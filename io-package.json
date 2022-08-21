@@ -1,0 +1,110 @@
+{
+    "common": {
+        "name": "tapo",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "zh-cn": "首次出版"
+            }
+        },
+        "title": "TP-Link Tapo",
+        "titleLang": {
+            "en": "TP-Link Tapo",
+            "de": "TP-Link Tapo",
+            "ru": "TP-Link Тапо",
+            "pt": "Tapo TP-Link",
+            "nl": "TP Link Tapo",
+            "fr": "Tapo TP-Link",
+            "it": "TP-Link Tapo",
+            "es": "Tapón de TP-Link",
+            "pl": "TP-Link Tapo",
+            "zh-cn": "TP-Link Tapo"
+        },
+        "desc": {
+            "en": "Adapter for TP-Link Tapo",
+            "de": "Adapter für TP-Link Tapo",
+            "ru": "Адаптер для TP-Link Tapo",
+            "pt": "Adaptador para TP-Link Tapo",
+            "nl": "Adapter voor TP-Link Tapo",
+            "fr": "Adaptateur pour TP-Link Tapo",
+            "it": "Adattatore per TP-Link Tapo",
+            "es": "Adaptador para TP-Link Tapo",
+            "pl": "Adapter do TP-Link Tapo",
+            "zh-cn": "TP-Link Tapo 适配器"
+        },
+        "authors": ["TA2k <tombox2020@gmail.com>"],
+        "keywords": ["tp-link", "tapo"],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "main": "build/main.js",
+        "icon": "tapo.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/TA2k/ioBroker.tapo/master/admin/tapo.png",
+        "readme": "https://github.com/TA2k/ioBroker.tapo/blob/master/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "iot-systems",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "poll",
+        "materialize": true,
+        "adminUI": {
+            "config": "json"
+        },
+        "plugins": {
+            "sentry": {
+                "dsn": "https://c9bd6c851b1246da95e6e982aa9b88f3@sentry.iobroker.net/152"
+            }
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=3.2.0"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=5.2.28"
+            }
+        ]
+    },
+    "encryptedNative": ["password"],
+    "protectedNative": ["password"],
+    "native": {
+        "username": "",
+        "password": "",
+        "interval": 10
+    },
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Device or service connected",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ]
+}
