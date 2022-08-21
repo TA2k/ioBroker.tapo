@@ -72,10 +72,10 @@ class Tapo extends utils.Adapter {
     await this.login();
     if (this.session.token) {
       await this.getDeviceList();
-      // await this.updateDevices();
+      await this.updateDevices();
       this.updateInterval = setInterval(async () => {
-        //  await this.updateDevices();
-      }, this.config.interval * 60 * 1000);
+        await this.updateDevices();
+      }, this.config.interval * 1000);
     }
   }
   async login(): Promise<void> {
@@ -307,67 +307,11 @@ class Tapo extends utils.Adapter {
   }
 
   async updateDevices(): Promise<void> {
-    const statusArray = [
-      {
-        path: "status",
-        url: "",
-        desc: "Status",
-      },
-    ];
-
-    for (const element of statusArray) {
-      // const url = element.url.replace("$id", id);
-
-      await this.requestClient({
-        method: element.method || "get",
-        url: element.url,
-        headers: {},
-      })
-        .then(async (res) => {
-          this.log.debug(JSON.stringify(res.data));
-          if (!res.data) {
-            return;
-          }
-          const data = res.data;
-
-          const forceIndex = true;
-          const preferedArrayName = null;
-
-          this.json2iob.parse(element.path, data, {
-            forceIndex: forceIndex,
-            preferedArrayName: preferedArrayName,
-            channelName: element.desc,
-          });
-          await this.setObjectNotExistsAsync(element.path + ".json", {
-            type: "state",
-            common: {
-              name: "Raw JSON",
-              write: false,
-              read: true,
-              type: "string",
-              role: "json",
-            },
-            native: {},
-          });
-          this.setState(element.path + ".json", JSON.stringify(data), true);
-        })
-        .catch((error) => {
-          if (error.response) {
-            if (error.response.status === 401) {
-              error.response && this.log.debug(JSON.stringify(error.response.data));
-              this.log.info(element.path + " receive 401 error. Refresh Token in 60 seconds");
-              this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
-              this.refreshTokenTimeout = setTimeout(() => {
-                this.refreshToken();
-              }, 1000 * 60);
-
-              return;
-            }
-          }
-          this.log.error(element.url);
-          this.log.error(error);
-          error.response && this.log.error(JSON.stringify(error.response.data));
-        });
+    for (const deviceId in this.deviceObjects) {
+      this.deviceObjects[deviceId].getDeviceInfo().then((sysInfo: any) => {
+        this.log.debug(JSON.stringify(sysInfo));
+        this.json2iob.parse(deviceId, sysInfo);
+      });
     }
   }
 
@@ -405,7 +349,11 @@ class Tapo extends utils.Adapter {
         }
 
         if (command === "Refresh") {
-          this.updateDevices();
+          this.deviceObjects[deviceId].getDeviceInfo().then((sysInfo: any) => {
+            this.log.debug(JSON.stringify(sysInfo));
+            this.json2iob.parse(deviceId, sysInfo);
+          });
+
           return;
         }
         try {
