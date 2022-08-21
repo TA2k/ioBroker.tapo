@@ -93,7 +93,7 @@ class Json2iob {
       }
       for (const key of objectKeys) {
         if (this.isJsonString(element[key]) && options.autoCast) {
-          element[key] = import_json_bigint.default.parse(element[key]);
+          element[key] = (0, import_json_bigint.default)({ storeAsString: true }).parse(element[key]);
         }
         if (Array.isArray(element[key])) {
           await this.extractArray(element, key, path, options);

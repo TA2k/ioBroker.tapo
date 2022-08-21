@@ -22,7 +22,10 @@ var import_axios = __toESM(require("axios"));
 var import_crypto = __toESM(require("crypto"));
 var import_https = __toESM(require("https"));
 var import_json2iob = __toESM(require("./lib/json2iob"));
+var import_l510e = __toESM(require("./lib/utils/l510e"));
+var import_l530 = __toESM(require("./lib/utils/l530"));
 var import_p100 = __toESM(require("./lib/utils/p100"));
+var import_p110 = __toESM(require("./lib/utils/p110"));
 class Tapo extends utils.Adapter {
   constructor(options = {}) {
     super({
@@ -179,6 +182,50 @@ class Tapo extends utils.Adapter {
           },
           native: {}
         });
+        await this.setObjectNotExistsAsync(id + ".remote", {
+          type: "channel",
+          common: {
+            name: "Remote Controls"
+          },
+          native: {}
+        });
+        const remoteArray = [
+          { command: "refresh", name: "True = Refresh" },
+          { command: "setPowerState", name: "True = On, False = Off" },
+          {
+            command: "setBrightness",
+            name: "Set Brightness for Light devices",
+            type: "number",
+            role: "level.brightness"
+          },
+          {
+            command: "setColorTemp",
+            name: "Set Color Temp for Light devices",
+            type: "number",
+            role: "level.color.temperature"
+          },
+          {
+            command: "setColor",
+            name: "Set Color for Light devices (hue, saturation)",
+            def: "30, 100",
+            type: "number",
+            role: "level.color"
+          }
+        ];
+        remoteArray.forEach((remote) => {
+          this.setObjectNotExists(id + ".remote." + remote.command, {
+            type: "state",
+            common: {
+              name: remote.name || "",
+              type: remote.type || "boolean",
+              role: remote.role || "boolean",
+              def: remote.def || false,
+              write: true,
+              read: true
+            },
+            native: {}
+          });
+        });
         this.json2iob.parse(id, device);
         if (device.status === 1) {
           const body2 = `{"requestData":{"method":"get_device_info","terminalUUID":"01D6B18A-5514-4C9F-B49C-555E775591B2"},"deviceId":"${id}"}`;
@@ -206,7 +253,7 @@ class Tapo extends utils.Adapter {
               return;
             }
             const result = (_b2 = (_a2 = res2.data.result) == null ? void 0 : _a2.responseData) == null ? void 0 : _b2.result;
-            this.devices[id] = { ...this.devices[id], result };
+            this.devices[id] = { ...this.devices[id], ...result };
             if (result.ip) {
               this.initDevice(id);
             }
@@ -224,26 +271,39 @@ class Tapo extends utils.Adapter {
   }
   async initDevice(id) {
     const device = this.devices[id];
+    this.log.info(`Init device ${id} type ${device.deviceName} with ip ${device.ip}`);
+    let deviceObject;
     if (device.deviceName === "P100") {
-      this.p100 = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
-      this.deviceObjects[id] = this.p100;
-      this.p100.handshake().then(() => {
-        this.p100.login().then(() => {
-          this.p100.getDeviceInfo().then((sysInfo) => {
-            const interval = this.config.interval ? this.config.interval * 1e3 : 3e4;
-            this.log.debug("interval: " + interval);
-            setTimeout(() => {
-            }, interval);
-          }).catch(() => {
-            this.log.error("52 - Get Device Info failed");
-          });
+      deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName === "P110") {
+      deviceObject = new import_p110.default(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName === "L530") {
+      deviceObject = new import_l530.default(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName === "L510E") {
+      deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else {
+      this.log.info(`Unknown device type ${device.deviceName} init as P100`);
+      deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
+    }
+    this.deviceObjects[id] = deviceObject;
+    deviceObject.handshake().then(() => {
+      deviceObject.login().then(() => {
+        deviceObject.getDeviceInfo().then((sysInfo) => {
+          this.log.debug(JSON.stringify(sysInfo));
+          this.json2iob.parse(id, sysInfo);
+          const interval = this.config.interval ? this.config.interval * 1e3 : 3e4;
+          this.log.debug("interval: " + interval);
+          setTimeout(() => {
+          }, interval);
         }).catch(() => {
-          this.log.error("Login failed");
+          this.log.error("52 - Get Device Info failed");
         });
       }).catch(() => {
-        this.log.error("Handshake failed");
+        this.log.error("Login failed");
       });
-    }
+    }).catch(() => {
+      this.log.error("Handshake failed");
+    });
   }
   async updateDevices() {
     const statusArray = [
@@ -328,6 +388,16 @@ class Tapo extends utils.Adapter {
         if (command === "Refresh") {
           this.updateDevices();
           return;
+        }
+        if (this.deviceObjects[deviceId][command]) {
+          if (command === "setColor") {
+            const valueSplit = state.val.split(", ");
+            this.log.info(this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]));
+          } else {
+            this.log.info(this.deviceObjects[deviceId][command](state.val));
+          }
+        } else {
+          this.log.error(`Device ${deviceId} has no command ${command}`);
         }
       }
     }
