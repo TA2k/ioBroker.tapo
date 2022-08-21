@@ -193,8 +193,7 @@ class Tapo extends utils.Adapter {
               command: "setColor",
               name: "Set Color for Light devices (hue, saturation)",
               def: "30, 100",
-              type: "number",
-              role: "level.color",
+              type: "string",
             },
           ];
           remoteArray.forEach((remote) => {
