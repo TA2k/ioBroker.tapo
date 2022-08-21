@@ -9,7 +9,10 @@ import axios, { AxiosInstance } from "axios";
 import crypto from "crypto";
 import https from "https";
 import Json2iob from "./lib/json2iob";
+import L510E from "./lib/utils/l510e";
+import L530 from "./lib/utils/l530";
 import P100 from "./lib/utils/p100";
+import P110 from "./lib/utils/p110";
 
 class Tapo extends utils.Adapter {
   private devices: { [key: string]: any };
@@ -21,7 +24,6 @@ class Tapo extends utils.Adapter {
   reLoginTimeout: any = null;
   refreshTokenTimeout: any = null;
   session: any = {};
-  p100: P100;
   refreshTimeout: any;
   refreshTokenInterval: any;
   public constructor(options: Partial<utils.AdapterOptions> = {}) {
@@ -215,7 +217,7 @@ class Tapo extends utils.Adapter {
                   return;
                 }
                 const result = res.data.result?.responseData?.result;
-                this.devices[id] = { ...this.devices[id], result };
+                this.devices[id] = { ...this.devices[id], ...result };
                 if (result.ip) {
                   this.initDevice(id);
                 }
@@ -235,37 +237,48 @@ class Tapo extends utils.Adapter {
   }
   async initDevice(id: string): Promise<void> {
     const device = this.devices[id];
+    this.log.info(`Init device ${id} type ${device.deviceName} with ip ${device.ip}`);
+    let deviceObject: any;
     if (device.deviceName === "P100") {
-      this.p100 = new P100(this.log, device.ip, this.config.username, this.config.password, 2);
-      this.deviceObjects[id] = this.p100;
-      this.p100
-        .handshake()
-        .then(() => {
-          this.p100
-            .login()
-            .then(() => {
-              this.p100
-                .getDeviceInfo()
-                .then((sysInfo) => {
-                  const interval = this.config.interval ? this.config.interval * 1000 : 30000;
-                  this.log.debug("interval: " + interval);
-
-                  setTimeout(() => {
-                    // this.updateState(interval);
-                  }, interval);
-                })
-                .catch(() => {
-                  this.log.error("52 - Get Device Info failed");
-                });
-            })
-            .catch(() => {
-              this.log.error("Login failed");
-            });
-        })
-        .catch(() => {
-          this.log.error("Handshake failed");
-        });
+      deviceObject = new P100(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName === "P110") {
+      deviceObject = new P110(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName === "L530") {
+      deviceObject = new L530(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName === "L510E") {
+      deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else {
+      this.log.info(`Unknown device type ${device.deviceName} init as P100`);
+      deviceObject = new P100(this.log, device.ip, this.config.username, this.config.password, 2);
     }
+    this.deviceObjects[id] = deviceObject;
+    deviceObject
+      .handshake()
+      .then(() => {
+        deviceObject
+          .login()
+          .then(() => {
+            deviceObject
+              .getDeviceInfo()
+              .then((sysInfo) => {
+                const interval = this.config.interval ? this.config.interval * 1000 : 30000;
+                this.log.debug("interval: " + interval);
+
+                setTimeout(() => {
+                  // this.updateState(interval);
+                }, interval);
+              })
+              .catch(() => {
+                this.log.error("52 - Get Device Info failed");
+              });
+          })
+          .catch(() => {
+            this.log.error("Login failed");
+          });
+      })
+      .catch(() => {
+        this.log.error("Handshake failed");
+      });
   }
 
   async updateDevices(): Promise<void> {

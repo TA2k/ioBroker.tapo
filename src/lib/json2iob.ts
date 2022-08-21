@@ -21,7 +21,15 @@ export default class Json2iob {
   async parse(
     path: string,
     element: string | null | undefined,
-    options: { [x: string]: boolean; write: any; channelName?: any; autoCast?: any; descriptions?: any },
+    options: {
+      [x: string]: any;
+      write?: any;
+      channelName?: any;
+      autoCast?: any;
+      descriptions?: any;
+      preferedArrayName?: any;
+      forceIndex?: any;
+    },
   ): Promise<void> {
     try {
       if (element === null || element === undefined) {
@@ -95,7 +103,7 @@ export default class Json2iob {
 
       for (const key of objectKeys) {
         if (this.isJsonString(element[key]) && options.autoCast) {
-          element[key] = JSONbig.parse(element[key]);
+          element[key] = JSONbig({ storeAsString: true }).parse(element[key]);
         }
 
         if (Array.isArray(element[key])) {
@@ -143,7 +151,7 @@ export default class Json2iob {
     key: string,
     path: string,
     options: {
-      [x: string]: boolean;
+      [x: string]: any;
       write: any;
       channelName?: any;
       autoCast?: any;
