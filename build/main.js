@@ -196,13 +196,15 @@ class Tapo extends utils.Adapter {
             command: "setBrightness",
             name: "Set Brightness for Light devices",
             type: "number",
-            role: "level.brightness"
+            role: "level.brightness",
+            def: 5
           },
           {
             command: "setColorTemp",
             name: "Set Color Temp for Light devices",
             type: "number",
-            role: "level.color.temperature"
+            role: "level.color.temperature",
+            def: 3e3
           },
           {
             command: "setColor",
