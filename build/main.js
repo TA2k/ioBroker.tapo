@@ -390,15 +390,19 @@ class Tapo extends utils.Adapter {
           this.updateDevices();
           return;
         }
-        if (this.deviceObjects[deviceId][command]) {
-          if (command === "setColor") {
-            const valueSplit = state.val.split(", ");
-            this.log.info(this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]));
+        try {
+          if (this.deviceObjects[deviceId][command]) {
+            if (command === "setColor") {
+              const valueSplit = state.val.split(", ");
+              this.log.info(this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]));
+            } else {
+              this.log.info(this.deviceObjects[deviceId][command](state.val));
+            }
           } else {
-            this.log.info(this.deviceObjects[deviceId][command](state.val));
+            this.log.error(`Device ${deviceId} has no command ${command}`);
           }
-        } else {
-          this.log.error(`Device ${deviceId} has no command ${command}`);
+        } catch (error) {
+          this.log.error(error);
         }
       }
     }
