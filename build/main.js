@@ -309,11 +309,17 @@ class Tapo extends utils.Adapter {
     });
   }
   async updateDevices() {
-    for (const deviceId in this.deviceObjects) {
-      this.deviceObjects[deviceId].getDeviceInfo().then((sysInfo) => {
-        this.log.debug(JSON.stringify(sysInfo));
-        this.json2iob.parse(deviceId, sysInfo);
-      });
+    try {
+      for (const deviceId in this.deviceObjects) {
+        this.deviceObjects[deviceId].getDeviceInfo().then((sysInfo) => {
+          this.log.debug(JSON.stringify(sysInfo));
+          this.json2iob.parse(deviceId, sysInfo);
+        }).catch((error) => {
+          this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
+        });
+      }
+    } catch (error) {
+      this.log.error(error);
     }
   }
   async refreshToken() {
@@ -344,6 +350,8 @@ class Tapo extends utils.Adapter {
           this.deviceObjects[deviceId].getDeviceInfo().then((sysInfo) => {
             this.log.debug(JSON.stringify(sysInfo));
             this.json2iob.parse(deviceId, sysInfo);
+          }).catch((error) => {
+            this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
           });
           return;
         }
