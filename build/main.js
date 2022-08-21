@@ -101,6 +101,8 @@ class Tapo extends utils.Adapter {
     await this.login();
     if (this.session.token) {
       await this.getDeviceList();
+      this.log.info("Wait for connections");
+      await this.sleep(1e4);
       await this.updateDevices();
       this.updateInterval = setInterval(async () => {
         await this.updateDevices();
@@ -258,7 +260,7 @@ class Tapo extends utils.Adapter {
             const result = (_b2 = (_a2 = res2.data.result) == null ? void 0 : _a2.responseData) == null ? void 0 : _b2.result;
             this.devices[id] = { ...this.devices[id], ...result };
             if (result.ip) {
-              this.initDevice(id);
+              await this.initDevice(id);
             }
             this.json2iob.parse(id, result);
           }).catch((error) => {
@@ -289,7 +291,7 @@ class Tapo extends utils.Adapter {
       deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
     }
     this.deviceObjects[id] = deviceObject;
-    deviceObject.handshake().then(() => {
+    await deviceObject.handshake().then(() => {
       deviceObject.login().then(() => {
         deviceObject.getDeviceInfo().then((sysInfo) => {
           this.log.debug(JSON.stringify(sysInfo));
@@ -321,6 +323,9 @@ class Tapo extends utils.Adapter {
     } catch (error) {
       this.log.error(error);
     }
+  }
+  async sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
   async refreshToken() {
     this.log.debug("Refresh token");
