@@ -2,12 +2,13 @@
 
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
-    namespace ioBroker {
-        interface AdapterConfig {
-            option1: boolean;
-            option2: string;
-        }
+  namespace ioBroker {
+    interface AdapterConfig {
+      username: string;
+      password: string;
+      interval: number;
     }
+  }
 }
 
 // this is required so the above AdapterConfig is found by TypeScript / type checking

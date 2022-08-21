@@ -164,29 +164,51 @@ class Tapo extends utils.Adapter {
             },
             native: {},
           });
-          //   await this.setObjectNotExistsAsync(id + ".remote", {
-          //     type: "channel",
-          //     common: {
-          //       name: "Remote Controls",
-          //     },
-          //     native: {},
-          //   });
+          await this.setObjectNotExistsAsync(id + ".remote", {
+            type: "channel",
+            common: {
+              name: "Remote Controls",
+            },
+            native: {},
+          });
 
-          //   const remoteArray = [{ command: "Refresh", name: "True = Refresh" }];
-          //   remoteArray.forEach((remote) => {
-          //     this.setObjectNotExists(id + ".remote." + remote.command, {
-          //       type: "state",
-          //       common: {
-          //         name: remote.name || "",
-          //         type: remote.type || "boolean",
-          //         role: remote.role || "boolean",
-          //         def: remote.def || false,
-          //         write: true,
-          //         read: true,
-          //       },
-          //       native: {},
-          //     });
-          //   });
+          const remoteArray = [
+            { command: "refresh", name: "True = Refresh" },
+            { command: "setPowerState", name: "True = On, False = Off" },
+            {
+              command: "setBrightness",
+              name: "Set Brightness for Light devices",
+              type: "number",
+              role: "level.brightness",
+            },
+            {
+              command: "setColorTemp",
+              name: "Set Color Temp for Light devices",
+              type: "number",
+              role: "level.color.temperature",
+            },
+            {
+              command: "setColor",
+              name: "Set Color for Light devices (hue, saturation)",
+              def: "30, 100",
+              type: "number",
+              role: "level.color",
+            },
+          ];
+          remoteArray.forEach((remote) => {
+            this.setObjectNotExists(id + ".remote." + remote.command, {
+              type: "state",
+              common: {
+                name: remote.name || "",
+                type: remote.type || "boolean",
+                role: remote.role || "boolean",
+                def: remote.def || false,
+                write: true,
+                read: true,
+              },
+              native: {},
+            });
+          });
           this.json2iob.parse(id, device);
           if (device.status === 1) {
             const body = `{"requestData":{"method":"get_device_info","terminalUUID":"01D6B18A-5514-4C9F-B49C-555E775591B2"},"deviceId":"${id}"}`;
@@ -260,7 +282,9 @@ class Tapo extends utils.Adapter {
           .then(() => {
             deviceObject
               .getDeviceInfo()
-              .then((sysInfo) => {
+              .then((sysInfo: any) => {
+                this.log.debug(JSON.stringify(sysInfo));
+                this.json2iob.parse(id, sysInfo);
                 const interval = this.config.interval ? this.config.interval * 1000 : 30000;
                 this.log.debug("interval: " + interval);
 
@@ -382,6 +406,17 @@ class Tapo extends utils.Adapter {
         if (command === "Refresh") {
           this.updateDevices();
           return;
+        }
+
+        if (this.deviceObjects[deviceId][command]) {
+          if (command === "setColor") {
+            const valueSplit = state.val.split(", ");
+            this.log.info(this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]));
+          } else {
+            this.log.info(this.deviceObjects[deviceId][command](state.val));
+          }
+        } else {
+          this.log.error(`Device ${deviceId} has no command ${command}`);
         }
       }
     }

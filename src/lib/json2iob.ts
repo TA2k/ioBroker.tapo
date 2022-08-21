@@ -21,7 +21,7 @@ export default class Json2iob {
   async parse(
     path: string,
     element: string | null | undefined,
-    options: {
+    options?: {
       [x: string]: any;
       write?: any;
       channelName?: any;
@@ -150,7 +150,7 @@ export default class Json2iob {
     element: any,
     key: string,
     path: string,
-    options: {
+    options?: {
       [x: string]: any;
       write: any;
       channelName?: any;
