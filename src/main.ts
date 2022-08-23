@@ -345,7 +345,8 @@ class Tapo extends utils.Adapter {
                 }
               }
               if (this.devices[id].ip) {
-                await this.initDevice(id);
+                const initResult = await this.initDevice(id);
+                this.log.debug(JSON.stringify(initResult));
               }
               this.json2iob.parse(id, result);
             })
