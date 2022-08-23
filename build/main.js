@@ -372,7 +372,7 @@ class Tapo extends utils.Adapter {
     let deviceObject;
     if (device.deviceName === "P100") {
       deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName === "P110") {
+    } else if (device.deviceName === "P110" || device.deviceName === "P115") {
       deviceObject = new import_p110.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName === "L530") {
       deviceObject = new import_l530.default(this.log, device.ip, this.config.username, this.config.password, 2);
@@ -385,10 +385,16 @@ class Tapo extends utils.Adapter {
     this.deviceObjects[id] = deviceObject;
     await deviceObject.handshake().then(() => {
       deviceObject.login().then(() => {
-        deviceObject.getDeviceInfo().then((sysInfo) => {
+        deviceObject.getDeviceInfo().then(async (sysInfo) => {
           this.log.debug(JSON.stringify(sysInfo));
           this.json2iob.parse(id, sysInfo);
           this.deviceObjects[id]._connected = true;
+          if (this.deviceObjects[id].getEnergyUsage) {
+            this.log.debug("Receive energy usage");
+            const energyUsage = await this.deviceObjects[id].getEnergyUsage();
+            this.log.debug(JSON.stringify(energyUsage));
+            this.json2iob.parse(id, energyUsage);
+          }
         }).catch(() => {
           this.log.error("52 - Get Device Info failed");
           this.deviceObjects[id]._connected = false;
@@ -408,9 +414,15 @@ class Tapo extends utils.Adapter {
         if (!this.deviceObjects[deviceId]._connected) {
           continue;
         }
-        this.deviceObjects[deviceId].getDeviceInfo().then((sysInfo) => {
+        this.deviceObjects[deviceId].getDeviceInfo().then(async (sysInfo) => {
           this.log.debug(JSON.stringify(sysInfo));
           this.json2iob.parse(deviceId, sysInfo);
+          if (this.deviceObjects[deviceId].getEnergyUsage) {
+            this.log.debug("Receive energy usage");
+            const energyUsage = await this.deviceObjects[deviceId].getEnergyUsage();
+            this.log.debug(JSON.stringify(energyUsage));
+            this.json2iob.parse(deviceId, energyUsage);
+          }
         }).catch((error) => {
           this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
         });

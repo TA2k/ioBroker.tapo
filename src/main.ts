@@ -373,7 +373,7 @@ class Tapo extends utils.Adapter {
     let deviceObject: any;
     if (device.deviceName === "P100") {
       deviceObject = new P100(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName === "P110") {
+    } else if (device.deviceName === "P110" || device.deviceName === "P115") {
       deviceObject = new P110(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName === "L530") {
       deviceObject = new L530(this.log, device.ip, this.config.username, this.config.password, 2);
@@ -392,11 +392,17 @@ class Tapo extends utils.Adapter {
           .then(() => {
             deviceObject
               .getDeviceInfo()
-              .then((sysInfo: any) => {
+              .then(async (sysInfo: any) => {
                 this.log.debug(JSON.stringify(sysInfo));
                 this.json2iob.parse(id, sysInfo);
 
                 this.deviceObjects[id]._connected = true;
+                if (this.deviceObjects[id].getEnergyUsage) {
+                  this.log.debug("Receive energy usage");
+                  const energyUsage = await this.deviceObjects[id].getEnergyUsage();
+                  this.log.debug(JSON.stringify(energyUsage));
+                  this.json2iob.parse(id, energyUsage);
+                }
               })
               .catch(() => {
                 this.log.error("52 - Get Device Info failed");
@@ -423,9 +429,15 @@ class Tapo extends utils.Adapter {
         }
         this.deviceObjects[deviceId]
           .getDeviceInfo()
-          .then((sysInfo: any) => {
+          .then(async (sysInfo: any) => {
             this.log.debug(JSON.stringify(sysInfo));
             this.json2iob.parse(deviceId, sysInfo);
+            if (this.deviceObjects[deviceId].getEnergyUsage) {
+              this.log.debug("Receive energy usage");
+              const energyUsage = await this.deviceObjects[deviceId].getEnergyUsage();
+              this.log.debug(JSON.stringify(energyUsage));
+              this.json2iob.parse(deviceId, energyUsage);
+            }
           })
           .catch((error) => {
             this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
