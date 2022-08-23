@@ -152,6 +152,50 @@ class Tapo extends utils.Adapter {
             native: {},
           });
           await this.setStateAsync("mfaId", res.data.result?.MFAProcessId, true);
+
+          const body = JSON.stringify({
+            cloudPassword: this.config.password,
+            locale: "de_DE",
+            terminalUUID: "CDE6601E-148C-4CB7-831F-FD587E999D99",
+            cloudUserName: this.config.username,
+            appType: "TP-Link_Tapo_iOS",
+          });
+
+          const path = "api/v2/account/getEmailVC4TerminalMFA";
+
+          const md5 = crypto.createHash("md5").update(body).digest("base64");
+          this.log.debug(md5);
+          const content = md5 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/" + path;
+          const signature = crypto.createHmac("sha1", this.secret).update(content).digest("hex");
+          await this.requestClient({
+            method: "post",
+            url:
+              "https://n-wap-gw.tplinkcloud.com/" +
+              path +
+              "?termID=CDE6601E-148C-4CB7-831F-FD587E954C69&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8",
+            headers: {
+              "Content-Type": "application/json;UTF-8",
+              Accept: "*/*",
+              "User-Agent": "Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)",
+              "Accept-Language": "de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8",
+              "X-Authorization":
+                "Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=" +
+                signature,
+            },
+            data: body,
+          })
+            .then(async (res) => {
+              this.log.debug(JSON.stringify(res.data));
+              if (res.data.error_code) {
+                this.log.error(JSON.stringify(res.data));
+                return;
+              }
+            })
+            .catch((error) => {
+              this.log.error(error);
+              error.response && this.log.error(JSON.stringify(error.response.data));
+            });
+          return;
         }
         this.setState("info.connection", true, true);
         this.session = res.data.result;
