@@ -344,7 +344,7 @@ class Tapo extends utils.Adapter {
                   this.log.warn(`No IP found for ${id} put the device online or set the ip state manually`);
                 }
               }
-              if (result.ip) {
+              if (this.devices[id].ip) {
                 await this.initDevice(id);
               }
               this.json2iob.parse(id, result);
