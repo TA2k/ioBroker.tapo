@@ -321,11 +321,13 @@ class Tapo extends utils.Adapter {
         }).then(async (res2) => {
           var _a2, _b2;
           this.log.debug(JSON.stringify(res2.data));
+          let result = {};
           if (res2.data.error_code) {
             this.log.error(JSON.stringify(res2.data));
+          } else {
+            result = (_b2 = (_a2 = res2.data.result) == null ? void 0 : _a2.responseData) == null ? void 0 : _b2.result;
+            this.devices[id] = { ...this.devices[id], ...result };
           }
-          const result = (_b2 = (_a2 = res2.data.result) == null ? void 0 : _a2.responseData) == null ? void 0 : _b2.result;
-          this.devices[id] = { ...this.devices[id], ...result };
           if (!result.ip) {
             const ipState = await this.getStateAsync(id + ".ip");
             if (ipState && ipState.val) {
