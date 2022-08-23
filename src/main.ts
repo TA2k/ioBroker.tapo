@@ -437,6 +437,8 @@ class Tapo extends utils.Adapter {
               const energyUsage = await this.deviceObjects[deviceId].getEnergyUsage();
               this.log.debug(JSON.stringify(energyUsage));
               this.json2iob.parse(deviceId, energyUsage);
+              const power_usage = this.deviceObjects[deviceId].getPowerConsumption();
+              this.json2iob.parse(deviceId, power_usage);
             }
           })
           .catch((error) => {
@@ -475,7 +477,7 @@ class Tapo extends utils.Adapter {
   /**
    * Is called if a subscribed state changes
    */
-  private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+  private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
     if (state) {
       if (!state.ack) {
         const deviceId = id.split(".")[2];
@@ -501,15 +503,27 @@ class Tapo extends utils.Adapter {
           if (this.deviceObjects[deviceId][command]) {
             if (command === "setColor") {
               const valueSplit = state.val.split(", ");
-              this.log.info(this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]));
+              await this.log.info(this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]));
             } else {
-              this.log.info(this.deviceObjects[deviceId][command](state.val));
+              await this.log.info(this.deviceObjects[deviceId][command](state.val));
             }
+            this.refreshTimeout && clearTimeout(this.refreshTimeout);
+            this.refreshTimeout = setTimeout(async () => {
+              await this.updateDevices();
+            }, 2 * 1000);
           } else {
             this.log.error(`Device ${deviceId} has no command ${command}`);
           }
         } catch (error) {
           this.log.error(error);
+        }
+      } else {
+        const resultDict = { device_on: "setPowerState" };
+        const idArray = id.split(".");
+        const stateName = idArray[idArray.length - 1];
+        const deviceId = id.split(".")[2];
+        if (resultDict[stateName]) {
+          await this.setStateAsync(deviceId + ".remote." + resultDict[stateName], state.val, true);
         }
       }
     }
