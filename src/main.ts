@@ -395,29 +395,32 @@ class Tapo extends utils.Adapter {
               .then((sysInfo: any) => {
                 this.log.debug(JSON.stringify(sysInfo));
                 this.json2iob.parse(id, sysInfo);
-                const interval = this.config.interval ? this.config.interval * 1000 : 30000;
-                this.log.debug("interval: " + interval);
 
-                setTimeout(() => {
-                  // this.updateState(interval);
-                }, interval);
+                this.deviceObjects[id]._connected = true;
               })
               .catch(() => {
                 this.log.error("52 - Get Device Info failed");
+
+                this.deviceObjects[id]._connected = false;
               });
           })
           .catch(() => {
             this.log.error("Login failed");
+            this.deviceObjects[id]._connected = false;
           });
       })
       .catch(() => {
         this.log.error("Handshake failed");
+        this.deviceObjects[id]._connected = false;
       });
   }
 
   async updateDevices(): Promise<void> {
     try {
       for (const deviceId in this.deviceObjects) {
+        if (!this.deviceObjects[deviceId]._connected) {
+          continue;
+        }
         this.deviceObjects[deviceId]
           .getDeviceInfo()
           .then((sysInfo: any) => {
