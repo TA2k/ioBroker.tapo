@@ -348,8 +348,12 @@ class Tapo extends utils.Adapter {
             }
           }
           if (this.devices[id].ip) {
-            const initResult = await this.initDevice(id);
-            this.log.debug(JSON.stringify(initResult));
+            const initResult = await this.initDevice(id).then(() => {
+              this.log.info(`Initialized ${id}`);
+            }).catch((e) => {
+              this.log.error(e);
+            });
+            this.log.debug(`initResult ${id} ${initResult}`);
           }
           this.json2iob.parse(id, result);
         }).catch((error) => {
