@@ -55,6 +55,23 @@
         "pl": "Update interval (ang.)",
         "zh-cn": "最新间隔(第二期)"
       }
+    },
+    "mfa": {
+      "type": "text",
+      "label": {
+        "en": "MFA Code",
+        "de": "MFA-Code",
+        "ru": "MFA код",
+        "pt": "Código MFA",
+        "nl": "MFA Code",
+        "fr": "Code MFA",
+        "it": "Codice MFA",
+        "es": "MFA Code",
+        "pl": "Kodeks",
+        "zh-cn": "MFA守则"
+      },
+      "newLine": true,
+      "sm": 3
     }
   }
 }

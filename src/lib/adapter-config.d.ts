@@ -5,6 +5,7 @@ declare global {
   namespace ioBroker {
     interface AdapterConfig {
       username: string;
+      mfa: string;
       password: string;
       interval: number;
     }
