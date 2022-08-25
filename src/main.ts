@@ -8,12 +8,12 @@ import * as utils from "@iobroker/adapter-core";
 import axios, { AxiosInstance } from "axios";
 import crypto from "crypto";
 import https from "https";
+import { v4 as uuidv4 } from "uuid";
 import Json2iob from "./lib/json2iob";
 import L510E from "./lib/utils/l510e";
 import L530 from "./lib/utils/l530";
 import P100 from "./lib/utils/p100";
 import P110 from "./lib/utils/p110";
-
 class Tapo extends utils.Adapter {
   private devices: { [key: string]: any };
   private deviceObjects: { [key: string]: any };
@@ -26,6 +26,7 @@ class Tapo extends utils.Adapter {
   session: any = {};
   refreshTimeout: any;
   refreshTokenInterval: any;
+  termId: any;
   public constructor(options: Partial<utils.AdapterOptions> = {}) {
     super({
       ...options,
@@ -67,6 +68,25 @@ class Tapo extends utils.Adapter {
     this.refreshTokenTimeout = null;
     this.session = {};
     this.subscribeStates("*");
+
+    const termIdState = await this.getStateAsync("termId");
+    if (termIdState && termIdState.val) {
+      this.termId = termIdState.val;
+    } else {
+      await this.setObjectNotExistsAsync("termId", {
+        type: "state",
+        common: {
+          name: "Terminal ID",
+          write: false,
+          read: true,
+          type: "string",
+          role: "text",
+        },
+        native: {},
+      });
+      this.termId = uuidv4();
+      await this.setStateAsync("termId", this.termId, true);
+    }
 
     this.log.info("Login tp TAPO App");
     await this.login();
@@ -120,7 +140,9 @@ class Tapo extends utils.Adapter {
       url:
         "https://n-wap-gw.tplinkcloud.com/" +
         path +
-        "?termID=CDE6601E-148C-4CB7-831F-FD587E954C69&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8",
+        "?termID=" +
+        this.termId +
+        "&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8",
       headers: {
         "Content-Type": "application/json;UTF-8",
         Accept: "*/*",
@@ -172,7 +194,9 @@ class Tapo extends utils.Adapter {
             url:
               "https://n-wap-gw.tplinkcloud.com/" +
               path +
-              "?termID=CDE6601E-148C-4CB7-831F-FD587E954C69&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8",
+              "?termID=" +
+              this.termId +
+              "&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8",
             headers: {
               "Content-Type": "application/json;UTF-8",
               Accept: "*/*",
@@ -216,7 +240,7 @@ class Tapo extends utils.Adapter {
     const signature = crypto.createHmac("sha1", this.secret).update(content).digest("hex");
     await this.requestClient({
       method: "post",
-      url: `https://n-euw1-wap-gw.tplinkcloud.com/api/v2/common/getDeviceListByPage?token=${this.session.token}&termID=CDE6601E-148C-4CB7-831F-FD587E954C69&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8`,
+      url: `https://n-euw1-wap-gw.tplinkcloud.com/api/v2/common/getDeviceListByPage?token=${this.session.token}&termID=${this.termId}&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8`,
       headers: {
         "Content-Type": "application/json;UTF-8",
         "Content-MD5": md5,
@@ -296,70 +320,106 @@ class Tapo extends utils.Adapter {
           });
           this.json2iob.parse(id, device);
 
-          const body = `{"requestData":{"method":"get_device_info","terminalUUID":"01D6B18A-5514-4C9F-B49C-555E775591B2"},"deviceId":"${id}"}`;
-          const md5 = crypto.createHash("md5").update(body).digest("base64");
-          this.log.debug(md5);
-          const content = md5 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/passthrough";
-          const signature = crypto.createHmac("sha1", this.secret).update(content).digest("hex");
+          //try new API
+
           await this.requestClient({
-            method: "post",
-            url: `https://n-euw1-wap-gw.tplinkcloud.com/api/v2/common/passthrough?token=${this.session.token}&termID=CDE6601E-148C-4CB7-831F-FD587E954C69&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8`,
+            method: "get",
+            url: "https://euw1-app-server.iot.i.tplinknbu.com/v1/things/" + id + "/details",
             headers: {
-              "Content-Type": "application/json;UTF-8",
-              "Content-MD5": md5,
+              "x-locale": "de",
+              Authorization: "ut|" + this.session.token,
+              "app-cid": "app:TP-Link_Tapo_iOS:" + this.termId,
+              "x-ospf": "iOS 14.8",
+              "x-app-name": "TP-Link_Tapo_iOS",
               Accept: "*/*",
-              "User-Agent": "Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)",
               "Accept-Language": "de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8",
-              "X-Authorization":
-                "Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=" +
-                signature,
+              "Content-Type": "application/json;UTF-8",
+              "User-Agent": "Tapo/2.9.7 (iPhone; iOS 14.8; Scale/3.00)",
+              "x-term-id": this.termId,
+              "x-app-version": "2.9.7",
+              "x-net-type": "wifi",
             },
-            data: body,
           })
             .then(async (res) => {
               this.log.debug(JSON.stringify(res.data));
-              let result = {};
               if (res.data.error_code) {
                 this.log.error(JSON.stringify(res.data));
+                return;
               } else {
-                result = res.data.result?.responseData?.result;
-                this.devices[id] = { ...this.devices[id], ...result };
+                this.devices[id] = { ...this.devices[id], ...res.data };
               }
-              if (!result.ip) {
-                const ipState = await this.getStateAsync(id + ".ip");
-                if (ipState && ipState.val) {
-                  this.devices[id].ip = ipState.val;
-                } else {
-                  await this.setObjectNotExistsAsync(id + ".ip", {
-                    type: "state",
-                    common: {
-                      name: "IP",
-                      write: true,
-                      read: true,
-                      type: "string",
-                      role: "text",
-                    },
-                    native: {},
-                  });
-                  this.log.warn(`No IP found for ${id} put the device online or set the ip state manually`);
-                }
-              }
-              if (this.devices[id].ip) {
-                const initResult = await this.initDevice(id)
-                  .then(() => {
-                    this.log.info(`Initialized ${id}`);
-                  })
-                  .catch((e) => {
-                    this.log.error(e);
-                  });
-                this.log.debug(`initResult ${id} ${initResult}`);
-              }
-              this.json2iob.parse(id, result);
             })
             .catch((error) => {
               this.log.error(error);
               error.response && this.log.error(JSON.stringify(error.response.data));
             });
+          //no ip via new API try old api
+          if (!this.devices[id].ip) {
+            const body = `{"requestData":{"method":"get_device_info","terminalUUID":${this.termId}},"deviceId":"${id}"}`;
+            const md5 = crypto.createHash("md5").update(body).digest("base64");
+            this.log.debug(md5);
+            const content = md5 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/passthrough";
+            const signature = crypto.createHmac("sha1", this.secret).update(content).digest("hex");
+            await this.requestClient({
+              method: "post",
+              url: `https://n-euw1-wap-gw.tplinkcloud.com/api/v2/common/passthrough?token=${this.session.token}&termID=${this.termId}&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8`,
+              headers: {
+                "Content-Type": "application/json;UTF-8",
+                "Content-MD5": md5,
+                Accept: "*/*",
+                "User-Agent": "Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)",
+                "Accept-Language": "de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8",
+                "X-Authorization":
+                  "Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=" +
+                  signature,
+              },
+              data: body,
+            })
+              .then(async (res) => {
+                this.log.debug(JSON.stringify(res.data));
+                let result = {};
+                if (res.data.error_code) {
+                  this.log.error(JSON.stringify(res.data));
+                } else {
+                  result = res.data.result?.responseData?.result;
+                  this.devices[id] = { ...this.devices[id], ...result };
+                }
+              })
+              .catch((error) => {
+                this.log.error(error);
+                error.response && this.log.error(JSON.stringify(error.response.data));
+              });
+          }
+          if (!this.devices[id].ip) {
+            const ipState = await this.getStateAsync(id + ".ip");
+            if (ipState && ipState.val) {
+              this.devices[id].ip = ipState.val;
+            } else {
+              await this.setObjectNotExistsAsync(id + ".ip", {
+                type: "state",
+                common: {
+                  name: "IP",
+                  write: true,
+                  read: true,
+                  type: "string",
+                  role: "text",
+                },
+                native: {},
+              });
+              this.log.warn(`No IP found for ${id} put the device online or set the ip state manually`);
+            }
+          }
+          this.json2iob.parse(id, this.devices[id]);
+          if (this.devices[id].ip) {
+            const initResult = await this.initDevice(id)
+              .then(() => {
+                this.log.info(`Initialized ${id}`);
+              })
+              .catch((e) => {
+                this.log.error(e);
+              });
+            this.log.debug(`initResult ${id} ${initResult}`);
+          }
         }
       })
       .catch((error) => {
