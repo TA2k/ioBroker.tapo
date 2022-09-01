@@ -437,6 +437,11 @@ class Tapo extends utils.Adapter {
       deviceObject.login().then(() => {
         deviceObject.getDeviceInfo().then(async (sysInfo) => {
           this.log.debug(JSON.stringify(sysInfo));
+          if (sysInfo.request) {
+            this.log.error("Malformed response sysinfo");
+            this.log.error(JSON.stringify(sysInfo));
+            return;
+          }
           this.json2iob.parse(id, sysInfo);
           this.deviceObjects[id]._connected = true;
           if (this.deviceObjects[id].getEnergyUsage) {
@@ -466,13 +471,28 @@ class Tapo extends utils.Adapter {
         }
         this.deviceObjects[deviceId].getDeviceInfo().then(async (sysInfo) => {
           this.log.debug(JSON.stringify(sysInfo));
+          if (sysInfo.request) {
+            this.log.error("Malformed response sysinfo");
+            this.log.error(JSON.stringify(sysInfo));
+            return;
+          }
           this.json2iob.parse(deviceId, sysInfo);
           if (this.deviceObjects[deviceId].getEnergyUsage) {
             this.log.debug("Receive energy usage");
             const energyUsage = await this.deviceObjects[deviceId].getEnergyUsage();
             this.log.debug(JSON.stringify(energyUsage));
+            if (energyUsage.request) {
+              this.log.error("Malformed response getEnergyUsage");
+              this.log.error(JSON.stringify(energyUsage));
+              return;
+            }
             this.json2iob.parse(deviceId, energyUsage);
             const power_usage = this.deviceObjects[deviceId].getPowerConsumption();
+            if (power_usage.request) {
+              this.log.error("Malformed response getPowerConsumption");
+              this.log.error(JSON.stringify(power_usage));
+              return;
+            }
             this.json2iob.parse(deviceId, power_usage);
           }
         }).catch((error) => {
