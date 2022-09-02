@@ -16,11 +16,27 @@
 
 Adapter for TP-Link Tapo
 
+based on
+https://github.com/apatsufas/homebridge-tapo-p100
+
+## Loginablauf
+
+Die Tapo Mail und Passwort eingeben. Es werden die Geräte via Cloud abgerufen, aber lokal gesteuert.
+Wenn die IP nicht gefunden wird muss sie manuell unter tapo.0.id.ip gesetzt werden.
+
+## Steuern
+
+tapo.0.id.remote auf true/false setzen steuert den jeweiligen Befehl. Der Befehl wird lokal an das Gerät gesendet.
+
+## Diskussion und Fragen
+
+<https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
+
 ## Changelog
 
 ### 0.0.1
 
--   (TA2k) initial release
+- (TA2k) initial release
 
 ## License
 

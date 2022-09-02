@@ -27,8 +27,8 @@ __export(p100_exports, {
   default: () => P100
 });
 module.exports = __toCommonJS(p100_exports);
-var import_tpLinkCipher = __toESM(require("./tpLinkCipher"));
 var import_uuid = require("uuid");
+var import_tpLinkCipher = __toESM(require("./tpLinkCipher"));
 class P100 {
   constructor(log, ipAddress, email, password, timeout) {
     this.log = log;
@@ -271,7 +271,7 @@ class P100 {
           return this.handleError(JSON.parse(decryptedResponse).error_code, "340");
         }
       }).catch((error) => {
-        this.log.error("371 Error: " + error.message);
+        this.log.debug("371 Error: " + error.message);
         return error;
       });
     } else {

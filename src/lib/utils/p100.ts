@@ -1,7 +1,7 @@
-import { PlugSysinfo } from "./types";
-import TpLinkCipher from "./tpLinkCipher";
-import { v4 as uuidv4 } from "uuid";
 import { AxiosResponse } from "axios";
+import { v4 as uuidv4 } from "uuid";
+import TpLinkCipher from "./tpLinkCipher";
+import { PlugSysinfo } from "./types";
 
 export default class P100 {
   private crypto = require("crypto");
@@ -77,7 +77,7 @@ export default class P100 {
     public readonly ipAddress: string,
     public readonly email: string,
     public readonly password: string,
-    public readonly timeout: number
+    public readonly timeout: number,
   ) {
     this.log.debug("Constructing P100 on host: " + ipAddress);
     this.ip = ipAddress;
@@ -237,7 +237,7 @@ export default class P100 {
         key: this.privateKey,
         padding: this.crypto.constants.RSA_PKCS1_PADDING,
       },
-      buff
+      buff,
     );
 
     const b_arr = decoded.slice(0, 16);
@@ -297,7 +297,8 @@ export default class P100 {
     }
     const URL = "http://" + this.ip + "/app?token=" + this.token;
 
-    const payload = "{" + '"method": "get_device_info",' + '"requestTimeMils": ' + Math.round(Date.now() * 1000) + "" + "};";
+    const payload =
+      "{" + '"method": "get_device_info",' + '"requestTimeMils": ' + Math.round(Date.now() * 1000) + "" + "};";
     const headers = {
       Cookie: this.cookie,
     };
@@ -347,7 +348,7 @@ export default class P100 {
           }
         })
         .catch((error: Error) => {
-          this.log.error("371 Error: " + error.message);
+          this.log.debug("371 Error: " + error.message);
           return error;
         });
     } else {
