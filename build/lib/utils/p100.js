@@ -332,7 +332,8 @@ class P100 {
     return this.handleRequest(payload).then((result) => {
       return result ? true : false;
     }).catch((error) => {
-      if (error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
+      this.log.debug(JSON.stringify(error));
+      if (error && error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
         return this.reconnect().then(() => {
           return this.handleRequest(payload).then((result) => {
             return result ? true : false;
