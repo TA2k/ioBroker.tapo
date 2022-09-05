@@ -542,9 +542,11 @@ class Tapo extends utils.Adapter {
           if (this.deviceObjects[deviceId] && this.deviceObjects[deviceId][command]) {
             if (command === "setColor") {
               const valueSplit = state.val.split(", ");
-              await this.log.info(this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]));
+              const result = await this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]);
+              this.log.info(JSON.stringify(result));
             } else {
-              await this.log.info(this.deviceObjects[deviceId][command](state.val));
+              const result = await this.deviceObjects[deviceId][command](state.val);
+              this.log.info(JSON.stringify(result));
             }
             this.refreshTimeout && clearTimeout(this.refreshTimeout);
             this.refreshTimeout = setTimeout(async () => {
