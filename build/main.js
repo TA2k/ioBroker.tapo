@@ -475,7 +475,7 @@ class Tapo extends utils.Adapter {
             this.log.debug("Malformed response sysinfo");
             return;
           }
-          this.json2iob.parse(deviceId, sysInfo);
+          await this.json2iob.parse(deviceId, sysInfo);
           if (this.deviceObjects[deviceId].getEnergyUsage) {
             this.log.debug("Receive energy usage");
             const energyUsage = await this.deviceObjects[deviceId].getEnergyUsage();
@@ -485,14 +485,14 @@ class Tapo extends utils.Adapter {
               this.log.error(JSON.stringify(energyUsage));
               return;
             }
-            this.json2iob.parse(deviceId, energyUsage);
+            await this.json2iob.parse(deviceId, energyUsage);
             const power_usage = this.deviceObjects[deviceId].getPowerConsumption();
             if (power_usage.request) {
               this.log.error("Malformed response getPowerConsumption");
               this.log.error(JSON.stringify(power_usage));
               return;
             }
-            this.json2iob.parse(deviceId, power_usage);
+            await this.json2iob.parse(deviceId, power_usage);
           }
         }).catch((error) => {
           this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
