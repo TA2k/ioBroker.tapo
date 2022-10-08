@@ -4,7 +4,16 @@
     "version": "0.0.3",
     "news": {
       "0.0.3": {
-        "en": "fix Login"
+        "en": "fix Login. Maybe relogin is neccessary",
+        "de": "Login gefixt. Vielleicht ist Relogin notwendig",
+        "ru": "исправить Логин. Может быть, перелогина необходима",
+        "pt": "corrigir login. Talvez o relogin seja necessário",
+        "nl": "los Login op. Misschien is relogin negatief",
+        "fr": "correction. Peut-être que relogin est néccessaire",
+        "it": "correggere Login. Forse la relogin è neccessaria",
+        "es": "arregla Iniciar sesión. Tal vez el relogin es necesario",
+        "pl": "następuje Logina. Maybe relogin to neccessary",
+        "zh-cn": "fix Loin。 Maybe relogin是不必要的。"
       },
       "0.0.2": {
         "en": "initial release",
