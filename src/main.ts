@@ -106,7 +106,7 @@ class Tapo extends utils.Adapter {
       refreshTokenNeeded: true,
       platform: "iOS 14.8",
       cloudPassword: this.config.password,
-      terminalUUID: "CDE6601E-148C-4CB7-831F-FD587E999D99",
+      terminalUUID: this.termId,
       cloudUserName: this.config.username,
       terminalName: "iPhone",
       terminalMeta: "3",
@@ -178,7 +178,7 @@ class Tapo extends utils.Adapter {
           const body = JSON.stringify({
             cloudPassword: this.config.password,
             locale: "de_DE",
-            terminalUUID: "CDE6601E-148C-4CB7-831F-FD587E999D99",
+            terminalUUID: this.termId,
             cloudUserName: this.config.username,
             appType: "TP-Link_Tapo_iOS",
           });
@@ -496,7 +496,7 @@ class Tapo extends utils.Adapter {
           .getDeviceInfo()
           .then(async (sysInfo: any) => {
             this.log.debug(JSON.stringify(sysInfo));
-            if (sysInfo.name === "Error" || sysInfo.request) {
+            if (!sysInfo || sysInfo.name === "Error" || sysInfo.request) {
               this.log.debug("Malformed response sysinfo");
               // this.log.error(JSON.stringify(sysInfo));
               return;
