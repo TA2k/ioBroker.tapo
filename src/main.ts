@@ -110,14 +110,14 @@ class Tapo extends utils.Adapter {
           }
         }
       }
-
-      this.log.info("Wait for connections");
-      await this.sleep(10000);
-      await this.updateDevices();
-      this.updateInterval = setInterval(async () => {
-        await this.updateDevices();
-      }, this.config.interval * 1000);
     }
+
+    this.log.info("Wait for connections");
+    await this.sleep(10000);
+    await this.updateDevices();
+    this.updateInterval = setInterval(async () => {
+      await this.updateDevices();
+    }, this.config.interval * 1000);
   }
   async login(): Promise<void> {
     let body = JSON.stringify({
