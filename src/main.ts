@@ -92,6 +92,25 @@ class Tapo extends utils.Adapter {
     await this.login();
     if (this.session.token) {
       await this.getDeviceList();
+    } else {
+      const deviceListState = await this.getStateAsync("deviceList");
+      if (deviceListState && deviceListState.val) {
+        this.log.info("Use cached device list");
+        this.devices = JSON.parse(deviceListState.val);
+        for (const id in this.devices) {
+          if (this.devices[id].ip) {
+            const initResult = await this.initDevice(id)
+              .then(() => {
+                this.log.info(`Initialized ${id}`);
+              })
+              .catch((e) => {
+                this.log.error(e);
+              });
+            this.log.debug(`initResult ${id} ${initResult}`);
+          }
+        }
+      }
+
       this.log.info("Wait for connections");
       await this.sleep(10000);
       await this.updateDevices();
@@ -260,6 +279,7 @@ class Tapo extends utils.Adapter {
           return;
         }
         this.log.info(`Found ${res.data.result?.totalNum} devices`);
+
         for (const device of res.data.result?.deviceList) {
           const id = device.deviceId;
           this.devices[id] = device;
@@ -426,6 +446,20 @@ class Tapo extends utils.Adapter {
         this.log.error(error);
         error.response && this.log.error(JSON.stringify(error.response.data));
       });
+
+    await this.setObjectNotExistsAsync("deviceList", {
+      type: "state",
+      common: {
+        name: "Cached device list",
+        write: false,
+        read: true,
+        type: "string",
+        role: "json",
+      },
+      native: {},
+    });
+
+    await this.setStateAsync("deviceList", JSON.stringify(this.devices), true);
   }
   async initDevice(id: string): Promise<void> {
     const device = this.devices[id];
