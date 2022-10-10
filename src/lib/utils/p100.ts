@@ -491,7 +491,7 @@ export default class P100 {
           }
         })
         .catch((error: Error) => {
-          return this.handleError(error.message, "372");
+          //return this.handleError(error.message, "372");
         });
     }
     return new Promise<true>((resolve, reject) => {

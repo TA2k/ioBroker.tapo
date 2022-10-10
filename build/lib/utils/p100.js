@@ -386,7 +386,6 @@ class P100 {
           return this.handleError(JSON.parse(decryptedResponse).error_code, "368");
         }
       }).catch((error) => {
-        return this.handleError(error.message, "372");
       });
     }
     return new Promise((resolve, reject) => {
