@@ -93,6 +93,7 @@ class Tapo extends utils.Adapter {
     if (this.session.token) {
       await this.getDeviceList();
     } else {
+      this.log.warn("Login failed using cached device list");
       const deviceListState = await this.getStateAsync("deviceList");
       if (deviceListState && deviceListState.val) {
         this.log.info("Use cached device list");
@@ -240,8 +241,14 @@ class Tapo extends utils.Adapter {
             });
           return;
         }
-        this.setState("info.connection", true, true);
-        this.session = res.data.result;
+        if (this.session.token) {
+          this.log.info("Login succesfull");
+          this.setState("info.connection", true, true);
+          this.session = res.data.result;
+        } else {
+          this.log.error("Login failed");
+          this.log.error(JSON.stringify(res.data));
+        }
         return;
       })
       .catch((error) => {
