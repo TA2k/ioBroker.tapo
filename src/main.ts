@@ -241,11 +241,11 @@ class Tapo extends utils.Adapter {
             });
           return;
         }
-        if (this.session.token) {
-          this.log.info("Login succesfull");
-          this.setState("info.connection", true, true);
-          this.session = res.data.result;
-        } else {
+
+        this.log.info("Login succesfull");
+        this.setState("info.connection", true, true);
+        this.session = res.data.result;
+        if (!this.session.token) {
           this.log.error("Login failed");
           this.log.error(JSON.stringify(res.data));
         }
