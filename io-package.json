@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "news": {
+      "0.0.6": {
+        "en": "fix Login.",
+        "de": "Login gefixt."
+      },
       "0.0.5": {
         "en": "fix Login. Maybe relogin is neccessary. Add device cache ",
         "de": "Login gefixt. Vielleicht ist Relogin notwendig. Device cache hinzugefügt.",
