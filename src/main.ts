@@ -128,7 +128,7 @@ class Tapo extends utils.Adapter {
       cloudPassword: this.config.password,
       terminalUUID: this.termId,
       cloudUserName: this.config.username,
-      terminalName: "iPhone",
+      terminalName: "ioBroker",
       terminalMeta: "3",
       appType: "TP-Link_Tapo_iOS",
     });
