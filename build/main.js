@@ -379,7 +379,22 @@ class Tapo extends utils.Adapter {
           error.response && this.log.error(JSON.stringify(error.response.data));
         });
         if (!this.devices[id].ip) {
-          const body2 = `{"requestData":{"method":"get_device_info","terminalUUID":${this.termId}},"deviceId":"${id}"}`;
+          const body2 = `{
+              "requestData": {
+                "method": "multipleRequest",
+                "params": {
+                  "requests": [{
+                    "method": "getDeviceIpAddress",
+                    "params": {
+                      "network": {
+                        "name": "wan"
+                      }
+                    }
+                  }]
+                }
+              },
+              "deviceId": "${id}"
+            }`;
           const md52 = import_crypto.default.createHash("md5").update(body2).digest("base64");
           this.log.debug(md52);
           const content2 = md52 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/passthrough";
@@ -397,13 +412,14 @@ class Tapo extends utils.Adapter {
             },
             data: body2
           }).then(async (res2) => {
-            var _a2, _b2;
+            var _a2, _b2, _c, _d, _e, _f;
             this.log.debug(JSON.stringify(res2.data));
             let result = {};
             if (res2.data.error_code) {
               this.log.error(JSON.stringify(res2.data));
             } else {
-              result = (_b2 = (_a2 = res2.data.result) == null ? void 0 : _a2.responseData) == null ? void 0 : _b2.result;
+              result = (_f = (_e = (_d = (_c = (_b2 = (_a2 = res2.data.result) == null ? void 0 : _a2.responseData) == null ? void 0 : _b2.result) == null ? void 0 : _c.responses[0]) == null ? void 0 : _d.result) == null ? void 0 : _e.network) == null ? void 0 : _f.wan;
+              result.ip = result.ipaddr;
               this.devices[id] = { ...this.devices[id], ...result };
             }
           }).catch((error) => {

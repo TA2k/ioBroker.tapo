@@ -389,7 +389,22 @@ class Tapo extends utils.Adapter {
             });
           //no ip via new API try old api
           if (!this.devices[id].ip) {
-            const body = `{"requestData":{"method":"get_device_info","terminalUUID":${this.termId}},"deviceId":"${id}"}`;
+            const body = `{
+              "requestData": {
+                "method": "multipleRequest",
+                "params": {
+                  "requests": [{
+                    "method": "getDeviceIpAddress",
+                    "params": {
+                      "network": {
+                        "name": "wan"
+                      }
+                    }
+                  }]
+                }
+              },
+              "deviceId": "${id}"
+            }`;
             const md5 = crypto.createHash("md5").update(body).digest("base64");
             this.log.debug(md5);
             const content = md5 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/passthrough";
@@ -411,11 +426,13 @@ class Tapo extends utils.Adapter {
             })
               .then(async (res) => {
                 this.log.debug(JSON.stringify(res.data));
-                let result = {};
+                let result: any = {};
                 if (res.data.error_code) {
                   this.log.error(JSON.stringify(res.data));
                 } else {
-                  result = res.data.result?.responseData?.result;
+                  result = res.data.result?.responseData?.result?.responses[0]?.result?.network?.wan;
+                  result.ip = result.ipaddr;
+                  // result = res.data.result?.responseData?.result;
                   this.devices[id] = { ...this.devices[id], ...result };
                 }
               })
