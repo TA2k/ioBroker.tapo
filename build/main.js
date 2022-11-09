@@ -23,6 +23,7 @@ var import_crypto = __toESM(require("crypto"));
 var import_https = __toESM(require("https"));
 var import_uuid = require("uuid");
 var import_json2iob = __toESM(require("./lib/json2iob"));
+var import_camera = __toESM(require("./lib/utils/camera"));
 var import_l510e = __toESM(require("./lib/utils/l510e"));
 var import_l530 = __toESM(require("./lib/utils/l530"));
 var import_p100 = __toESM(require("./lib/utils/p100"));
@@ -261,7 +262,7 @@ class Tapo extends utils.Adapter {
     });
   }
   async getDeviceList() {
-    const body = '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH"],"limit":20}';
+    const body = '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH"],"limit":30}';
     const md5 = import_crypto.default.createHash("md5").update(body).digest("base64");
     this.log.debug(md5);
     const content = md5 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/getDeviceListByPage";
@@ -307,6 +308,8 @@ class Tapo extends utils.Adapter {
         const remoteArray = [
           { command: "refresh", name: "True = Refresh" },
           { command: "setPowerState", name: "True = On, False = Off" },
+          { command: "setAlertConfig", name: "True = On, False = Off" },
+          { command: "setLensMaskConfig", name: "True = On, False = Off" },
           {
             command: "setBrightness",
             name: "Set Brightness for Light devices",
@@ -463,6 +466,8 @@ class Tapo extends utils.Adapter {
       deviceObject = new import_l530.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName.startsWith("C")) {
+      deviceObject = new import_camera.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else {
       this.log.info(`Unknown device type ${device.deviceName} init as P100`);
       deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);

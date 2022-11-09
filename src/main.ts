@@ -10,6 +10,7 @@ import crypto from "crypto";
 import https from "https";
 import { v4 as uuidv4 } from "uuid";
 import Json2iob from "./lib/json2iob";
+import Camera from "./lib/utils/camera";
 import L510E from "./lib/utils/l510e";
 import L530 from "./lib/utils/l530";
 import P100 from "./lib/utils/p100";
@@ -260,7 +261,7 @@ class Tapo extends utils.Adapter {
 
   async getDeviceList(): Promise<void> {
     const body =
-      '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH"],"limit":20}';
+      '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH"],"limit":30}';
     const md5 = crypto.createHash("md5").update(body).digest("base64");
     this.log.debug(md5);
     const content = md5 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/getDeviceListByPage";
@@ -311,6 +312,8 @@ class Tapo extends utils.Adapter {
           const remoteArray = [
             { command: "refresh", name: "True = Refresh" },
             { command: "setPowerState", name: "True = On, False = Off" },
+            { command: "setAlertConfig", name: "True = On, False = Off" },
+            { command: "setLensMaskConfig", name: "True = On, False = Off" },
             {
               command: "setBrightness",
               name: "Set Brightness for Light devices",
@@ -481,6 +484,8 @@ class Tapo extends utils.Adapter {
       deviceObject = new L530(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName.startsWith("C")) {
+      deviceObject = new Camera(this.log, device.ip, this.config.username, this.config.password, 2);
     } else {
       this.log.info(`Unknown device type ${device.deviceName} init as P100`);
       deviceObject = new P100(this.log, device.ip, this.config.username, this.config.password, 2);
