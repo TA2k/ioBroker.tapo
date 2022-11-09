@@ -290,7 +290,10 @@ class Tapo extends utils.Adapter {
       for (const device of (_b = res.data.result) == null ? void 0 : _b.deviceList) {
         const id = device.deviceId;
         this.devices[id] = device;
-        const name = Buffer.from(device.alias, "base64").toString("utf8");
+        let name = device.alias;
+        if (this.isBase64(device.alias)) {
+          name = Buffer.from(device.alias, "base64").toString("utf8");
+        }
         await this.setObjectNotExistsAsync(id, {
           type: "device",
           common: {
@@ -540,6 +543,16 @@ class Tapo extends utils.Adapter {
       }
     } catch (error) {
       this.log.error(error);
+    }
+  }
+  isBase64(str) {
+    if (str === "" || str.trim() === "") {
+      return false;
+    }
+    try {
+      return btoa(atob(str)) == str;
+    } catch (err) {
+      return false;
     }
   }
   async sleep(ms) {
