@@ -431,7 +431,9 @@ class Tapo extends utils.Adapter {
                   this.log.error(JSON.stringify(res.data));
                 } else {
                   result = res.data.result?.responseData?.result?.responses[0]?.result?.network?.wan;
-                  result.ip = result.ipaddr;
+                  result = result.ipaddr;
+                  delete result[".name"];
+                  delete result[".type"];
                   // result = res.data.result?.responseData?.result;
                   this.devices[id] = { ...this.devices[id], ...result };
                 }
