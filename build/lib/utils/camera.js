@@ -45,8 +45,11 @@ class camera extends import_p100.default {
   }
   async setAlertConfig(enabled) {
     const enabledString = enabled ? "on" : "off";
-    const payload = `
-    {
+    const payload = `{
+      "method": "multipleRequest",
+      "params": {
+        "requests": [
+          {
       "method": "setAlertConfig",
       "params": {
         "msg_alarm": {
@@ -59,13 +62,16 @@ class camera extends import_p100.default {
         },
         "requestTimeMils": ${Math.round(Date.now() * 1e3)}
       }
-    }`;
+    }]}}`;
     return this.sendRequest(payload);
   }
   async setLensMaskConfig(enabled) {
     const enabledString = enabled ? "on" : "off";
-    const payload = `
-    {
+    const payload = `{
+      "method": "multipleRequest",
+      "params": {
+        "requests": [
+          {
       "method": "setLensMaskConfig",
       "params": {
         "lens_mask": {
@@ -75,7 +81,7 @@ class camera extends import_p100.default {
         },
         "requestTimeMils": ${Math.round(Date.now() * 1e3)}
       }
-    }`;
+    }]}}`;
     return this.sendRequest(payload);
   }
   setSysInfo(sysInfo) {

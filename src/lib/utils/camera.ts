@@ -21,8 +21,11 @@ export default class camera extends P100 {
 
   async setAlertConfig(enabled: boolean): Promise<boolean> {
     const enabledString = enabled ? "on" : "off";
-    const payload = `
-    {
+    const payload = `{
+      "method": "multipleRequest",
+      "params": {
+        "requests": [
+          {
       "method": "setAlertConfig",
       "params": {
         "msg_alarm": {
@@ -35,13 +38,16 @@ export default class camera extends P100 {
         },
         "requestTimeMils": ${Math.round(Date.now() * 1000)}
       }
-    }`;
+    }]}}`;
     return this.sendRequest(payload);
   }
   async setLensMaskConfig(enabled: boolean): Promise<boolean> {
     const enabledString = enabled ? "on" : "off";
-    const payload = `
-    {
+    const payload = `{
+      "method": "multipleRequest",
+      "params": {
+        "requests": [
+          {
       "method": "setLensMaskConfig",
       "params": {
         "lens_mask": {
@@ -51,7 +57,7 @@ export default class camera extends P100 {
         },
         "requestTimeMils": ${Math.round(Date.now() * 1000)}
       }
-    }`;
+    }]}}`;
     return this.sendRequest(payload);
   }
 
