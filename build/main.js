@@ -23,7 +23,7 @@ var import_crypto = __toESM(require("crypto"));
 var import_https = __toESM(require("https"));
 var import_uuid = require("uuid");
 var import_json2iob = __toESM(require("./lib/json2iob"));
-var import_camera = __toESM(require("./lib/utils/camera"));
+var import_tapoCamera = require("./lib/utils/camera/tapoCamera");
 var import_l510e = __toESM(require("./lib/utils/l510e"));
 var import_l530 = __toESM(require("./lib/utils/l530"));
 var import_p100 = __toESM(require("./lib/utils/p100"));
@@ -488,7 +488,23 @@ class Tapo extends utils.Adapter {
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("C")) {
-      deviceObject = new import_camera.default(this.log, device.ip, this.config.username, this.config.password, 2);
+      deviceObject = new import_tapoCamera.TAPOCamera(this.log, {
+        name: device.deviceName,
+        ipAddress: device.ip,
+        password: this.config.password,
+        streamUser: "",
+        streamPassword: "",
+        disableStreaming: true
+      });
+      this.deviceObjects[id] = deviceObject;
+      const deviceInfo = await deviceObject.getDeviceInfo();
+      this.log.debug(JSON.stringify(deviceInfo));
+      this.json2iob.parse(id, deviceInfo);
+      const eventEmitter = await deviceObject.getEventEmitter();
+      eventEmitter.addListener("motion", (motionDetected) => {
+        this.log.info(`[${device.deviceName}] "Motion detected" ${motionDetected}`);
+      });
+      return;
     } else {
       this.log.info(`Unknown device type ${device.deviceName} init as P100`);
       deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
@@ -528,6 +544,12 @@ class Tapo extends utils.Adapter {
     try {
       for (const deviceId in this.deviceObjects) {
         if (!this.deviceObjects[deviceId]._connected) {
+          continue;
+        }
+        if (this.deviceObjects[deviceId].getStatus) {
+          const status = await this.deviceObjects[deviceId].getStatus();
+          this.log.debug(JSON.stringify(status));
+          this.json2iob.parse(deviceId, status);
           continue;
         }
         this.deviceObjects[deviceId].getDeviceInfo().then(async (sysInfo) => {

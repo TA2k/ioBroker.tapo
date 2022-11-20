@@ -10,7 +10,7 @@ import crypto from "crypto";
 import https from "https";
 import { v4 as uuidv4 } from "uuid";
 import Json2iob from "./lib/json2iob";
-import Camera from "./lib/utils/camera";
+import { TAPOCamera } from "./lib/utils/camera/tapoCamera";
 import L510E from "./lib/utils/l510e";
 import L530 from "./lib/utils/l530";
 import P100 from "./lib/utils/p100";
@@ -507,7 +507,24 @@ class Tapo extends utils.Adapter {
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("C")) {
-      deviceObject = new Camera(this.log, device.ip, this.config.username, this.config.password, 2);
+      deviceObject = new TAPOCamera(this.log, {
+        name: device.deviceName,
+        ipAddress: device.ip,
+        password: this.config.password,
+        streamUser: "",
+        streamPassword: "",
+        disableStreaming: true,
+      }); //new Camera(this.log, device.ip, this.config.username, this.config.password, 2);
+
+      this.deviceObjects[id] = deviceObject;
+      const deviceInfo = await deviceObject.getDeviceInfo();
+      this.log.debug(JSON.stringify(deviceInfo));
+      this.json2iob.parse(id, deviceInfo);
+      const eventEmitter = await deviceObject.getEventEmitter();
+      eventEmitter.addListener("motion", (motionDetected: any) => {
+        this.log.info(`[${device.deviceName}] "Motion detected" ${motionDetected}`);
+      });
+      return;
     } else {
       this.log.info(`Unknown device type ${device.deviceName} init as P100`);
       deviceObject = new P100(this.log, device.ip, this.config.username, this.config.password, 2);
@@ -561,6 +578,13 @@ class Tapo extends utils.Adapter {
         if (!this.deviceObjects[deviceId]._connected) {
           continue;
         }
+        if (this.deviceObjects[deviceId].getStatus) {
+          const status = await this.deviceObjects[deviceId].getStatus();
+          this.log.debug(JSON.stringify(status));
+          this.json2iob.parse(deviceId, status);
+          continue;
+        }
+
         this.deviceObjects[deviceId]
           .getDeviceInfo()
           .then(async (sysInfo: any) => {
