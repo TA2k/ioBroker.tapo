@@ -492,8 +492,8 @@ class Tapo extends utils.Adapter {
         name: device.deviceName,
         ipAddress: device.ip,
         password: this.config.password,
-        streamUser: "",
-        streamPassword: "",
+        streamUser: this.config.streamusername,
+        streamPassword: this.config.streampassword,
         disableStreaming: true
       });
       this.deviceObjects[id] = deviceObject;
@@ -501,7 +501,20 @@ class Tapo extends utils.Adapter {
       this.log.debug(JSON.stringify(deviceInfo));
       this.json2iob.parse(id, deviceInfo);
       const eventEmitter = await deviceObject.getEventEmitter();
-      eventEmitter.addListener("motion", (motionDetected) => {
+      eventEmitter.addListener("motion", async (motionDetected) => {
+        await this.setObjectNotExistsAsync(id + ".motionEvent", {
+          type: "state",
+          common: {
+            name: "Motion detected",
+            type: "boolean",
+            role: "boolean",
+            def: false,
+            write: false,
+            read: true
+          },
+          native: {}
+        });
+        await this.setStateAsync(id + ".motionEvent", motionDetected, true);
         this.log.info(`[${device.deviceName}] "Motion detected" ${motionDetected}`);
       });
       return;

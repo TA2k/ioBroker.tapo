@@ -97,6 +97,8 @@
     "username": "",
     "password": "",
     "mfa": "",
+    "streamusername": "",
+    "streampassword": "",
     "interval": 10
   },
   "objects": [],

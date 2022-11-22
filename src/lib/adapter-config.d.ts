@@ -7,6 +7,8 @@ declare global {
       username: string;
       mfa: string;
       password: string;
+      streamusername: string;
+      streampassword: string;
       interval: number;
     }
   }
