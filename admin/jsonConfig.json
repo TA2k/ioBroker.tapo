@@ -77,7 +77,7 @@
       "type": "text",
       "label": {
         "en": "Stream Username. Settings > Advanced Settings > Camera Account.",
-        "de": "Kamera Stream Benutzername. App   Einstellungen > Erweiterte Einstellungen > Kamerakonto.",
+        "de": "Kamera Stream Benutzername. Kamera Einstellungen > Erweiterte Einstellungen > Kamerakonto.",
         "ru": "Stream Имя пользователя. Настройки > Расширенные настройки > учетная запись камеры.",
         "pt": "Stream Username. Configurações > Configurações avançadas > Conta de câmera.",
         "nl": "Stream User naam. Settings Geavanceerde Settings Camera Account.",
@@ -99,7 +99,7 @@
       "sm": 3,
       "label": {
         "en": "Stream Password. App Settings > Advanced Settings > Camera Account.",
-        "de": "Kamera Stream Passwort. App-Einstellungen > Erweiterte Einstellungen > Kamerakonto.",
+        "de": "Kamera Stream Passwort. Kamera Einstellungen > Erweiterte Einstellungen > Kamerakonto.",
         "ru": "Stream Пароль. Настройки приложений > Расширенные настройки > учетная запись камеры.",
         "pt": "Stream Password. Configurações do aplicativo > Configurações avançadas > Conta de câmera.",
         "nl": "Stream Password. App Settings Geavanceerde Settings Camera Account.",
