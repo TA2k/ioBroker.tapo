@@ -499,6 +499,7 @@ class Tapo extends utils.Adapter {
       });
       this.deviceObjects[id] = deviceObject;
       const deviceInfo = await deviceObject.getDeviceInfo();
+      this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
       this.log.debug(JSON.stringify(deviceInfo));
       this.json2iob.parse(id, deviceInfo);
       const eventEmitter = await deviceObject.getEventEmitter();
