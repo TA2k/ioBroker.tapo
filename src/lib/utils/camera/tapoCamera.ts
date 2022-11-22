@@ -199,6 +199,27 @@ export class TAPOCamera extends OnvifCamera {
 
     return json.error_code !== 0;
   }
+  async setForceWhitelampState(value: boolean) {
+    const json = await this.makeTAPOAPIRequest({
+      method: "multipleRequest",
+      params: {
+        requests: [
+          {
+            method: "setForceWhitelampState",
+            params: {
+              image: {
+                switch: {
+                  force_wtl_state: value ? "on" : "off",
+                },
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    return json.error_code !== 0;
+  }
 
   async getTAPODeviceInfo() {
     const json = await this.makeTAPOAPIRequest({
@@ -221,7 +242,7 @@ export class TAPOCamera extends OnvifCamera {
     return info.result.device_info.basic_info;
   }
 
-  async getStatus(): Promise<{ lensMask: boolean; alert: boolean }> {
+  async getStatus(): Promise<{ lensMask: boolean; alert: boolean; forceWhiteLamp: boolean }> {
     const json = await this.makeTAPOAPIRequest({
       method: "multipleRequest",
       params: {
@@ -242,6 +263,14 @@ export class TAPOCamera extends OnvifCamera {
               },
             },
           },
+          {
+            method: "getForceWhitelampState",
+            params: {
+              image: {
+                name: "switch",
+              },
+            },
+          },
         ],
       },
     });
@@ -251,6 +280,10 @@ export class TAPOCamera extends OnvifCamera {
     }
 
     const alertConfig = json.result.responses.find((r) => r.method === "getAlertConfig") as TAPOCameraResponseGetAlert;
+
+    const forceWhitelampState = json.result.responses.find(
+      (r) => r.method === "getForceWhitelampState",
+    ) as TAPOCameraResponseGetForce;
     const lensMaskConfig = json.result.responses.find(
       (r) => r.method === "getLensMaskConfig",
     ) as TAPOCameraResponseGetLensMask;
@@ -258,6 +291,7 @@ export class TAPOCamera extends OnvifCamera {
     return {
       alert: alertConfig.result.msg_alarm.chn1_msg_alarm_info.enabled === "on",
       lensMask: lensMaskConfig.result.lens_mask.lens_mask_info.enabled === "on",
+      forceWhiteLamp: forceWhitelampState.result.image.switch.force_wtl_state === "on",
     };
   }
 }

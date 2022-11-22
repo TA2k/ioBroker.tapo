@@ -84,6 +84,14 @@ declare type TAPOCameraRequest = {
           };
         }
       | {
+          method: "getForceWhitelampState";
+          params: {
+            image: {
+              name: "switch";
+            };
+          };
+        }
+      | {
           method: "getAudioConfig";
           params: {
             audio_config: {
@@ -142,7 +150,28 @@ declare type TAPOCameraResponseGetAlert = {
   };
   error_code: number;
 };
-
+declare type TAPOCameraResponseGetForce = {
+  method: "getForceWhitelampState";
+  result: {
+    image: {
+      switch: {
+        ".name": "switch";
+        ".type": "switch_type";
+        switch_mode: "common";
+        schedule_start_time: "21600";
+        schedule_end_time: "64800";
+        flip_type: "off";
+        rotate_type: "off";
+        ldc: "off";
+        night_vision_mode: "inf_night_vision";
+        wtl_intensity_level: "5";
+        force_wtl_state: "on";
+        lct_style_enable: "1";
+      };
+    };
+  };
+  error_code: number;
+};
 declare type TAPOCameraResponseGetLensMask = {
   method: "getLensMaskConfig";
   result: {
@@ -190,7 +219,8 @@ declare type TAPOCameraResponseDeviceInfo = {
 declare type TAPOCameraResponse = {
   result: {
     responses: Array<
-      TAPOCameraResponseGetAlert | TAPOCameraResponseGetLensMask | TAPOCameraResponseSet | TAPOCameraResponseDeviceInfo
+      TAPOCameraResponseGetAlert | TAPOCameraResponseGetLensMask | TAPOCameraResponseSet | TAPOCameraResponseDeviceInfo,
+      TAPOCameraResponseGetForce
     >;
   };
   error_code: number;

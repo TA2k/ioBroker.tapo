@@ -313,6 +313,7 @@ class Tapo extends utils.Adapter {
           { command: "setPowerState", name: "True = On, False = Off" },
           { command: "setAlertConfig", name: "True = On, False = Off" },
           { command: "setLensMaskConfig", name: "True = On, False = Off" },
+          { command: "setForceWhitelampState", name: "True = On, False = Off" },
           {
             command: "setBrightness",
             name: "Set Brightness for Light devices",
