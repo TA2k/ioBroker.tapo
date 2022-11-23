@@ -503,19 +503,19 @@ class Tapo extends utils.Adapter {
       this.log.debug(JSON.stringify(deviceInfo));
       this.json2iob.parse(id, deviceInfo);
       const eventEmitter = await deviceObject.getEventEmitter();
+      await this.setObjectNotExistsAsync(id + ".motionEvent", {
+        type: "state",
+        common: {
+          name: "Motion detected",
+          type: "boolean",
+          role: "boolean",
+          def: false,
+          write: false,
+          read: true
+        },
+        native: {}
+      });
       eventEmitter.addListener("motion", async (motionDetected) => {
-        await this.setObjectNotExistsAsync(id + ".motionEvent", {
-          type: "state",
-          common: {
-            name: "Motion detected",
-            type: "boolean",
-            role: "boolean",
-            def: false,
-            write: false,
-            read: true
-          },
-          native: {}
-        });
         await this.setStateAsync(id + ".motionEvent", motionDetected, true);
         this.log.info(`[${device.deviceName}] "Motion detected" ${motionDetected}`);
       });
@@ -558,13 +558,14 @@ class Tapo extends utils.Adapter {
   async updateDevices() {
     try {
       for (const deviceId in this.deviceObjects) {
-        if (!this.deviceObjects[deviceId]._connected) {
-          continue;
-        }
         if (this.deviceObjects[deviceId].getStatus) {
+          this.log.debug("Receive camera status");
           const status = await this.deviceObjects[deviceId].getStatus();
           this.log.debug(JSON.stringify(status));
           this.json2iob.parse(deviceId, status);
+          continue;
+        }
+        if (!this.deviceObjects[deviceId]._connected) {
           continue;
         }
         this.deviceObjects[deviceId].getDeviceInfo().then(async (sysInfo) => {
