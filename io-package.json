@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "news": {
+      "0.0.7": {
+        "en": "add camera support",
+        "de": "Kamera Unterstützung hinzugefügt"
+      },
       "0.0.6": {
         "en": "fix Login.",
         "de": "Login gefixt."
