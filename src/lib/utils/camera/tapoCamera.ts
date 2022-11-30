@@ -291,7 +291,9 @@ export class TAPOCamera extends OnvifCamera {
     return {
       alert: alertConfig.result.msg_alarm.chn1_msg_alarm_info.enabled === "on",
       lensMask: lensMaskConfig.result.lens_mask.lens_mask_info.enabled === "on",
-      forceWhiteLamp: forceWhitelampState.result.image.switch.force_wtl_state === "on",
+      forceWhiteLamp: forceWhitelampState.result.image
+        ? forceWhitelampState.result.image.switch.force_wtl_state === "on"
+        : false,
     };
   }
 }

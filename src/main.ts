@@ -508,6 +508,9 @@ class Tapo extends utils.Adapter {
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("C")) {
+      if (!this.config.streamusername || !this.config.streampassword) {
+        this.log.warn(`No stream username or password. No motion detection available`);
+      }
       deviceObject = new TAPOCamera(this.log, {
         name: device.deviceName,
         ipAddress: device.ip,
