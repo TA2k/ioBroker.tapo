@@ -433,6 +433,7 @@ class Tapo extends utils.Adapter {
                 } else {
                   result = res.data.result?.responseData?.result?.responses[0]?.result?.network?.wan;
                   result.ip = result.ipaddr;
+                  this.log.info(`Device ${id} has IP ${result.ip}`);
                   delete result[".name"];
                   delete result[".type"];
                   // result = res.data.result?.responseData?.result;

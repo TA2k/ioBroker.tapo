@@ -421,6 +421,7 @@ class Tapo extends utils.Adapter {
             } else {
               result = (_f = (_e = (_d = (_c = (_b2 = (_a2 = res2.data.result) == null ? void 0 : _a2.responseData) == null ? void 0 : _b2.result) == null ? void 0 : _c.responses[0]) == null ? void 0 : _d.result) == null ? void 0 : _e.network) == null ? void 0 : _f.wan;
               result.ip = result.ipaddr;
+              this.log.info(`Device ${id} has IP ${result.ip}`);
               delete result[".name"];
               delete result[".type"];
               this.devices[id] = { ...this.devices[id], ...result };
