@@ -61,6 +61,7 @@ class OnvifCamera {
     this.log.debug(`[${this.config.name}]`, "Starting ONVIF listener");
     onvifDevice.on("event", (event) => {
       var _a, _b;
+      this.log.debug(`Received event: ${JSON.stringify(event)}`);
       if ((_b = (_a = event == null ? void 0 : event.topic) == null ? void 0 : _a._) == null ? void 0 : _b.match(/RuleEngine\/CellMotionDetector\/Motion$/)) {
         const motion = event.message.message.data.simpleItem.$.Value;
         if (motion !== lastMotionValue) {
