@@ -1,8 +1,11 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "news": {
+      "0.0.8": {
+        "en": "Bugfixes"
+      },
       "0.0.7": {
         "en": "add camera support",
         "de": "Kamera Unterstützung hinzugefügt"
