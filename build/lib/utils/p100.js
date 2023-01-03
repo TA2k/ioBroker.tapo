@@ -247,6 +247,7 @@ class P100 {
         timeout: this._timeout * 1e3
       };
       return this.axios.post(URL, securePassthroughPayload, config).then((res) => {
+        this.log.debug(JSON.stringify(res.data));
         if (res.data.error_code) {
           if ((res.data.error_code === "9999" || res.data.error_code === 9999) && this._reconnect_counter <= 3) {
             this.log.error(" Error Code: " + res.data.error_code + ", " + this.ERROR_CODES[res.data.error_code]);
@@ -268,6 +269,7 @@ class P100 {
           this.log.debug("Device Info: ", response.result);
           return this.getSysInfo();
         } catch (error) {
+          this.log.debug(error.stack);
           return this.handleError(JSON.parse(decryptedResponse).error_code, "340");
         }
       }).catch((error) => {
