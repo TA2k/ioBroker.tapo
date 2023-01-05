@@ -324,7 +324,7 @@ export default class P100 {
           this.log.debug(JSON.stringify(res.data));
           if (res.data.error_code) {
             if ((res.data.error_code === "9999" || res.data.error_code === 9999) && this._reconnect_counter <= 3) {
-              this.log.error(" Error Code: " + res.data.error_code + ", " + this.ERROR_CODES[res.data.error_code]);
+              this.log.debug(" Error Code: " + res.data.error_code + ", " + this.ERROR_CODES[res.data.error_code]);
               this.log.debug("Trying to reconnect...");
               return this.reconnect().then(() => {
                 return this.getDeviceInfo();
@@ -419,7 +419,7 @@ export default class P100 {
 
   protected handleError(errorCode: string, line: string): boolean {
     const errorMessage = this.ERROR_CODES[errorCode];
-    this.log.error(line + " Error Code: " + errorCode + ", " + errorMessage + " " + this.ip);
+    this.log.debug(line + " Error Code: " + errorCode + ", " + errorMessage + " " + this.ip);
     return false;
   }
 
