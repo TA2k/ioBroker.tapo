@@ -376,7 +376,7 @@ class Tapo extends utils.Adapter {
             this.devices[id] = { ...this.devices[id], ...res2.data };
           }
         }).catch((error) => {
-          this.log.error(error);
+          this.log.warn(error);
           error.response && this.log.error(JSON.stringify(error.response.data));
         });
         if (!this.devices[id].ip) {
@@ -427,7 +427,7 @@ class Tapo extends utils.Adapter {
               this.devices[id] = { ...this.devices[id], ...result };
             }
           }).catch((error) => {
-            this.log.error(error);
+            this.log.warn(error);
             error.response && this.log.error(JSON.stringify(error.response.data));
           });
         }
@@ -461,7 +461,7 @@ class Tapo extends utils.Adapter {
         }
       }
     }).catch((error) => {
-      this.log.error(error);
+      this.log.warn(error);
       error.response && this.log.error(JSON.stringify(error.response.data));
     });
     await this.setObjectNotExistsAsync("deviceList", {
@@ -602,7 +602,7 @@ class Tapo extends utils.Adapter {
         });
       }
     } catch (error) {
-      this.log.error(error);
+      this.log.warn(error);
     }
   }
   isBase64(str) {

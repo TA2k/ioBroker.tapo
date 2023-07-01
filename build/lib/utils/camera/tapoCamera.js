@@ -124,6 +124,9 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
             headers: {
               "Content-Type": "application/json"
             }
+          }).catch((e) => {
+            this.log.warn("makeTAPOAPIRequest error: ", e);
+            return;
           });
           const json = await response.json();
           this.log.debug(`makeTAPOAPIRequest url: ${url}, json: ${JSON.stringify(json)}`);

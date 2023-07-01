@@ -385,7 +385,7 @@ class Tapo extends utils.Adapter {
               }
             })
             .catch((error) => {
-              this.log.error(error);
+              this.log.warn(error);
               error.response && this.log.error(JSON.stringify(error.response.data));
             });
           //no ip via new API try old api
@@ -441,7 +441,7 @@ class Tapo extends utils.Adapter {
                 }
               })
               .catch((error) => {
-                this.log.error(error);
+                this.log.warn(error);
                 error.response && this.log.error(JSON.stringify(error.response.data));
               });
           }
@@ -478,7 +478,7 @@ class Tapo extends utils.Adapter {
         }
       })
       .catch((error) => {
-        this.log.error(error);
+        this.log.warn(error);
         error.response && this.log.error(JSON.stringify(error.response.data));
       });
 
