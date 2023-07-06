@@ -489,7 +489,7 @@ class Tapo extends utils.Adapter {
       deviceObject = new import_l530.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName.startsWith("C")) {
+    } else if (device.deviceName.startsWith("C") || device.deviceName.startsWith("TC")) {
       if (!this.config.streamusername || !this.config.streampassword) {
         this.log.warn(`No stream username or password. No motion detection available`);
       }
