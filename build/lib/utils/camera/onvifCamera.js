@@ -34,6 +34,7 @@ class OnvifCamera {
       if (this.device) {
         return resolve(this.device);
       }
+      this.log.debug("Connecting to ONVIF device" + JSON.stringify(this.config) + " on port " + this.kOnvifPort);
       const device = new import_onvif.Cam(
         {
           hostname: this.config.ipAddress,
@@ -80,6 +81,7 @@ class OnvifCamera {
   async getDeviceInfo() {
     const onvifDevice = await this.getDevice();
     return new Promise((resolve, reject) => {
+      this.log.debug("Getting device information for " + JSON.stringify(onvifDevice));
       onvifDevice.getDeviceInformation((err, deviceInformation) => {
         if (err)
           return reject(err);

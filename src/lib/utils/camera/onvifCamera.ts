@@ -1,4 +1,4 @@
-import { Cam, DeviceInformation, NotificationMessage, VideoSource } from "onvif";
+import { Cam, NotificationMessage } from "onvif";
 import { EventEmitter } from "stream";
 type CameraConfig = {
   name: string;
@@ -23,11 +23,12 @@ export class OnvifCamera {
   constructor(protected readonly log: any, protected readonly config: CameraConfig) {}
 
   private async getDevice(): Promise<Cam> {
+
     return new Promise((resolve, reject) => {
       if (this.device) {
         return resolve(this.device);
       }
-
+      this.log.debug("Connecting to ONVIF device" + JSON.stringify(this.config) + " on port " + this.kOnvifPort);
       const device: Cam = new Cam(
         {
           hostname: this.config.ipAddress,
@@ -81,6 +82,7 @@ export class OnvifCamera {
   async getDeviceInfo(): Promise<DeviceInformation> {
     const onvifDevice = await this.getDevice();
     return new Promise((resolve, reject) => {
+      this.log.debug("Getting device information for " + JSON.stringify(onvifDevice));
       onvifDevice.getDeviceInformation((err, deviceInformation) => {
         if (err) return reject(err);
         resolve(deviceInformation);
