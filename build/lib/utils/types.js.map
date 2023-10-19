@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../../src/lib/utils/types.ts"],
-  "sourcesContent": ["export type CommonSysinfo = {\n    nickname: string;\n    device_id: string;\n    model: string;\n    fw_ver: string;\n    hw_ver: string;\n  };\n\nexport type PlugSysinfo = CommonSysinfo &{ \n    type: 'SMART.TAPOPLUG';\n    mac: string;\n    hw_id: string;\n    fw_id: string;\n    device_on: boolean;\n    last_update:number;\n  };\n\nexport type LightSysinfo = PlugSysinfo &{ \n    brightness: number;\n  };\n\nexport type ColorLightSysinfo = LightSysinfo &{ \n    color_temp: number;\n    hue: number;\n    saturation: number;\n  };\n\nexport type ConsumptionInfo = {\n    total?: number;\n    current: number;\n};"],
+  "sourcesContent": ["export type CommonSysinfo = {\n    nickname: string;\n    device_id: string;\n    model: string;\n    fw_ver: string;\n    hw_ver: string;\n  };\n\nexport type PlugSysinfo = CommonSysinfo &{ \n    type: 'SMART.TAPOPLUG';\n    mac: string;\n    hw_id: string;\n    fw_id: string;\n    device_on: boolean;\n    last_update:number;\n  };\n\nexport type LightSysinfo = PlugSysinfo &{ \n    brightness: number;\n  };\n\nexport type ColorTempLightSysinfo = LightSysinfo &{ \n    color_temp: number;\n  };\n  \nexport type ColorLightSysinfo = ColorTempLightSysinfo &{ \n    hue: number;\n    saturation: number;\n  };\n\nexport type ConsumptionInfo = {\n    total?: number;\n    current: number;\n};"],
   "mappings": ";;;;;;;;;;;;;;AAAA;AAAA;",
   "names": []
 }

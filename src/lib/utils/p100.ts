@@ -1,11 +1,14 @@
 import { AxiosResponse } from "axios";
 import { v4 as uuidv4 } from "uuid";
+import NewTpLinkCipher from "./newTpLinkCipher";
 import TpLinkCipher from "./tpLinkCipher";
 import { PlugSysinfo } from "./types";
 
 export default class P100 {
   private crypto = require("crypto");
   protected axios = require("axios");
+  private utf8 = require("utf8");
+  public is_klap = false;
 
   private encodedPassword!: string;
   private encodedEmail!: string;
@@ -20,6 +23,7 @@ export default class P100 {
   protected _timeout!: number;
 
   protected tpLinkCipher!: TpLinkCipher;
+  protected newTpLinkCipher!: NewTpLinkCipher;
 
   protected ERROR_CODES = {
     "0": "Success",
@@ -70,6 +74,7 @@ export default class P100 {
     "-2202": "ERR_STAT_SAVE",
     "-2301": "ERR_DST",
     "-2302": "ERR_DST_SAVE",
+    "1003": "KLAP",
   };
 
   constructor(
@@ -103,6 +108,22 @@ export default class P100 {
     return digest;
   }
 
+  private calc_auth_hash(username: string, password: string): Buffer {
+    const usernameDigest = this.crypto
+      .createHash("sha1")
+      .update(Buffer.from(username.normalize("NFKC")))
+      .digest();
+    const passwordDigest = this.crypto
+      .createHash("sha1")
+      .update(Buffer.from(password.normalize("NFKC")))
+      .digest();
+    const digest = this.crypto
+      .createHash("sha256")
+      .update(Buffer.concat([usernameDigest, passwordDigest]))
+      .digest();
+    return digest;
+  }
+
   private createKeyPair() {
     // Including publicKey and  privateKey from
     // generateKeyPairSync() method with its
@@ -123,7 +144,7 @@ export default class P100 {
     this.publicKey = publicKey.toString("utf8");
   }
 
-  async handshake(): Promise<void> {
+  async handshake(): Promise<any> {
     const URL = "http://" + this.ip + "/app";
     const payload = {
       method: "handshake",
@@ -229,6 +250,83 @@ export default class P100 {
     }
   }
 
+  async raw_request(path: string, data: Buffer, responseType: string, params?: any): Promise<any> {
+    const URL = "http://" + this.ip + "/app/" + path;
+
+    const headers = {
+      Connection: "Keep-Alive",
+      Host: this.ip,
+      Accept: "*/*",
+      "Content-Type": "application/octet-stream",
+    };
+
+    if (this.cookie) {
+      headers["Cookie"] = this.cookie;
+    }
+
+    const config = {
+      timeout: 5000,
+      responseType: responseType,
+      headers: headers,
+      params: params,
+    };
+    return this.axios
+      .post(URL, data, config)
+      .then((res: AxiosResponse) => {
+        this.log.debug("Received request on host response: " + this.ip);
+        if (res.data.error_code) {
+          return this.handleError(res.data.error_code, "309");
+        }
+
+        try {
+          if (res.headers && res.headers["set-cookie"]) {
+            this.cookie = res.headers["set-cookie"][0].split(";")[0];
+          }
+          return res.data;
+        } catch (error) {
+          return this.handleError(res.data.error_code, "318");
+        }
+      })
+      .catch((error: Error) => {
+        this.log.error("322 Error: " + error.message);
+        return error;
+      });
+  }
+
+  async handshake_new(): Promise<void> {
+    const local_seed = this.crypto.randomBytes(16);
+
+    await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
+      const remote_seed: Buffer = res.subarray(0, 16);
+      const server_hash: Buffer = res.subarray(16);
+
+      let auth_hash: any = undefined;
+      const ah = this.calc_auth_hash(this.email, this.password);
+      const local_seed_auth_hash = this.crypto
+        .createHash("sha256")
+        .update(Buffer.concat([local_seed, remote_seed, ah]))
+        .digest();
+
+      if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
+        this.log.debug("Handshake 1 successful");
+        auth_hash = ah;
+      }
+      const req = this.crypto
+        .createHash("sha256")
+        .update(Buffer.concat([remote_seed, local_seed, auth_hash]))
+        .digest();
+
+      return this.raw_request("handshake2", req, "text").then((res) => {
+        this.log.debug("Handshake 2 successful");
+
+        this.newTpLinkCipher = new NewTpLinkCipher(local_seed, remote_seed, auth_hash);
+        this.log.debug("Init cipher successful");
+
+        return;
+      });
+    });
+  }
+
   private decode_handshake_key(key: string) {
     const buff = Buffer.from(key, "base64");
 
@@ -297,8 +395,7 @@ export default class P100 {
     }
     const URL = "http://" + this.ip + "/app?token=" + this.token;
 
-    const payload =
-      "{" + '"method": "get_device_info",' + '"requestTimeMils": ' + Math.round(Date.now() * 1000) + "" + "};";
+    const payload = "{" + '"method": "get_device_info",' + '"requestTimeMils": ' + Math.round(Date.now() * 1000) + "" + "};";
     const headers = {
       Cookie: this.cookie,
     };
@@ -350,7 +447,57 @@ export default class P100 {
           }
         })
         .catch((error: Error) => {
-          this.log.debug("371 Error: " + error.message);
+          this.log.error("371 Error: " + error.message);
+          return error;
+        });
+    } else if (this.newTpLinkCipher) {
+      const data = this.newTpLinkCipher.encrypt(payload);
+
+      const URL = "http://" + this.ip + "/app/" + "request";
+      const headers = {
+        Connection: "Keep-Alive",
+        Host: this.ip,
+        Accept: "*/*",
+        "Content-Type": "application/octet-stream",
+      };
+
+      if (this.cookie) {
+        headers["Cookie"] = this.cookie;
+      }
+
+      const config = {
+        timeout: 5000,
+        responseType: "arraybuffer",
+        headers: headers,
+        params: { seq: data.seq.toString() },
+      };
+      return this.axios
+        .post(URL, data.encryptedPayload, config)
+        .then((res: AxiosResponse) => {
+          if (res.data.error_code) {
+            return this.handleError(res.data.error_code, "309");
+          }
+
+          try {
+            if (res.headers && res.headers["set-cookie"]) {
+              this.cookie = res.headers["set-cookie"][0].split(";")[0];
+            }
+
+            const response = JSON.parse(this.newTpLinkCipher.decrypt(res.data));
+
+            if (response.error_code !== 0) {
+              return this.handleError(response.error_code, "333");
+            }
+            this.setSysInfo(response.result);
+            this.log.debug("Device Info: ", response.result);
+
+            return this.getSysInfo();
+          } catch (error) {
+            return this.handleError(res.data.error_code, "480");
+          }
+        })
+        .catch((error: Error) => {
+          this.log.error("322 Error: " + error.message);
           return error;
         });
     } else {
@@ -417,13 +564,53 @@ export default class P100 {
     return this._plugSysInfo;
   }
 
-  protected handleError(errorCode: string, line: string): boolean {
+  protected handleError(errorCode: number | string, line: string): boolean {
     const errorMessage = this.ERROR_CODES[errorCode];
     this.log.debug(line + " Error Code: " + errorCode + ", " + errorMessage + " " + this.ip);
+
+    if (typeof errorCode === "number" && errorCode === 1003) {
+      this.is_klap = true;
+    }
     return false;
   }
 
   protected async sendRequest(payload: string): Promise<boolean> {
+    if (this.tpLinkCipher) {
+      return this.handleRequest(payload)
+        .then((result) => {
+          return result ? true : false;
+        })
+        .catch((error) => {
+          if (error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
+            return this.reconnect().then(() => {
+              return this.handleRequest(payload).then((result) => {
+                return result ? true : false;
+              });
+            });
+          }
+          this._reconnect_counter = 0;
+          return false;
+        });
+    } else {
+      return this.newHandleRequest(payload)
+        .then((result) => {
+          return result ? true : false;
+        })
+        .catch((error) => {
+          if (error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
+            return this.newReconnect().then(() => {
+              return this.newHandleRequest(payload).then((result) => {
+                return result ? true : false;
+              });
+            });
+          }
+          this._reconnect_counter = 0;
+          return false;
+        });
+    }
+  }
+
+  protected async newSendRequest(payload: string): Promise<boolean> {
     return this.handleRequest(payload)
       .then((result) => {
         return result ? true : false;
@@ -501,12 +688,36 @@ export default class P100 {
     });
   }
 
+  protected newHandleRequest(payload: string): Promise<any> {
+    if (this.newTpLinkCipher) {
+      const data = this.newTpLinkCipher.encrypt(payload);
+
+      return this.raw_request("request", data.encryptedPayload, "arraybuffer", { seq: data.seq.toString() })
+        .then((res) => {
+          return JSON.parse(this.newTpLinkCipher.decrypt(res));
+        })
+        .catch((error: Error) => {
+          return this.handleError(error.message, "372");
+        });
+    }
+    return new Promise<true>((resolve, reject) => {
+      reject();
+    });
+  }
+
   protected async reconnect(): Promise<void> {
     this._reconnect_counter++;
     return this.handshake().then(() => {
       this.login().then(() => {
         return;
       });
+    });
+  }
+
+  protected async newReconnect(): Promise<void> {
+    this._reconnect_counter++;
+    return this.handshake_new().then(() => {
+      return;
     });
   }
 }

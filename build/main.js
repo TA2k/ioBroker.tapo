@@ -25,6 +25,7 @@ var import_uuid = require("uuid");
 var import_json2iob = __toESM(require("./lib/json2iob"));
 var import_tapoCamera = require("./lib/utils/camera/tapoCamera");
 var import_l510e = __toESM(require("./lib/utils/l510e"));
+var import_l520e = __toESM(require("./lib/utils/l520e"));
 var import_l530 = __toESM(require("./lib/utils/l530"));
 var import_p100 = __toESM(require("./lib/utils/p100"));
 var import_p110 = __toESM(require("./lib/utils/p110"));
@@ -487,6 +488,10 @@ class Tapo extends utils.Adapter {
       deviceObject = new import_p110.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName === "L530") {
       deviceObject = new import_l530.default(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName === "L510E") {
+      deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName === "L520E") {
+      deviceObject = new import_l520e.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("C") || device.deviceName.startsWith("TC")) {

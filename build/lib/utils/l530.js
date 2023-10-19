@@ -27,8 +27,8 @@ __export(l530_exports, {
   default: () => L530
 });
 module.exports = __toCommonJS(l530_exports);
-var import_l510e = __toESM(require("./l510e"));
-class L530 extends import_l510e.default {
+var import_l520e = __toESM(require("./l520e"));
+class L530 extends import_l520e.default {
   constructor(log, ipAddress, email, password, timeout) {
     super(log, ipAddress, email, password, timeout);
     this.log = log;
@@ -47,15 +47,6 @@ class L530 extends import_l510e.default {
       return this.getSysInfo();
     });
   }
-  async setColorTemp(color_temp) {
-    const transformedColorTemp = this.transformColorTemp(color_temp);
-    this.log.debug("Color Temp Tapo :" + transformedColorTemp);
-    const roundedValue = transformedColorTemp > 6500 ? 6500 : transformedColorTemp < 2500 ? 2500 : transformedColorTemp;
-    const payload = '{"method": "set_device_info","params": {"hue": 0,"saturation": 0,"color_temp": ' + roundedValue + '},"requestTimeMils": ' + Math.round(Date.now() * 1e3) + "};";
-    return this.handleRequest(payload).then(() => {
-      return true;
-    });
-  }
   async setColor(hue, saturation) {
     if (!hue) {
       hue = 0;
@@ -72,18 +63,6 @@ class L530 extends import_l510e.default {
   }
   getSysInfo() {
     return this._colorLightSysInfo;
-  }
-  transformColorTemp(value) {
-    return Math.floor(1e6 / value);
-  }
-  async getColorTemp() {
-    return super.getDeviceInfo().then(() => {
-      return this.calculateColorTemp(this.getSysInfo().color_temp);
-    });
-  }
-  calculateColorTemp(tapo_color_temp) {
-    const newValue = this.transformColorTemp(tapo_color_temp);
-    return newValue > 400 ? 400 : newValue < 154 ? 154 : newValue;
   }
   async getEnergyUsage() {
     const payload = '{"method": "get_device_usage","requestTimeMils": ' + Math.round(Date.now() * 1e3) + "};";

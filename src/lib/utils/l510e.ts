@@ -1,5 +1,5 @@
-import { LightSysinfo } from "./types";
 import P100 from "./p100";
+import { LightSysinfo } from "./types";
 
 export default class L510E extends P100 {
   private _lightSysInfo!: LightSysinfo;
@@ -9,7 +9,7 @@ export default class L510E extends P100 {
     public readonly ipAddress: string,
     public readonly email: string,
     public readonly password: string,
-    public readonly timeout: number
+    public readonly timeout: number,
   ) {
     super(log, ipAddress, email, password, timeout);
     this.log.debug("Constructing L510E on host: " + ipAddress);

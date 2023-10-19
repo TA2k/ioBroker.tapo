@@ -10,7 +10,7 @@ export default class P110 extends P100 {
     public readonly ipAddress: string,
     public readonly email: string,
     public readonly password: string,
-    public readonly timeout: number
+    public readonly timeout: number,
   ) {
     super(log, ipAddress, email, password, timeout);
     this.log.debug("Constructing P110 on host: " + ipAddress);

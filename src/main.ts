@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 import Json2iob from "./lib/json2iob";
 import { TAPOCamera } from "./lib/utils/camera/tapoCamera";
 import L510E from "./lib/utils/l510e";
+import L520E from "./lib/utils/l520e";
 import L530 from "./lib/utils/l530";
 import P100 from "./lib/utils/p100";
 import P110 from "./lib/utils/p110";
@@ -45,8 +46,7 @@ class Tapo extends utils.Adapter {
       }),
     });
     this.secret = Buffer.from([
-      54, 101, 100, 55, 100, 57, 55, 102, 51, 101, 55, 51, 52, 54, 55, 102, 56, 97, 53, 98, 97, 98, 57, 48, 98, 53, 55,
-      55, 98, 97, 52, 99,
+      54, 101, 100, 55, 100, 57, 55, 102, 51, 101, 55, 51, 52, 54, 55, 102, 56, 97, 53, 98, 97, 98, 57, 48, 98, 53, 55, 55, 98, 97, 52, 99,
     ]);
   }
 
@@ -506,6 +506,10 @@ class Tapo extends utils.Adapter {
       deviceObject = new P110(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName === "L530") {
       deviceObject = new L530(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName === "L510E") {
+      deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2);
+    } else if (device.deviceName === "L520E") {
+      deviceObject = new L520E(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("C") || device.deviceName.startsWith("TC")) {

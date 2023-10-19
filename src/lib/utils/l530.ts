@@ -1,8 +1,8 @@
-import { ColorLightSysinfo, ConsumptionInfo } from "./types";
-import L510E from "./l510e";
+import L520E from "./l520e";
 import { PowerUsage } from "./powerUsage";
+import { ColorLightSysinfo, ConsumptionInfo } from "./types";
 
-export default class L530 extends L510E {
+export default class L530 extends L520E {
   private _colorLightSysInfo!: ColorLightSysinfo;
   private _consumption!: ConsumptionInfo;
 
@@ -11,7 +11,7 @@ export default class L530 extends L510E {
     public readonly ipAddress: string,
     public readonly email: string,
     public readonly password: string,
-    public readonly timeout: number
+    public readonly timeout: number,
   ) {
     super(log, ipAddress, email, password, timeout);
     this.log.debug("Constructing L530 on host: " + ipAddress);
@@ -24,31 +24,6 @@ export default class L530 extends L510E {
   async getDeviceInfo(): Promise<ColorLightSysinfo> {
     return super.getDeviceInfo().then(() => {
       return this.getSysInfo();
-    });
-  }
-
-  async setColorTemp(color_temp: number): Promise<true> {
-    const transformedColorTemp = this.transformColorTemp(color_temp);
-    this.log.debug("Color Temp Tapo :" + transformedColorTemp);
-
-    const roundedValue = transformedColorTemp > 6500 ? 6500 : transformedColorTemp < 2500 ? 2500 : transformedColorTemp;
-
-    const payload =
-      "{" +
-      '"method": "set_device_info",' +
-      '"params": {' +
-      '"hue": 0,' +
-      '"saturation": 0,' +
-      '"color_temp": ' +
-      roundedValue +
-      "}," +
-      '"requestTimeMils": ' +
-      Math.round(Date.now() * 1000) +
-      "" +
-      "};";
-
-    return this.handleRequest(payload).then(() => {
-      return true;
     });
   }
 
@@ -85,21 +60,6 @@ export default class L530 extends L510E {
 
   public getSysInfo(): ColorLightSysinfo {
     return this._colorLightSysInfo;
-  }
-
-  private transformColorTemp(value: number) {
-    return Math.floor(1000000 / value);
-  }
-
-  async getColorTemp(): Promise<number> {
-    return super.getDeviceInfo().then(() => {
-      return this.calculateColorTemp(this.getSysInfo().color_temp);
-    });
-  }
-
-  calculateColorTemp(tapo_color_temp: number) {
-    const newValue = this.transformColorTemp(tapo_color_temp);
-    return newValue > 400 ? 400 : newValue < 154 ? 154 : newValue;
   }
 
   async getEnergyUsage(): Promise<PowerUsage> {
