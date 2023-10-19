@@ -39,6 +39,7 @@ class P100 {
     this.timeout = timeout;
     this.crypto = require("crypto");
     this.axios = require("axios");
+    this.utf8 = require("utf8");
     this.is_klap = false;
     this.ERROR_CODES = {
       "0": "Success",

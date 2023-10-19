@@ -23,6 +23,7 @@
     "node-fetch": "^2.6.12",
     "onvif": "^0.6.8",
     "qs": "^6.11.2",
+    "utf8": "^3.0.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
