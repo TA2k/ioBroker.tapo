@@ -7,7 +7,6 @@ import { PlugSysinfo } from "./types";
 export default class P100 {
   private crypto = require("crypto");
   protected axios = require("axios");
-  private utf8 = require("utf8");
   public is_klap = false;
 
   private encodedPassword!: string;
