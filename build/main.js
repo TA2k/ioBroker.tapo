@@ -534,29 +534,36 @@ class Tapo extends utils.Adapter {
       deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
     }
     this.deviceObjects[id] = deviceObject;
-    await deviceObject.handshake().then(() => {
-      deviceObject.login().then(() => {
-        deviceObject.getDeviceInfo().then(async (sysInfo) => {
-          this.log.debug(JSON.stringify(sysInfo));
-          if (sysInfo.request) {
-            this.log.error("Malformed response sysinfo");
-            this.log.error(JSON.stringify(sysInfo));
-            return;
-          }
-          this.json2iob.parse(id, sysInfo);
-          this.deviceObjects[id]._connected = true;
-          if (this.deviceObjects[id].getEnergyUsage) {
-            this.log.debug("Receive energy usage");
-            const energyUsage = await this.deviceObjects[id].getEnergyUsage();
-            this.log.debug(JSON.stringify(energyUsage));
-            this.json2iob.parse(id, energyUsage);
-          }
-        }).catch(() => {
-          this.log.error("52 - Get Device Info failed");
+    await deviceObject.handshake().then(async () => {
+      if (deviceObject.is_klap) {
+        await deviceObject.handshake_new().catch(() => {
+          this.log.error("KLAP Handshake failed");
+          deviceObject.is_klap = false;
           this.deviceObjects[id]._connected = false;
         });
+      } else {
+        await deviceObject.login().catch(() => {
+          this.log.error("Login failed");
+          this.deviceObjects[id]._connected = false;
+        });
+      }
+      deviceObject.getDeviceInfo().then(async (sysInfo) => {
+        this.log.debug(JSON.stringify(sysInfo));
+        if (sysInfo.request) {
+          this.log.error("Malformed response sysinfo");
+          this.log.error(JSON.stringify(sysInfo));
+          return;
+        }
+        this.json2iob.parse(id, sysInfo);
+        this.deviceObjects[id]._connected = true;
+        if (this.deviceObjects[id].getEnergyUsage) {
+          this.log.debug("Receive energy usage");
+          const energyUsage = await this.deviceObjects[id].getEnergyUsage();
+          this.log.debug(JSON.stringify(energyUsage));
+          this.json2iob.parse(id, energyUsage);
+        }
       }).catch(() => {
-        this.log.error("Login failed");
+        this.log.error("52 - Get Device Info failed");
         this.deviceObjects[id]._connected = false;
       });
     }).catch(() => {
