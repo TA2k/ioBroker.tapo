@@ -135,7 +135,7 @@ class Tapo extends utils.Adapter {
             }).catch((e) => {
               this.log.error(e);
             });
-            this.log.debug(`initResult ${id} ${initResult}`);
+            this.log.debug(`initResult ${id} ${JSON.stringify(initResult)}`);
           }
         }
       }
@@ -458,7 +458,7 @@ class Tapo extends utils.Adapter {
           }).catch((e) => {
             this.log.error(e);
           });
-          this.log.debug(`initResult ${id} ${initResult}`);
+          this.log.debug(`initResult ${id} ${JSON.stringify(initResult)}`);
         }
       }
     }).catch((error) => {

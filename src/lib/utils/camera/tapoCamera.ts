@@ -28,6 +28,7 @@ export class TAPOCamera extends OnvifCamera {
 
   constructor(protected readonly log: any, protected readonly config: CameraConfig) {
     super(log, config);
+    this.log.debug("Constructing Camera on host: " + config.ipAddress);
 
     this.httpsAgent = new https.Agent({
       rejectUnauthorized: false,

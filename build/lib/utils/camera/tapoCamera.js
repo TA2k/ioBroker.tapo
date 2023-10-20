@@ -39,6 +39,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     this.kTokenExpiration = 1e3 * 60 * 60;
     this.kStreamPort = 554;
     this.pendingAPIRequests = /* @__PURE__ */ new Map();
+    this.log.debug("Constructing Camera on host: " + config.ipAddress);
     this.httpsAgent = new import_https.default.Agent({
       rejectUnauthorized: false
     });

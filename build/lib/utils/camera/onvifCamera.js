@@ -58,7 +58,9 @@ class OnvifCamera {
     }
     this.log.debug("Getting device for event emiiter");
     const onvifDevice = await this.getDevice();
+    this.log.debug("Got device for event emiiter" + JSON.stringify(onvifDevice));
     let lastMotionValue = false;
+    this.log.debug("Creating event emitter");
     this.events = new import_stream.EventEmitter();
     this.log.debug(`[${this.config.name}]`, "Starting ONVIF listener");
     onvifDevice.on("event", (event) => {
@@ -82,8 +84,9 @@ class OnvifCamera {
   async getDeviceInfo() {
     const onvifDevice = await this.getDevice();
     return new Promise((resolve, reject) => {
-      this.log.debug("Getting device information for " + JSON.stringify(onvifDevice));
+      this.log.debug("Getting device information ");
       onvifDevice.getDeviceInformation((err, deviceInformation) => {
+        this.log.debug("Got device information for " + JSON.stringify(deviceInformation));
         if (err)
           return reject(err);
         resolve(deviceInformation);
