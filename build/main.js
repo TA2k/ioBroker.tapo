@@ -511,6 +511,7 @@ class Tapo extends utils.Adapter {
       this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
       this.log.debug(JSON.stringify(deviceInfo));
       this.json2iob.parse(id, deviceInfo);
+      this.log.debug(`Init event emitter for ${id}`);
       const eventEmitter = await deviceObject.getEventEmitter();
       await this.setObjectNotExistsAsync(id + ".motionEvent", {
         type: "state",
@@ -524,6 +525,7 @@ class Tapo extends utils.Adapter {
         },
         native: {}
       });
+      this.log.debug('Init event listener for "motion"');
       eventEmitter.addListener("motion", async (motionDetected) => {
         await this.setStateAsync(id + ".motionEvent", motionDetected, true);
         this.log.info(`[${device.deviceName}] "Motion detected" ${motionDetected}`);

@@ -56,6 +56,7 @@ class OnvifCamera {
     if (this.events) {
       return this.events;
     }
+    this.log.debug("Getting device for event emiiter");
     const onvifDevice = await this.getDevice();
     let lastMotionValue = false;
     this.events = new import_stream.EventEmitter();
