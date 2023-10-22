@@ -21,7 +21,7 @@
     "axios": "^1.5.1",
     "json-bigint": "^1.0.0",
     "node-fetch": "^2.7.0",
-    "onvif": "^0.6.9",
+    "onvif": "github:TA2k/onvif",
     "qs": "^6.11.2",
     "utf8": "^3.0.0",
     "uuid": "^9.0.1"
