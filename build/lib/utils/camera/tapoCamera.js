@@ -254,16 +254,13 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
         ]
       }
     });
+    this.log.debug(`getStatus json: ${JSON.stringify(json)}`);
     if (json.error_code !== 0) {
       throw new Error("Camera replied with error");
     }
     const alertConfig = json.result.responses.find((r) => r.method === "getAlertConfig");
-    const forceWhitelampState = json.result.responses.find(
-      (r) => r.method === "getForceWhitelampState"
-    );
-    const lensMaskConfig = json.result.responses.find(
-      (r) => r.method === "getLensMaskConfig"
-    );
+    const forceWhitelampState = json.result.responses.find((r) => r.method === "getForceWhitelampState");
+    const lensMaskConfig = json.result.responses.find((r) => r.method === "getLensMaskConfig");
     return {
       alert: alertConfig.result.msg_alarm.chn1_msg_alarm_info.enabled === "on",
       lensMask: lensMaskConfig.result.lens_mask.lens_mask_info.enabled === "on",

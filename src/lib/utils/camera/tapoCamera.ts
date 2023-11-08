@@ -26,7 +26,10 @@ export class TAPOCamera extends OnvifCamera {
   private token: [string, number] | undefined;
   private tokenPromise: (() => Promise<string>) | undefined;
 
-  constructor(protected readonly log: any, protected readonly config: CameraConfig) {
+  constructor(
+    protected readonly log: any,
+    protected readonly config: CameraConfig,
+  ) {
     super(log, config);
     this.log.debug("Constructing Camera on host: " + config.ipAddress);
 
@@ -278,26 +281,20 @@ export class TAPOCamera extends OnvifCamera {
         ],
       },
     });
-
+    this.log.debug(`getStatus json: ${JSON.stringify(json)}`);
     if (json.error_code !== 0) {
       throw new Error("Camera replied with error");
     }
 
     const alertConfig = json.result.responses.find((r) => r.method === "getAlertConfig") as TAPOCameraResponseGetAlert;
 
-    const forceWhitelampState = json.result.responses.find(
-      (r) => r.method === "getForceWhitelampState",
-    ) as TAPOCameraResponseGetForce;
-    const lensMaskConfig = json.result.responses.find(
-      (r) => r.method === "getLensMaskConfig",
-    ) as TAPOCameraResponseGetLensMask;
+    const forceWhitelampState = json.result.responses.find((r) => r.method === "getForceWhitelampState") as TAPOCameraResponseGetForce;
+    const lensMaskConfig = json.result.responses.find((r) => r.method === "getLensMaskConfig") as TAPOCameraResponseGetLensMask;
 
     return {
       alert: alertConfig.result.msg_alarm.chn1_msg_alarm_info.enabled === "on",
       lensMask: lensMaskConfig.result.lens_mask.lens_mask_info.enabled === "on",
-      forceWhiteLamp: forceWhitelampState.result.image
-        ? forceWhitelampState.result.image.switch.force_wtl_state === "on"
-        : false,
+      forceWhiteLamp: forceWhitelampState.result.image ? forceWhitelampState.result.image.switch.force_wtl_state === "on" : false,
     };
   }
 }
