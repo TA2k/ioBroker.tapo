@@ -258,6 +258,9 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     if (json.error_code !== 0) {
       throw new Error("Camera replied with error");
     }
+    if (!json.result.responses) {
+      throw new Error("Camera replied with invalid response");
+    }
     const alertConfig = json.result.responses.find((r) => r.method === "getAlertConfig");
     const forceWhitelampState = json.result.responses.find((r) => r.method === "getForceWhitelampState");
     const lensMaskConfig = json.result.responses.find((r) => r.method === "getLensMaskConfig");
