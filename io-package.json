@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "news": {
+      "0.1.1": {
+        "en": "Bugfixes",
+        "de": "Bugfixes"
+      },
       "0.1.0": {
         "en": "Add support for new firmware",
         "de": "Unterstützung für neue Firmware hinzugefügt"
