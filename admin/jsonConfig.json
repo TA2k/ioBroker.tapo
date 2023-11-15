@@ -1,5 +1,6 @@
 {
   "i18n": false,
+  "type": "panel",
   "items": {
     "username": {
       "type": "text",
@@ -88,6 +89,20 @@
         "uk": "Потокове ім'я користувача. Налаштування > Розширені налаштування > обліковий запис камери.",
         "zh-cn": "Stream Ur名称。 定 法 预发型号——卡拉账户。."
       },
+      "tooltip": "Stream Username. Settings > Advanced Settings > Camera Account.",
+      "help": {
+        "en": "Stream Username. Settings > Advanced Settings > Camera Account.",
+        "de": "Kamera Stream Benutzername. Kamera Einstellungen > Erweiterte Einstellungen > Kamerakonto.",
+        "ru": "Stream Имя пользователя. Настройки > Расширенные настройки > учетная запись камеры.",
+        "pt": "Stream Username. Configurações > Configurações avançadas > Conta de câmera.",
+        "nl": "Stream User naam. Settings Geavanceerde Settings Camera Account.",
+        "fr": "Rationaliser l'utilisateur. Paramètres phy Paramètres avancés Compte de la caméra.",
+        "it": "Stream Username. Impostazioni > Impostazioni avanzate > Account fotocamera.",
+        "es": "Stream Username. Ajustes Ajustes avanzados con cuenta de cámara.",
+        "pl": "Stream Username (ang.). Settings (ang.). Advanced Settings > Camera Account (ang.).",
+        "uk": "Потокове ім'я користувача. Налаштування > Розширені налаштування > обліковий запис камери.",
+        "zh-cn": "Stream Ur名称。 定 法 预发型号——卡拉账户。."
+      },
       "newLine": true,
       "sm": 3
     },
@@ -98,6 +113,20 @@
       "visible": true,
       "sm": 3,
       "label": {
+        "en": "Stream Password. App Settings > Advanced Settings > Camera Account.",
+        "de": "Kamera Stream Passwort. Kamera Einstellungen > Erweiterte Einstellungen > Kamerakonto.",
+        "ru": "Stream Пароль. Настройки приложений > Расширенные настройки > учетная запись камеры.",
+        "pt": "Stream Password. Configurações do aplicativo > Configurações avançadas > Conta de câmera.",
+        "nl": "Stream Password. App Settings Geavanceerde Settings Camera Account.",
+        "fr": "Simplifiez le mot de passe. Paramètres de l'application s Paramètres avancés Compte de la caméra.",
+        "it": "Password di streaming. Impostazioni dell'app > Impostazioni avanzate > Account fotocamera.",
+        "es": "Stream Password. Ajustes de la aplicación Ajustes avanzados con cuenta de cámara.",
+        "pl": "Stream Password (ang.). App Settings (ang.). Advanced Settings > Camera Account (ang.).",
+        "uk": "Статус на сервери Налаштування додатків > Розширені налаштування > обліковий запис камери.",
+        "zh-cn": "Stream Pass。 附录 预发型号——卡拉账户。."
+      },
+      "tooltip": "Stream Password. App Settings > Advanced Settings > Camera Account.",
+      "help": {
         "en": "Stream Password. App Settings > Advanced Settings > Camera Account.",
         "de": "Kamera Stream Passwort. Kamera Einstellungen > Erweiterte Einstellungen > Kamerakonto.",
         "ru": "Stream Пароль. Настройки приложений > Расширенные настройки > учетная запись камеры.",
