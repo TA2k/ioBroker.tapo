@@ -6,6 +6,7 @@ import { EventEmitter } from "stream";
 type CameraConfig = {
   name: string;
   ipAddress: string;
+  username: string;
   password: string;
   streamUser: string;
   streamPassword: string;
@@ -16,6 +17,11 @@ type CameraConfig = {
   disableAlarmAccessory?: boolean;
   disableMotionAccessory?: boolean;
   lowQuality?: boolean;
+
+  videoConfig?: VideoConfig;
+
+  privacyAccessoryName?: string;
+  alarmAccessoryName?: string;
 };
 export class OnvifCamera {
   private events: EventEmitter | undefined;

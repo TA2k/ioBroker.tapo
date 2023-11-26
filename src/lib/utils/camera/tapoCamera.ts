@@ -18,6 +18,7 @@ const AES_BLOCK_SIZE = 16;
 type CameraConfig = {
   name: string;
   ipAddress: string;
+  username: string;
   password: string;
   streamUser: string;
   streamPassword: string;
@@ -28,6 +29,11 @@ type CameraConfig = {
   disableAlarmAccessory?: boolean;
   disableMotionAccessory?: boolean;
   lowQuality?: boolean;
+
+  videoConfig?: VideoConfig;
+
+  privacyAccessoryName?: string;
+  alarmAccessoryName?: string;
 };
 export class TAPOCamera extends OnvifCamera {
   private readonly kStreamPort = 554;

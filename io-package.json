@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "news": {
+      "0.2.0": {
+        "en": "Fix support for latest Camera firmware",
+        "de": "Unterstützung für neuste Kamera Firmware hinzugefügt"
+      },
       "0.1.1": {
         "en": "Bugfixes",
         "de": "Bugfixes"
