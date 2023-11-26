@@ -21,11 +21,10 @@ __export(onvifCamera_exports, {
   OnvifCamera: () => OnvifCamera
 });
 module.exports = __toCommonJS(onvifCamera_exports);
-var import_onvif = require("onvif");
+var import_onvif2 = require("onvif");
 var import_stream = require("stream");
 class OnvifCamera {
-  constructor(log, config) {
-    this.log = log;
+  constructor(config) {
     this.config = config;
     this.kOnvifPort = 2020;
   }
@@ -34,8 +33,7 @@ class OnvifCamera {
       if (this.device) {
         return resolve(this.device);
       }
-      this.log.debug("Connecting to ONVIF device" + JSON.stringify(this.config) + " on port " + this.kOnvifPort);
-      const device = new import_onvif.Cam(
+      const device = new import_onvif2.Cam(
         {
           hostname: this.config.ipAddress,
           username: this.config.streamUser,
@@ -56,20 +54,15 @@ class OnvifCamera {
     if (this.events) {
       return this.events;
     }
-    this.log.debug("Getting device for event emiiter");
     const onvifDevice = await this.getDevice();
-    this.log.debug("Got device for event emiiter" + JSON.stringify(onvifDevice));
     let lastMotionValue = false;
-    this.log.debug("Creating event emitter");
     this.events = new import_stream.EventEmitter();
-    this.log.debug(`[${this.config.name}]`, "Starting ONVIF listener");
     onvifDevice.on("event", (event) => {
       var _a, _b;
-      this.log.debug(`Received event: ${JSON.stringify(event)}`);
       if ((_b = (_a = event == null ? void 0 : event.topic) == null ? void 0 : _a._) == null ? void 0 : _b.match(/RuleEngine\/CellMotionDetector\/Motion$/)) {
         const motion = event.message.message.data.simpleItem.$.Value;
         if (motion !== lastMotionValue) {
-          lastMotionValue = motion;
+          lastMotionValue = Boolean(motion);
           this.events = this.events || new import_stream.EventEmitter();
           this.events.emit("motion", motion);
         }
@@ -84,9 +77,7 @@ class OnvifCamera {
   async getDeviceInfo() {
     const onvifDevice = await this.getDevice();
     return new Promise((resolve, reject) => {
-      this.log.debug("Getting device information ");
       onvifDevice.getDeviceInformation((err, deviceInformation) => {
-        this.log.debug("Got device information for " + JSON.stringify(deviceInformation));
         if (err)
           return reject(err);
         resolve(deviceInformation);

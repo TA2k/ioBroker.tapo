@@ -1,4 +1,7 @@
-import { Cam, NotificationMessage } from "onvif";
+import { DeviceInformation, VideoSource, NotificationMessage, Cam as ICam } from "./types/onvif";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { Cam } from "onvif";
 import { EventEmitter } from "stream";
 type CameraConfig = {
   name: string;
@@ -20,23 +23,22 @@ export class OnvifCamera {
 
   private readonly kOnvifPort = 2020;
 
-  constructor(protected readonly log: any, protected readonly config: CameraConfig) {}
+  constructor(protected readonly config: CameraConfig) {}
 
-  private async getDevice(): Promise<Cam> {
-
+  private async getDevice(): Promise<ICam> {
     return new Promise((resolve, reject) => {
       if (this.device) {
         return resolve(this.device);
       }
-      this.log.debug("Connecting to ONVIF device" + JSON.stringify(this.config) + " on port " + this.kOnvifPort);
-      const device: Cam = new Cam(
+
+      const device: ICam = new Cam(
         {
           hostname: this.config.ipAddress,
           username: this.config.streamUser,
           password: this.config.streamPassword,
           port: this.kOnvifPort,
         },
-        (err) => {
+        (err: Error) => {
           if (err) {
             return reject(err);
           }
@@ -51,20 +53,18 @@ export class OnvifCamera {
     if (this.events) {
       return this.events;
     }
-    this.log.debug("Getting device for event emiiter");
+
     const onvifDevice = await this.getDevice();
-    this.log.debug("Got device for event emiiter" + JSON.stringify(onvifDevice));
+
     let lastMotionValue = false;
-    this.log.debug("Creating event emitter");
+
     this.events = new EventEmitter();
-    this.log.debug(`[${this.config.name}]`, "Starting ONVIF listener");
 
     onvifDevice.on("event", (event: NotificationMessage) => {
-      this.log.debug(`Received event: ${JSON.stringify(event)}`);
       if (event?.topic?._?.match(/RuleEngine\/CellMotionDetector\/Motion$/)) {
         const motion = event.message.message.data.simpleItem.$.Value;
         if (motion !== lastMotionValue) {
-          lastMotionValue = motion;
+          lastMotionValue = Boolean(motion);
           this.events = this.events || new EventEmitter();
           this.events.emit("motion", motion);
         }
@@ -82,9 +82,7 @@ export class OnvifCamera {
   async getDeviceInfo(): Promise<DeviceInformation> {
     const onvifDevice = await this.getDevice();
     return new Promise((resolve, reject) => {
-      this.log.debug("Getting device information ");
       onvifDevice.getDeviceInformation((err, deviceInformation) => {
-        this.log.debug("Got device information for " + JSON.stringify(deviceInformation));
         if (err) return reject(err);
         resolve(deviceInformation);
       });
