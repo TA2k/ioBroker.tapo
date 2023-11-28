@@ -149,6 +149,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
       }
     }
     if (isSecureConnection) {
+      this.log.debug("StokRefresh: Using secure connection");
       const nonce = (_d = (_c = responseData == null ? void 0 : responseData.result) == null ? void 0 : _c.data) == null ? void 0 : _d.nonce;
       const deviceConfirm = (_f = (_e = responseData == null ? void 0 : responseData.result) == null ? void 0 : _e.data) == null ? void 0 : _f.device_confirm;
       if (nonce && deviceConfirm && this.validateDeviceConfirm(nonce, deviceConfirm)) {
@@ -218,6 +219,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
           }
         })
       });
+      this.log.debug(JSON.stringify(response));
       const json = await response.json();
       this.log.debug("isSecureConnection response :>> ", response.status, json);
       this.isSecureConnectionValue = json.error_code == -40413 && ((_c = (_b = (_a = json == null ? void 0 : json.result) == null ? void 0 : _a.data) == null ? void 0 : _b.encrypt_type) == null ? void 0 : _c.includes("3"));

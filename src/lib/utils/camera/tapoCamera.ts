@@ -202,6 +202,7 @@ export class TAPOCamera extends OnvifCamera {
     }
 
     if (isSecureConnection) {
+      this.log.debug("StokRefresh: Using secure connection");
       const nonce = responseData?.result?.data?.nonce;
       const deviceConfirm = responseData?.result?.data?.device_confirm;
 
@@ -291,6 +292,7 @@ export class TAPOCamera extends OnvifCamera {
           },
         }),
       });
+      this.log.debug(JSON.stringify(response));
       const json = await response.json();
 
       this.log.debug("isSecureConnection response :>> ", response.status, json);
