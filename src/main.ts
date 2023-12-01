@@ -244,7 +244,7 @@ class Tapo extends utils.Adapter {
         }
 
         this.session = res.data.result;
-        if (this.session.token) {
+        if (this.session?.token) {
           this.log.info("Login succesfull");
           this.setState("info.connection", true, true);
         } else {
@@ -426,7 +426,7 @@ class Tapo extends utils.Adapter {
               data: body,
             })
               .then(async (res) => {
-                this.log.debug(JSON.stringify(res.data));
+                this.log.info(`DEBUG: ${JSON.stringify(res.data)}`);
                 let result: any = {};
                 if (res.data.error_code) {
                   this.log.error(JSON.stringify(res.data));
