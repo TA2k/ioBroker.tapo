@@ -235,8 +235,10 @@ class P100 {
       } catch (error) {
         return this.handleError(res.data.error_code, "318");
       }
-    }).catch((error) => {
+    }).catch(async (error) => {
       this.log.error("322 Error: " + error.message);
+      this.log.info("Trying to reconnect...");
+      await this.newReconnect();
       return error;
     });
   }
@@ -378,9 +380,10 @@ class P100 {
         } catch (error) {
           return this.handleError(res.data.error_code, "480");
         }
-      }).catch((error) => {
-        this.log.error("322 Error: " + error.message);
-        return error;
+      }).catch(async (error) => {
+        this.log.error("322 #2 Error: " + error.message);
+        this.log.info("Trying to reconnect...");
+        await this.newReconnect();
       });
     } else {
       return new Promise((resolve, reject) => {

@@ -287,8 +287,11 @@ export default class P100 {
           return this.handleError(res.data.error_code, "318");
         }
       })
-      .catch((error: Error) => {
+      .catch(async (error: Error) => {
         this.log.error("322 Error: " + error.message);
+        this.log.info("Trying to reconnect...");
+
+        await this.newReconnect();
         return error;
       });
   }
@@ -496,9 +499,11 @@ export default class P100 {
             return this.handleError(res.data.error_code, "480");
           }
         })
-        .catch((error: Error) => {
-          this.log.error("322 Error: " + error.message);
-          return error;
+        .catch(async (error: Error) => {
+          this.log.error("322 #2 Error: " + error.message);
+          this.log.info("Trying to reconnect...");
+
+          await this.newReconnect();
         });
     } else {
       return new Promise<PlugSysinfo>((resolve, reject) => {
