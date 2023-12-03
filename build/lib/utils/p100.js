@@ -161,7 +161,7 @@ class P100 {
         return this.handleError(res.data.error_code, "106");
       }
     }).catch((error) => {
-      this.log.error("111 Error: " + error.message);
+      this.log.error("111 Error: " + error ? error.message : "");
       return error;
     });
   }
@@ -200,7 +200,7 @@ class P100 {
           return this.handleError(JSON.parse(decryptedResponse).error_code, "157");
         }
       }).catch((error) => {
-        this.log.error("Error: " + error.message);
+        this.log.error("Error Login: " + error ? error.message : "");
         return error;
       });
     }
@@ -236,7 +236,7 @@ class P100 {
         return this.handleError(res.data.error_code, "318");
       }
     }).catch(async (error) => {
-      this.log.error("322 Error: " + error.message);
+      this.log.error("322 Error: " + error ? error.message : "");
       this.log.info("Trying to reconnect...");
       await this.newReconnect();
       return error;
@@ -341,7 +341,7 @@ class P100 {
           return this.handleError(JSON.parse(decryptedResponse).error_code, "340");
         }
       }).catch((error) => {
-        this.log.error("371 Error: " + error.message);
+        this.log.error("371 Error: " + error ? error.message : "");
         return error;
       });
     } else if (this.newTpLinkCipher) {
@@ -381,7 +381,7 @@ class P100 {
           return this.handleError(res.data.error_code, "480");
         }
       }).catch(async (error) => {
-        this.log.error("322 #2 Error: " + error.message);
+        this.log.error("322 #2 Error: " + error ? error.message : "");
         this.log.info("Trying to reconnect...");
         await this.newReconnect();
       });
@@ -447,7 +447,7 @@ class P100 {
       return this.handleRequest(payload).then((result) => {
         return result ? true : false;
       }).catch((error) => {
-        if (error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
+        if (error && error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
           return this.reconnect().then(() => {
             return this.handleRequest(payload).then((result) => {
               return result ? true : false;
@@ -461,7 +461,7 @@ class P100 {
       return this.newHandleRequest(payload).then((result) => {
         return result ? true : false;
       }).catch((error) => {
-        if (error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
+        if (error && error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
           return this.newReconnect().then(() => {
             return this.newHandleRequest(payload).then((result) => {
               return result ? true : false;

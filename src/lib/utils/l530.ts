@@ -81,7 +81,7 @@ export default class L530 extends L520E {
         return response.result;
       })
       .catch((error) => {
-        if (error.message.indexOf("9999") > 0) {
+        if (error && error.message.indexOf("9999") > 0) {
           return this.reconnect().then(() => {
             return this.handleRequest(payload).then(() => {
               return true;

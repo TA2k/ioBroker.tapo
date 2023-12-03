@@ -80,7 +80,7 @@ class L530 extends import_l520e.default {
       }
       return response.result;
     }).catch((error) => {
-      if (error.message.indexOf("9999") > 0) {
+      if (error && error.message.indexOf("9999") > 0) {
         return this.reconnect().then(() => {
           return this.handleRequest(payload).then(() => {
             return true;
