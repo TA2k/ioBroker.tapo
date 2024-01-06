@@ -289,9 +289,10 @@ export default class P100 {
       })
       .catch(async (error: Error) => {
         this.log.error("322 Error: " + error ? error.message : "");
-        this.log.info("Trying to reconnect...");
-
-        await this.newReconnect();
+        if (this._reconnect_counter <= 3) {
+          this.log.info("Trying to reconnect...");
+          await this.newReconnect();
+        }
         return error;
       });
   }
@@ -501,9 +502,10 @@ export default class P100 {
         })
         .catch(async (error: Error) => {
           this.log.error("322 #2 Error: " + error ? error.message : "");
-          this.log.info("Trying to reconnect...");
-
-          await this.newReconnect();
+          if (this._reconnect_counter <= 3) {
+            this.log.info("Trying to reconnect...");
+            await this.newReconnect();
+          }
         });
     } else {
       return new Promise<PlugSysinfo>((resolve, reject) => {
