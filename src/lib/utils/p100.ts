@@ -301,6 +301,9 @@ export default class P100 {
     const local_seed = this.crypto.randomBytes(16);
 
     await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
+      if (!res || !res.subarray) {
+        return;
+      }
       const remote_seed: Buffer = res.subarray(0, 16);
       const server_hash: Buffer = res.subarray(16);
 
