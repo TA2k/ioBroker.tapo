@@ -516,7 +516,6 @@ class Tapo extends utils.Adapter {
         disableStreaming: true
       });
       this.deviceObjects[id] = deviceObject;
-      this.deviceObjects[id].adapter = this;
       const deviceInfo = await deviceObject.getDeviceInfo();
       this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
       this.log.debug(JSON.stringify(deviceInfo));

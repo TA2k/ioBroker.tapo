@@ -281,7 +281,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     if (this.pendingAPIRequests.has(reqJson)) {
       return this.pendingAPIRequests.get(reqJson);
     }
-    this.log.debug("API new request", reqJson);
+    this.log.debug("API new request: " + reqJson);
     this.pendingAPIRequests.set(
       reqJson,
       (async () => {
@@ -337,7 +337,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     return this.pendingAPIRequests.get(reqJson);
   }
   async setLensMaskConfig(value) {
-    this.log.debug("Processing setLensMaskConfig", value);
+    this.adapter.log.debug("Processing setLensMaskConfig", value);
     const json = await this.apiRequest({
       method: "multipleRequest",
       params: {
