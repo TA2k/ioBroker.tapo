@@ -519,6 +519,7 @@ export class TAPOCamera extends OnvifCamera {
     return json.error_code !== 0;
   }
   async moveMotorStep(angle: string) {
+    angle = angle.toString();
     const json = await this.apiRequest({ method: "do", motor: { movestep: { direction: angle } } });
 
     return json.error_code !== 0;

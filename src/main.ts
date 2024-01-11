@@ -321,8 +321,8 @@ class Tapo extends utils.Adapter {
             { command: "setAlertConfig", name: "True = On, False = Off" },
             { command: "setLensMaskConfig", name: "True = On, False = Off" },
             { command: "setForceWhitelampState", name: "True = On, False = Off" },
-            { command: "moveMotor", name: "X,Y", type: "string", def: "0, 0", role: "text" },
-            { command: "moveMotorStep", name: "Angle 0 - 360", type: "string", def: "1", role: "text" },
+            { command: "moveMotor", name: "move Camera to X (-360,360), Y(-45,45)", type: "string", def: "0, 0", role: "text" },
+            { command: "moveMotorStep", name: "Angle (0-360)", type: "string", def: "180", role: "text" },
 
             {
               command: "setBrightness",
