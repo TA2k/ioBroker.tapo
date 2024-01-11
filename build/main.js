@@ -140,8 +140,9 @@ class Tapo extends utils.Adapter {
         }
       }
     }
-    this.log.info("Wait for connections");
+    this.log.info("Wait for connections for non camera devices");
     await this.sleep(1e4);
+    this.log.info("Start first Update");
     await this.updateDevices();
     this.updateInterval = setInterval(async () => {
       await this.updateDevices();
@@ -339,13 +340,13 @@ class Tapo extends utils.Adapter {
           }
         ];
         remoteArray.forEach((remote) => {
-          this.setObjectNotExists(id + ".remote." + remote.command, {
+          this.extendObjectAsync(id + ".remote." + remote.command, {
             type: "state",
             common: {
               name: remote.name || "",
               type: remote.type || "boolean",
-              role: remote.role || "boolean",
-              def: remote.def || false,
+              role: remote.role || "switch",
+              def: remote.def != null ? remote.def : false,
               write: true,
               read: true
             },
@@ -482,6 +483,10 @@ class Tapo extends utils.Adapter {
   }
   async initDevice(id) {
     const device = this.devices[id];
+    if (!device.ip) {
+      this.log.warn(`No IP found for ${id}`);
+      return;
+    }
     this.log.info(`Init device ${id} type ${device.deviceName} with ip ${device.ip}`);
     let deviceObject;
     if (device.deviceName === "P100") {
