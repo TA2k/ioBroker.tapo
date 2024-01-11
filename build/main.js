@@ -319,7 +319,7 @@ class Tapo extends utils.Adapter {
           { command: "setLensMaskConfig", name: "True = On, False = Off" },
           { command: "setForceWhitelampState", name: "True = On, False = Off" },
           { command: "moveMotor", name: "X,Y", type: "string", def: "0, 0", role: "text" },
-          { command: "moveMotorStep", name: "Angle 0 - 360", type: "number", def: "1", role: "level" },
+          { command: "moveMotorStep", name: "Angle 0 - 360", type: "string", def: "1", role: "text" },
           {
             command: "setBrightness",
             name: "Set Brightness for Light devices",
@@ -516,6 +516,7 @@ class Tapo extends utils.Adapter {
         disableStreaming: true
       });
       this.deviceObjects[id] = deviceObject;
+      this.deviceObjects[id].adapter = this;
       const deviceInfo = await deviceObject.getDeviceInfo();
       this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
       this.log.debug(JSON.stringify(deviceInfo));

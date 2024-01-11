@@ -401,12 +401,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     return json.error_code !== 0;
   }
   async moveMotorStep(angle) {
-    const json = await this.apiRequest({
-      method: "multipleRequest",
-      params: {
-        requests: [{ method: "do", motor: { movestep: { direction: angle } } }]
-      }
-    });
+    const json = await this.apiRequest({ method: "do", motor: { movestep: { direction: angle } } });
     return json.error_code !== 0;
   }
   async moveMotor(x, y) {
