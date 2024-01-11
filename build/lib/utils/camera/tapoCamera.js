@@ -142,7 +142,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     }
     response = await this.fetch(`https://${this.config.ipAddress}`, fetchParams);
     responseData = await response.json();
-    this.log.debug("StokRefresh: Login response :>> ", response.status, JSON.stringify(responseData));
+    this.log.debug("StokRefresh: Login response :>> " + response.status + JSON.stringify(responseData));
     if (response.status === 401) {
       if (((_b = (_a = responseData == null ? void 0 : responseData.result) == null ? void 0 : _a.data) == null ? void 0 : _b.code) === 40411) {
         throw new Error("Invalid credentials");
@@ -172,7 +172,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
           })
         });
         responseData = await response.json();
-        this.log.debug("StokRefresh: Start_seq response :>>", response.status, JSON.stringify(responseData));
+        this.log.debug("StokRefresh: Start_seq response :>>" + response.status + JSON.stringify(responseData));
         if ((_g = responseData == null ? void 0 : responseData.result) == null ? void 0 : _g.start_seq) {
           if (((_h = responseData == null ? void 0 : responseData.result) == null ? void 0 : _h.user_group) !== "root") {
             throw new Error("Incorrect user_group detected");
@@ -193,14 +193,12 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     }
     if ((_m = responseData == null ? void 0 : responseData.result) == null ? void 0 : _m.stok) {
       this.stok = responseData.result.stok;
-      this.log.debug("StokRefresh: Success :>>", this.stok);
+      this.log.debug("StokRefresh: Success :>>" + this.stok);
       return this.stok;
     }
     if ((responseData == null ? void 0 : responseData.error_code) === -40413 && loginRetryCount < MAX_LOGIN_RETRIES) {
       this.log.debug(
-        `Unexpected response, retrying: ${loginRetryCount}/${MAX_LOGIN_RETRIES}.`,
-        response.status,
-        JSON.stringify(responseData)
+        `Unexpected response, retrying: ${loginRetryCount}/${MAX_LOGIN_RETRIES}.` + response.status + JSON.stringify(responseData)
       );
       return this.refreshStok(loginRetryCount + 1);
     }
@@ -221,7 +219,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
       });
       this.log.debug(JSON.stringify(response));
       const json = await response.json();
-      this.log.debug("isSecureConnection response :>> ", response.status, json);
+      this.log.debug("isSecureConnection response :>> " + response.status + json);
       this.isSecureConnectionValue = json.error_code == -40413 && ((_c = (_b = (_a = json == null ? void 0 : json.result) == null ? void 0 : _a.data) == null ? void 0 : _b.encrypt_type) == null ? void 0 : _c.includes("3"));
     }
     return this.isSecureConnectionValue;
@@ -319,7 +317,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
           } else {
             json = json;
           }
-          this.log.debug(`API response`, response.status, JSON.stringify(json));
+          this.log.debug(`API response: ` + response.status, JSON.stringify(json));
           if (isSecureConnection && response.status === 500) {
             this.stok = void 0;
           }
@@ -337,7 +335,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     return this.pendingAPIRequests.get(reqJson);
   }
   async setLensMaskConfig(value) {
-    this.adapter.log.debug("Processing setLensMaskConfig", value);
+    this.adapter.log.debug("Processing setLensMaskConfig" + value);
     const json = await this.apiRequest({
       method: "multipleRequest",
       params: {
@@ -360,7 +358,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     }
   }
   async setAlertConfig(value) {
-    this.log.debug("Processing setAlertConfig", value);
+    this.log.debug("Processing setAlertConfig" + value);
     const json = await this.apiRequest({
       method: "multipleRequest",
       params: {

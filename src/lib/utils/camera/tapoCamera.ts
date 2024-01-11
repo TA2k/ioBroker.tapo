@@ -193,7 +193,7 @@ export class TAPOCamera extends OnvifCamera {
     response = await this.fetch(`https://${this.config.ipAddress}`, fetchParams);
     responseData = await response.json();
 
-    this.log.debug("StokRefresh: Login response :>> ", response.status, JSON.stringify(responseData));
+    this.log.debug("StokRefresh: Login response :>> " + response.status + JSON.stringify(responseData));
 
     if (response.status === 401) {
       if (responseData?.result?.data?.code === 40411) {
@@ -234,7 +234,7 @@ export class TAPOCamera extends OnvifCamera {
 
         responseData = await response.json();
 
-        this.log.debug("StokRefresh: Start_seq response :>>", response.status, JSON.stringify(responseData));
+        this.log.debug("StokRefresh: Start_seq response :>>" + response.status + JSON.stringify(responseData));
 
         if (responseData?.result?.start_seq) {
           if (responseData?.result?.user_group !== "root") {
@@ -262,7 +262,7 @@ export class TAPOCamera extends OnvifCamera {
 
     if (responseData?.result?.stok) {
       this.stok = responseData.result.stok;
-      this.log.debug("StokRefresh: Success :>>", this.stok);
+      this.log.debug("StokRefresh: Success :>>" + this.stok);
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.stok!;
@@ -270,9 +270,7 @@ export class TAPOCamera extends OnvifCamera {
 
     if (responseData?.error_code === -40413 && loginRetryCount < MAX_LOGIN_RETRIES) {
       this.log.debug(
-        `Unexpected response, retrying: ${loginRetryCount}/${MAX_LOGIN_RETRIES}.`,
-        response.status,
-        JSON.stringify(responseData),
+        `Unexpected response, retrying: ${loginRetryCount}/${MAX_LOGIN_RETRIES}.` + response.status + JSON.stringify(responseData),
       );
       return this.refreshStok(loginRetryCount + 1);
     }
@@ -295,7 +293,7 @@ export class TAPOCamera extends OnvifCamera {
       this.log.debug(JSON.stringify(response));
       const json = await response.json();
 
-      this.log.debug("isSecureConnection response :>> ", response.status, json);
+      this.log.debug("isSecureConnection response :>> " + response.status + json);
 
       this.isSecureConnectionValue = json.error_code == -40413 && json?.result?.data?.encrypt_type?.includes("3");
     }
@@ -425,7 +423,7 @@ export class TAPOCamera extends OnvifCamera {
             json = json as TAPOCameraResponse;
           }
 
-          this.log.debug(`API response`, response.status, JSON.stringify(json));
+          this.log.debug(`API response: ` + response.status, JSON.stringify(json));
 
           // Apparently the Tapo C200 returns 500 on successful requests,
           // but it's indicating an expiring token, therefore refresh the token next time
@@ -451,7 +449,7 @@ export class TAPOCamera extends OnvifCamera {
   }
 
   async setLensMaskConfig(value: boolean) {
-    this.adapter.log.debug("Processing setLensMaskConfig", value);
+    this.adapter.log.debug("Processing setLensMaskConfig" + value);
 
     const json = await this.apiRequest({
       method: "multipleRequest",
@@ -477,7 +475,7 @@ export class TAPOCamera extends OnvifCamera {
   }
 
   async setAlertConfig(value: boolean) {
-    this.log.debug("Processing setAlertConfig", value);
+    this.log.debug("Processing setAlertConfig" + value);
 
     const json = await this.apiRequest({
       method: "multipleRequest",
