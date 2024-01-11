@@ -321,6 +321,9 @@ class Tapo extends utils.Adapter {
             { command: "setAlertConfig", name: "True = On, False = Off" },
             { command: "setLensMaskConfig", name: "True = On, False = Off" },
             { command: "setForceWhitelampState", name: "True = On, False = Off" },
+            { command: "moveMotor", name: "X,Y", type: "string", def: "0, 0", role: "text" },
+            { command: "moveMotorStep", name: "Angle 0 - 360", type: "number", def: "1", role: "level" },
+
             {
               command: "setBrightness",
               name: "Set Brightness for Light devices",
@@ -721,8 +724,8 @@ class Tapo extends utils.Adapter {
         }
         try {
           if (this.deviceObjects[deviceId] && this.deviceObjects[deviceId][command]) {
-            if (command === "setColor") {
-              const valueSplit = state.val.split(", ");
+            if (command === "setColor" || command === "moveMotor") {
+              const valueSplit = state.val.replace(" ", "").split(",");
               const result = await this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]);
               this.log.info(JSON.stringify(result));
             } else {

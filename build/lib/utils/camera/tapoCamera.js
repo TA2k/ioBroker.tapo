@@ -400,6 +400,24 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     });
     return json.error_code !== 0;
   }
+  async moveMotorStep(angle) {
+    const json = await this.apiRequest({
+      method: "multipleRequest",
+      params: {
+        requests: [{ method: "do", motor: { movestep: { direction: angle } } }]
+      }
+    });
+    return json.error_code !== 0;
+  }
+  async moveMotor(x, y) {
+    const json = await this.apiRequest({
+      method: "multipleRequest",
+      params: {
+        requests: [{ method: "do", motor: { move: { x_coord: x, y_coord: y } } }]
+      }
+    });
+    return json.error_code !== 0;
+  }
   async getBasicInfo() {
     const json = await this.apiRequest({
       method: "multipleRequest",
