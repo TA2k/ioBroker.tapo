@@ -1,11 +1,12 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.2.0",
+    "version": "0.2.2",
     "news": {
-      "0.2.1": {
+      "0.2.2": {
         "en": "Add Camera movment",
-        "de": "Kamera Bewegungskontrolle hinzugefügt",
+        "de": "Kamera Bewegungskontrolle hinzugefügt"
+      },
       "0.2.0": {
         "en": "Fix support for latest Camera firmware",
         "de": "Unterstützung für neuste Kamera Firmware hinzugefügt"
