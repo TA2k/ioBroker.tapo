@@ -39,7 +39,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     this.log = log;
     this.config = config;
     this.kStreamPort = 554;
-    this.passwordEncryptionMethod = null;
+    this.passwordEncryptionMethod = "md5";
     this.isSecureConnectionValue = null;
     this.loginRetryCount = 0;
     this.pendingAPIRequests = /* @__PURE__ */ new Map();
@@ -73,7 +73,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     } else if (this.passwordEncryptionMethod === "sha256") {
       return this.hashedSha256Password;
     } else {
-      throw new Error("Unknown password encryption method");
+      throw new Error("Unknown password encryption method " + this.passwordEncryptionMethod + "!");
     }
   }
   fetch(url, data) {
@@ -148,42 +148,40 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
         throw new Error("Invalid credentials");
       }
     }
-    if (isSecureConnection) {
-      this.log.debug("StokRefresh: Using secure connection");
-      const nonce = (_d = (_c = responseData == null ? void 0 : responseData.result) == null ? void 0 : _c.data) == null ? void 0 : _d.nonce;
-      const deviceConfirm = (_f = (_e = responseData == null ? void 0 : responseData.result) == null ? void 0 : _e.data) == null ? void 0 : _f.device_confirm;
-      if (nonce && deviceConfirm && this.validateDeviceConfirm(nonce, deviceConfirm)) {
-        const digestPasswd = import_crypto.default.createHash("sha256").update(this.getHashedPassword() + this.cnonce + nonce).digest("hex").toUpperCase();
-        const digestPasswdFull = Buffer.concat([
-          Buffer.from(digestPasswd, "utf8"),
-          Buffer.from(this.cnonce, "utf8"),
-          Buffer.from(nonce, "utf8")
-        ]).toString("utf8");
-        response = await this.fetch(`https://${this.config.ipAddress}`, {
-          method: "POST",
-          body: JSON.stringify({
-            method: "login",
-            params: {
-              cnonce: this.cnonce,
-              encrypt_type: "3",
-              digest_passwd: digestPasswdFull,
-              username: this.getUsername()
-            }
-          })
-        });
-        responseData = await response.json();
-        this.log.debug("StokRefresh: Start_seq response :>>" + response.status + JSON.stringify(responseData));
-        if ((_g = responseData == null ? void 0 : responseData.result) == null ? void 0 : _g.start_seq) {
-          if (((_h = responseData == null ? void 0 : responseData.result) == null ? void 0 : _h.user_group) !== "root") {
-            throw new Error("Incorrect user_group detected");
-          }
-          this.lsk = this.generateEncryptionToken("lsk", nonce);
-          this.ivb = this.generateEncryptionToken("ivb", nonce);
-          this.seq = responseData.result.start_seq;
-        }
+    const nonce = (_d = (_c = responseData == null ? void 0 : responseData.result) == null ? void 0 : _c.data) == null ? void 0 : _d.nonce;
+    const deviceConfirm = (_f = (_e = responseData == null ? void 0 : responseData.result) == null ? void 0 : _e.data) == null ? void 0 : _f.device_confirm;
+    if (isSecureConnection && nonce && deviceConfirm) {
+      if (!this.validateDeviceConfirm(nonce, deviceConfirm)) {
+        throw new Error("Invalid device confirm");
       }
-    } else {
-      this.passwordEncryptionMethod = "md5";
+      const digestPasswd = import_crypto.default.createHash("sha256").update(this.getHashedPassword() + this.cnonce + nonce).digest("hex").toUpperCase();
+      const digestPasswdFull = Buffer.concat([
+        Buffer.from(digestPasswd, "utf8"),
+        Buffer.from(this.cnonce, "utf8"),
+        Buffer.from(nonce, "utf8")
+      ]).toString("utf8");
+      response = await this.fetch(`https://${this.config.ipAddress}`, {
+        method: "POST",
+        body: JSON.stringify({
+          method: "login",
+          params: {
+            cnonce: this.cnonce,
+            encrypt_type: "3",
+            digest_passwd: digestPasswdFull,
+            username: this.getUsername()
+          }
+        })
+      });
+      responseData = await response.json();
+      this.log.debug("StokRefresh: Start_seq response :>>", response.status, JSON.stringify(responseData));
+      if ((_g = responseData == null ? void 0 : responseData.result) == null ? void 0 : _g.start_seq) {
+        if (((_h = responseData == null ? void 0 : responseData.result) == null ? void 0 : _h.user_group) !== "root") {
+          throw new Error("Incorrect user_group detected");
+        }
+        this.lsk = this.generateEncryptionToken("lsk", nonce);
+        this.ivb = this.generateEncryptionToken("ivb", nonce);
+        this.seq = responseData.result.start_seq;
+      }
     }
     if (((_j = (_i = responseData == null ? void 0 : responseData.result) == null ? void 0 : _i.data) == null ? void 0 : _j.sec_left) > 0) {
       throw new Error(`StokRefresh: Temporary Suspension: Try again in ${responseData.result.data.sec_left} seconds`);
