@@ -9,7 +9,7 @@ import axios, { AxiosInstance } from "axios";
 import crypto from "crypto";
 import https from "https";
 import { v4 as uuidv4 } from "uuid";
-import Json2iob from "./lib/json2iob";
+import Json2iob from "json2iob";
 import { TAPOCamera } from "./lib/utils/camera/tapoCamera";
 import L510E from "./lib/utils/l510e";
 import L520E from "./lib/utils/l520e";
