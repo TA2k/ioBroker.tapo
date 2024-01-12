@@ -31,6 +31,12 @@ tapo.0.id.remote auf true/false setzen steuert den jeweiligen Befehl. Der Befehl
 
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
+## Changelog
+
+### 0.0.2
+
+- (TA2k) initial release
+
 ## License
 
 MIT License
