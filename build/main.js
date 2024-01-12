@@ -22,7 +22,7 @@ var import_axios = __toESM(require("axios"));
 var import_crypto = __toESM(require("crypto"));
 var import_https = __toESM(require("https"));
 var import_uuid = require("uuid");
-var import_json2iob = __toESM(require("./lib/json2iob"));
+var import_json2iob = __toESM(require("json2iob"));
 var import_tapoCamera = require("./lib/utils/camera/tapoCamera");
 var import_l510e = __toESM(require("./lib/utils/l510e"));
 var import_l520e = __toESM(require("./lib/utils/l520e"));
@@ -318,8 +318,8 @@ class Tapo extends utils.Adapter {
           { command: "setAlertConfig", name: "True = On, False = Off" },
           { command: "setLensMaskConfig", name: "True = On, False = Off" },
           { command: "setForceWhitelampState", name: "True = On, False = Off" },
-          { command: "moveMotor", name: "X,Y", type: "string", def: "0, 0", role: "text" },
-          { command: "moveMotorStep", name: "Angle 0 - 360", type: "string", def: "1", role: "text" },
+          { command: "moveMotor", name: "move Camera to X (-360,360), Y(-45,45)", type: "string", def: "0, 0", role: "text" },
+          { command: "moveMotorStep", name: "Angle (0-360)", type: "string", def: "180", role: "text" },
           {
             command: "setBrightness",
             name: "Set Brightness for Light devices",
@@ -547,6 +547,7 @@ class Tapo extends utils.Adapter {
     this.deviceObjects[id] = deviceObject;
     await deviceObject.handshake().then(async () => {
       if (deviceObject.is_klap) {
+        this.log.debug("Detected KLAP device");
         await deviceObject.handshake_new().catch(() => {
           this.log.error("KLAP Handshake failed");
           deviceObject.is_klap = false;

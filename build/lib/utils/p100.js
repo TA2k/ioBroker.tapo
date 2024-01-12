@@ -308,6 +308,7 @@ class P100 {
       Cookie: this.cookie
     };
     if (this.tpLinkCipher) {
+      this.log.debug("using old cypher");
       const encryptedPayload = this.tpLinkCipher.encrypt(payload);
       const securePassthroughPayload = {
         method: "securePassthrough",
@@ -350,6 +351,7 @@ class P100 {
         return error;
       });
     } else if (this.newTpLinkCipher) {
+      this.log.debug("using new cypher");
       const data = this.newTpLinkCipher.encrypt(payload);
       const URL2 = "http://" + this.ip + "/app/request";
       const headers2 = {
@@ -368,6 +370,7 @@ class P100 {
         params: { seq: data.seq.toString() }
       };
       return this.axios.post(URL2, data.encryptedPayload, config).then((res) => {
+        this.log.debug(JSON.stringify(res.data));
         if (res.data.error_code) {
           return this.handleError(res.data.error_code, "309");
         }
@@ -376,11 +379,11 @@ class P100 {
             this.cookie = res.headers["set-cookie"][0].split(";")[0];
           }
           const response = JSON.parse(this.newTpLinkCipher.decrypt(res.data));
+          this.log.debug("Device Info: " + JSON.stringify(response));
           if (response.error_code !== 0) {
             return this.handleError(response.error_code, "333");
           }
           this.setSysInfo(response.result);
-          this.log.debug("Device Info: ", response.result);
           return this.getSysInfo();
         } catch (error) {
           return this.handleError(res.data.error_code, "480");
