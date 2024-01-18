@@ -224,15 +224,18 @@ class P100 {
       params
     };
     return this.axios.post(URL, data, config).then((res) => {
-      this.log.debug("Received request on host response: " + this.ip);
+      this.log.debug("Received request on host " + URL);
       this.log.debug(JSON.stringify(res.data));
       if (res.data.error_code) {
+        this.log.debug("Found error code: " + res.data.error_code);
         return this.handleError(res.data.error_code, "309");
       }
+      this.log.debug("Try to parse headers");
       try {
         if (res.headers && res.headers["set-cookie"]) {
           this.cookie = res.headers["set-cookie"][0].split(";")[0];
         }
+        this.log.debug("Return data");
         return res.data;
       } catch (error) {
         return this.handleError(res.data.error_code, "318");
