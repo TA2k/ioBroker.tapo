@@ -312,11 +312,11 @@ export default class P100 {
       }
       const remote_seed: Buffer = res.subarray(0, 16);
       const server_hash: Buffer = res.subarray(16);
-      this.log.debug("Received remote seed" + remote_seed.toString("hex"));
-      this.log.debug("Received server hash" + server_hash.toString("hex"));
+      this.log.debug("Received remote seed: " + remote_seed.toString("hex"));
+      this.log.debug("Received server hash: " + server_hash.toString("hex"));
       let auth_hash: any = undefined;
       const ah = this.calc_auth_hash(this.email, this.password);
-      this.log.debug("Calculated auth hash" + ah.toString("hex"));
+      this.log.debug("Calculated auth hash: " + ah.toString("hex"));
       const local_seed_auth_hash = this.crypto
         .createHash("sha256")
         .update(Buffer.concat([local_seed, remote_seed, ah]))
