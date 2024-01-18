@@ -570,7 +570,8 @@ class Tapo extends utils.Adapter {
       .then(async () => {
         if (deviceObject.is_klap) {
           this.log.debug("Detected KLAP device");
-          await deviceObject.handshake_new().catch(() => {
+          await deviceObject.handshake_new().catch((error: any) => {
+            this.log.error(error);
             this.log.error("KLAP Handshake failed");
             deviceObject.is_klap = false;
             this.deviceObjects[id]._connected = false;

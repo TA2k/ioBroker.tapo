@@ -306,12 +306,13 @@ export default class P100 {
     const local_seed = this.crypto.randomBytes(16);
 
     await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
-      if (!res || !res.subarray) {
+      if (!res) {
+        this.log.debug("Empty response");
         return;
       }
       const remote_seed: Buffer = res.subarray(0, 16);
       const server_hash: Buffer = res.subarray(16);
-
+      this.log.debug("Received remote seed");
       let auth_hash: any = undefined;
       const ah = this.calc_auth_hash(this.email, this.password);
       const local_seed_auth_hash = this.crypto
