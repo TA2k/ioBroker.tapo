@@ -211,7 +211,8 @@ class P100 {
       Connection: "Keep-Alive",
       Host: this.ip,
       Accept: "*/*",
-      "Content-Type": "application/octet-stream"
+      "Content-Type": "application/octet-stream",
+      "User-Agent": "ioBroker"
     };
     if (this.cookie) {
       headers["Cookie"] = this.cookie;
@@ -224,6 +225,7 @@ class P100 {
     };
     return this.axios.post(URL, data, config).then((res) => {
       this.log.debug("Received request on host response: " + this.ip);
+      this.log.debug(JSON.stringify(res.data));
       if (res.data.error_code) {
         return this.handleError(res.data.error_code, "309");
       }
@@ -236,6 +238,7 @@ class P100 {
         return this.handleError(res.data.error_code, "318");
       }
     }).catch(async (error) => {
+      this.log.debug(JSON.stringify(error));
       this.log.error("322 Error: " + error ? error.message : "");
       if (this._reconnect_counter <= 3) {
         this.log.info("Trying to reconnect...");
