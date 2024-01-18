@@ -259,13 +259,18 @@ class P100 {
       }
       const remote_seed = res.subarray(0, 16);
       const server_hash = res.subarray(16);
-      this.log.debug("Received remote seed");
+      this.log.debug("Received remote seed" + remote_seed.toString("hex"));
+      this.log.debug("Received server hash" + server_hash.toString("hex"));
       let auth_hash = void 0;
       const ah = this.calc_auth_hash(this.email, this.password);
+      this.log.debug("Calculated auth hash" + ah.toString("hex"));
       const local_seed_auth_hash = this.crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah])).digest();
       if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
         this.log.debug("Handshake 1 successful");
         auth_hash = ah;
+      } else {
+        this.log.warn("Handshake 1 failed");
+        auth_hash = this.calc_auth_hash(this.email, this.password + this.password);
       }
       const req = this.crypto.createHash("sha256").update(Buffer.concat([remote_seed, local_seed, auth_hash])).digest();
       return this.raw_request("handshake2", req, "text").then((res2) => {
