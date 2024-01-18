@@ -327,6 +327,7 @@ export default class P100 {
         auth_hash = ah;
       } else {
         this.log.warn("Handshake 1 failed");
+        this.log.debug(local_seed_auth_hash.toString("hex") + " != " + server_hash.toString("hex"));
         auth_hash = this.calc_auth_hash(this.email, this.password + this.password);
       }
       const req = this.crypto
