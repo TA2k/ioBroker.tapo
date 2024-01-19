@@ -1,4 +1,4 @@
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { v4 as uuidv4 } from "uuid";
 import NewTpLinkCipher from "./newTpLinkCipher";
 import TpLinkCipher from "./tpLinkCipher";
@@ -680,7 +680,7 @@ export default class P100 {
       return this.axios
         .post(URL, securePassthroughPayload, config)
         .then((res: AxiosResponse) => {
-          this.log.debug(JSON.stringify(res.data));
+          this.log.debug("Response: " + JSON.stringify(res.data));
           if (res.data.error_code) {
             if (res.data.error_code === "9999" || (res.data.error_code === 9999 && this._reconnect_counter <= 3)) {
               this.log.error(" Error Code: " + res.data.error_code + ", " + this.ERROR_CODES[res.data.error_code]);
@@ -692,7 +692,7 @@ export default class P100 {
             this._reconnect_counter = 0;
             return this.handleError(res.data.error_code, "357");
           }
-
+          this.log.debug("Decrypt response");
           const decryptedResponse = this.tpLinkCipher.decrypt(res.data.result.response);
           try {
             const response = JSON.parse(decryptedResponse);
@@ -705,8 +705,10 @@ export default class P100 {
             return this.handleError(JSON.parse(decryptedResponse).error_code, "368");
           }
         })
-        .catch((error: Error) => {
-          this.log.debug(JSON.stringify(error));
+        .catch((error: AxiosError) => {
+          this.log.debug("request error:" + JSON.stringify(error));
+          error.response && this.log.debug("request error response:" + JSON.stringify(error.response));
+          error.message && this.log.debug("request error message:" + JSON.stringify(error.message));
           //return this.handleError(error.message, "372");
         });
     }

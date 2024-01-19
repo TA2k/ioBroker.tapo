@@ -532,7 +532,7 @@ class P100 {
         timeout: this._timeout * 1e3
       };
       return this.axios.post(URL, securePassthroughPayload, config).then((res) => {
-        this.log.debug(JSON.stringify(res.data));
+        this.log.debug("Response: " + JSON.stringify(res.data));
         if (res.data.error_code) {
           if (res.data.error_code === "9999" || res.data.error_code === 9999 && this._reconnect_counter <= 3) {
             this.log.error(" Error Code: " + res.data.error_code + ", " + this.ERROR_CODES[res.data.error_code]);
@@ -544,6 +544,7 @@ class P100 {
           this._reconnect_counter = 0;
           return this.handleError(res.data.error_code, "357");
         }
+        this.log.debug("Decrypt response");
         const decryptedResponse = this.tpLinkCipher.decrypt(res.data.result.response);
         try {
           const response = JSON.parse(decryptedResponse);
@@ -556,7 +557,9 @@ class P100 {
           return this.handleError(JSON.parse(decryptedResponse).error_code, "368");
         }
       }).catch((error) => {
-        this.log.debug(JSON.stringify(error));
+        this.log.debug("request error:" + JSON.stringify(error));
+        error.response && this.log.debug("request error response:" + JSON.stringify(error.response));
+        error.message && this.log.debug("request error message:" + JSON.stringify(error.message));
       });
     }
     return new Promise((resolve, reject) => {
