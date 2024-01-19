@@ -680,6 +680,7 @@ export default class P100 {
       return this.axios
         .post(URL, securePassthroughPayload, config)
         .then((res: AxiosResponse) => {
+          this.log.debug(JSON.stringify(res.data));
           if (res.data.error_code) {
             if (res.data.error_code === "9999" || (res.data.error_code === 9999 && this._reconnect_counter <= 3)) {
               this.log.error(" Error Code: " + res.data.error_code + ", " + this.ERROR_CODES[res.data.error_code]);
@@ -705,6 +706,7 @@ export default class P100 {
           }
         })
         .catch((error: Error) => {
+          this.log.debug(JSON.stringify(error));
           //return this.handleError(error.message, "372");
         });
     }

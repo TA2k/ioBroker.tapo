@@ -601,7 +601,8 @@ class Tapo extends utils.Adapter {
               this.json2iob.parse(id, energyUsage);
             }
           })
-          .catch(() => {
+          .catch((error: any) => {
+            this.log.error(JSON.stringify(error));
             this.log.error("52 - Get Device Info failed");
 
             this.deviceObjects[id]._connected = false;

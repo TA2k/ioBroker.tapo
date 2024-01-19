@@ -20,6 +20,7 @@ export default class P110 extends P100 {
     const payload = "{" + '"method": "get_energy_usage",' + '"requestTimeMils": ' + Math.round(Date.now() * 1000) + "" + "};";
 
     return this.handleRequest(payload).then((response) => {
+      this.log.debug("getEnergyUsage response: " + JSON.stringify(response));
       if (response && response.result) {
         this._consumption = {
           current: response.result.current_power / 1000,

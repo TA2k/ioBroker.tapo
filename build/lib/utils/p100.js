@@ -259,11 +259,11 @@ class P100 {
       }
       const remote_seed = res.subarray(0, 16);
       const server_hash = res.subarray(16);
-      this.log.debug("Received remote seed" + remote_seed.toString("hex"));
-      this.log.debug("Received server hash" + server_hash.toString("hex"));
+      this.log.debug("Received remote seed: " + remote_seed.toString("hex"));
+      this.log.debug("Received server hash: " + server_hash.toString("hex"));
       let auth_hash = void 0;
       const ah = this.calc_auth_hash(this.email, this.password);
-      this.log.debug("Calculated auth hash" + ah.toString("hex"));
+      this.log.debug("Calculated auth hash: " + ah.toString("hex"));
       const local_seed_auth_hash = this.crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah])).digest();
       if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
         this.log.debug("Handshake 1 successful");
@@ -532,6 +532,7 @@ class P100 {
         timeout: this._timeout * 1e3
       };
       return this.axios.post(URL, securePassthroughPayload, config).then((res) => {
+        this.log.debug(JSON.stringify(res.data));
         if (res.data.error_code) {
           if (res.data.error_code === "9999" || res.data.error_code === 9999 && this._reconnect_counter <= 3) {
             this.log.error(" Error Code: " + res.data.error_code + ", " + this.ERROR_CODES[res.data.error_code]);
@@ -555,6 +556,7 @@ class P100 {
           return this.handleError(JSON.parse(decryptedResponse).error_code, "368");
         }
       }).catch((error) => {
+        this.log.debug(JSON.stringify(error));
       });
     }
     return new Promise((resolve, reject) => {
