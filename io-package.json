@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.2.3",
+    "version": "0.2.5",
     "news": {
+      "0.2.5": {
+        "en": "Improve P1XX handling",
+        "de": "Verbesserte P1XX Unterstützung"
+      },
       "0.2.3": {
         "en": "Add Camera movment",
         "de": "Kamera Bewegungskontrolle hinzugefügt"

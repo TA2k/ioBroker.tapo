@@ -712,6 +712,12 @@ export default class P100 {
           //return this.handleError(error.message, "372");
         });
     }
+    this.log.debug("No cipher found");
+    if (this.newTpLinkCipher) {
+      return this.newHandleRequest(payload);
+    }
+    this.log.debug("No new cipher found");
+
     return new Promise<true>((resolve, reject) => {
       reject();
     });
