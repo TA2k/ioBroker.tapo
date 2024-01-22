@@ -493,7 +493,7 @@ class Tapo extends utils.Adapter {
     let deviceObject;
     if (device.deviceName === "P100") {
       deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName === "P110" || device.deviceName === "P115") {
+    } else if (device.deviceName.startsWith("P110") || device.deviceName.startsWith("P115")) {
       deviceObject = new import_p110.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName === "L530") {
       deviceObject = new import_l530.default(this.log, device.ip, this.config.username, this.config.password, 2);

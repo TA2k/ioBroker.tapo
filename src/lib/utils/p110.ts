@@ -13,7 +13,7 @@ export default class P110 extends P100 {
     public readonly timeout: number,
   ) {
     super(log, ipAddress, email, password, timeout);
-    this.log.debug("Constructing P110 on host: " + ipAddress);
+    this.log.info("Constructing P110 on host: " + ipAddress);
   }
 
   async getEnergyUsage(): Promise<EnergyUsage> {

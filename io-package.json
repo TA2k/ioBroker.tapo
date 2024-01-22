@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.2.6",
+    "version": "0.2.7",
     "news": {
+      "0.2.7": {
+        "en": "Add support for P110M",
+        "de": "Unterstützung für P110M hinzugefügt"
+      },
       "0.2.6": {
         "en": "Improve P1XX handling",
         "de": "Verbesserte P1XX Unterstützung"

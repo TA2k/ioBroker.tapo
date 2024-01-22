@@ -36,7 +36,7 @@ class P110 extends import_p100.default {
     this.email = email;
     this.password = password;
     this.timeout = timeout;
-    this.log.debug("Constructing P110 on host: " + ipAddress);
+    this.log.info("Constructing P110 on host: " + ipAddress);
   }
   async getEnergyUsage() {
     const payload = '{"method": "get_energy_usage","requestTimeMils": ' + Math.round(Date.now() * 1e3) + "};";
