@@ -562,6 +562,11 @@ class P100 {
         error.message && this.log.debug("request error message:" + JSON.stringify(error.message));
       });
     }
+    this.log.debug("No cipher found");
+    if (this.newTpLinkCipher) {
+      return this.newHandleRequest(payload);
+    }
+    this.log.debug("No new cipher found");
     return new Promise((resolve, reject) => {
       reject();
     });

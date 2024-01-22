@@ -1,9 +1,9 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "news": {
-      "0.2.5": {
+      "0.2.6": {
         "en": "Improve P1XX handling",
         "de": "Verbesserte P1XX Unterstützung"
       },
