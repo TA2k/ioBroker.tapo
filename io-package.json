@@ -1,9 +1,9 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "news": {
-      "0.2.7": {
+      "0.2.8": {
         "en": "Add support for P110M",
         "de": "Unterstützung für P110M hinzugefügt"
       },

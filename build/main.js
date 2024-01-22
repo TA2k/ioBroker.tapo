@@ -295,10 +295,13 @@ class Tapo extends utils.Adapter {
         const id = device.deviceId;
         this.devices[id] = device;
         let name = device.alias;
+        if (name.endsWith("=")) {
+          name = Buffer.from(name, "base64").toString("utf8");
+        }
         if (this.isBase64(device.alias)) {
           name = Buffer.from(device.alias, "base64").toString("utf8");
         }
-        await this.setObjectNotExistsAsync(id, {
+        await this.extendObjectAsync(id, {
           type: "device",
           common: {
             name
