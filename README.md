@@ -33,6 +33,10 @@ tapo.0.id.remote auf true/false setzen steuert den jeweiligen Befehl. Der Befehl
 
 ## Changelog
 
+### **WORK IN PROGRESS**
+
+- fix tapo Plugs and setLensMask
+
 ### 0.0.2
 
 - (TA2k) initial release
