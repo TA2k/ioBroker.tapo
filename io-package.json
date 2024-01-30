@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.2.8",
+    "version": "0.2.9",
     "news": {
+      "0.2.9": {
+        "en": "fix tapo Plugs and setLensMask command",
+        "de": "fix Tapo Plugs und setLensMask Befehl",
+        "ru": "исправить топорные вилки и setLensMask",
+        "pt": "corrigir tapo Plugs e setLensMask",
+        "nl": "fix tapo-plugs en setLensMask",
+        "fr": "fixer les prises de tampo et setLensMask",
+        "it": "fix tapo Plugs e setLensMask",
+        "es": "fijar tapo Plugs y setLensMask",
+        "pl": "naprawić wtyczki tapo i setLensMask",
+        "uk": "фіксувати тапочки та встановитиLensMask",
+        "zh-cn": "修复管道插件和设置LensMask"
+      },
       "0.2.8": {
         "en": "Add support for P110M",
         "de": "Unterstützung für P110M hinzugefügt"
@@ -26,41 +39,6 @@
       "0.1.0": {
         "en": "Add support for new firmware",
         "de": "Unterstützung für neue Firmware hinzugefügt"
-      },
-      "0.0.8": {
-        "en": "Bugfixes"
-      },
-      "0.0.7": {
-        "en": "add camera support",
-        "de": "Kamera Unterstützung hinzugefügt"
-      },
-      "0.0.6": {
-        "en": "fix Login.",
-        "de": "Login gefixt."
-      },
-      "0.0.5": {
-        "en": "fix Login. Maybe relogin is neccessary. Add device cache ",
-        "de": "Login gefixt. Vielleicht ist Relogin notwendig. Device cache hinzugefügt.",
-        "ru": "исправить Логин. Может быть, перелогина необходима",
-        "pt": "corrigir login. Talvez o relogin seja necessário",
-        "nl": "los Login op. Misschien is relogin negatief",
-        "fr": "correction. Peut-être que relogin est néccessaire",
-        "it": "correggere Login. Forse la relogin è neccessaria",
-        "es": "arregla Iniciar sesión. Tal vez el relogin es necesario",
-        "pl": "następuje Logina. Maybe relogin to neccessary",
-        "zh-cn": "fix Loin。 Maybe relogin是不必要的。"
-      },
-      "0.0.2": {
-        "en": "initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "Начальная версия",
-        "pt": "lançamento inicial",
-        "nl": "Eerste uitgave",
-        "fr": "Première version",
-        "it": "Versione iniziale",
-        "es": "Versión inicial",
-        "pl": "Pierwsze wydanie",
-        "zh-cn": "首次出版"
       }
     },
     "titleLang": {
