@@ -447,7 +447,7 @@ export class TAPOCamera extends OnvifCamera {
   }
 
   async setLensMaskConfig(value: boolean) {
-    this.adapter.log.debug("Processing setLensMaskConfig" + value);
+    this.log.debug("Processing setLensMaskConfig" + value);
 
     const json = await this.apiRequest({
       method: "multipleRequest",
