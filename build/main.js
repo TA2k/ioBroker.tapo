@@ -496,7 +496,7 @@ class Tapo extends utils.Adapter {
       deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("P110") || device.deviceName.startsWith("P115")) {
       deviceObject = new import_p110.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName === "L530") {
+    } else if (device.deviceName === "L530" || device.deviceName.startsWith("L630")) {
       deviceObject = new import_l530.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName === "L510E") {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
