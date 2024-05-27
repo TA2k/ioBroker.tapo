@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.2.9",
+    "version": "0.3.0",
     "news": {
+      "0.3.0": {
+        "en": "update onvif lib to fix issues with newer cameras",
+        "de": "onvif lib aktualisiert, um Motion Detection Probleme mit neueren Kameras zu beheben",
+        "ru": "обновление onvif lib для решения проблем с новыми камерами",
+        "pt": "atualizar onvif lib para corrigir problemas com câmeras mais recentes",
+        "nl": "update onvif lib om problemen met nieuwere camera's op te lossen",
+        "fr": "update onvif lib pour résoudre les problèmes avec les caméras plus récentes",
+        "it": "aggiornamento onvif lib per risolvere i problemi con le nuove telecamere",
+        "es": "actualizar onvif lib para solucionar problemas con cámaras nuevas",
+        "pl": "aktualizacja onvif lib w celu rozwiązania problemów z nowszymi kamerami",
+        "uk": "оновлення onvif lib для виправлення проблем з новими камерами",
+        "zh-cn": "更新 onvif lib 以更新相机处理问题"
+      },
       "0.2.9": {
         "en": "fix tapo Plugs and setLensMask command",
         "de": "fix Tapo Plugs und setLensMask Befehl",
@@ -35,10 +48,6 @@
       "0.1.1": {
         "en": "Bugfixes",
         "de": "Bugfixes"
-      },
-      "0.1.0": {
-        "en": "Add support for new firmware",
-        "de": "Unterstützung für neue Firmware hinzugefügt"
       }
     },
     "titleLang": {
