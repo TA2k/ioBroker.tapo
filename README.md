@@ -32,7 +32,7 @@ tapo.0.id.remote auf true/false setzen steuert den jeweiligen Befehl. Der Befehl
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
-### 0.3.0 (2024-05-27)
+### 0.3.1 (2024-05-27)
 
 update onvif lib to fix issues with newer cameras
 

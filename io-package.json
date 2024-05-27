@@ -1,9 +1,9 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "news": {
-      "0.3.0": {
+      "0.3.1": {
         "en": "update onvif lib to fix issues with newer cameras",
         "de": "onvif lib aktualisiert, um Motion Detection Probleme mit neueren Kameras zu beheben",
         "ru": "обновление onvif lib для решения проблем с новыми камерами",
@@ -44,10 +44,6 @@
       "0.2.0": {
         "en": "Fix support for latest Camera firmware",
         "de": "Unterstützung für neuste Kamera Firmware hinzugefügt"
-      },
-      "0.1.1": {
-        "en": "Bugfixes",
-        "de": "Bugfixes"
       }
     },
     "titleLang": {
