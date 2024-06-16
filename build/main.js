@@ -47,7 +47,8 @@ class Tapo extends utils.Adapter {
     this.json2iob = new import_json2iob.default(this);
     this.requestClient = import_axios.default.create({
       httpsAgent: new import_https.default.Agent({
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
+        secureOptions: import_crypto.default.constants.SSL_OP_LEGACY_SERVER_CONNECT
       })
     });
     this.secret = Buffer.from([

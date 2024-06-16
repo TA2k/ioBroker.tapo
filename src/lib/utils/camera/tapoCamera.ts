@@ -64,6 +64,7 @@ export class TAPOCamera extends OnvifCamera {
 
     this.httpsAgent = new https.Agent({
       rejectUnauthorized: false,
+      secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
     });
 
     this.cnonce = this.generateCnonce();

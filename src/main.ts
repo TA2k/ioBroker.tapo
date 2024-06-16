@@ -43,6 +43,7 @@ class Tapo extends utils.Adapter {
     this.requestClient = axios.create({
       httpsAgent: new https.Agent({
         rejectUnauthorized: false,
+        secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
       }),
     });
     this.secret = Buffer.from([

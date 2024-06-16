@@ -45,7 +45,8 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     this.pendingAPIRequests = /* @__PURE__ */ new Map();
     this.log.debug("Constructing Camera on host: " + config.ipAddress);
     this.httpsAgent = new import_https.default.Agent({
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+      secureOptions: import_crypto.default.constants.SSL_OP_LEGACY_SERVER_CONNECT
     });
     this.cnonce = this.generateCnonce();
     this.hashedMD5Password = import_crypto.default.createHash("md5").update(config.password).digest("hex").toUpperCase();
