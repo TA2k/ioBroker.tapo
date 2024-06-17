@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "news": {
+      "0.3.3": {
+        "en": "ignore ssl legacy error\n",
+        "de": "ignorieren ssl legacy fehler\n",
+        "ru": "игнорировать ошибки\n",
+        "pt": "ignorar erro legado ssl\n",
+        "nl": "ssl legacy-fout negeren\n",
+        "fr": "ignorer l'erreur legs ssl\n",
+        "it": "ignorare errore legacy ssl\n",
+        "es": "ignorar el error legado ssl\n",
+        "pl": "ignoruj błąd spuścizny ssl\n",
+        "uk": "ігнорувати помилку sssl\n",
+        "zh-cn": "忽略 ssl 遗留错误\n"
+      },
       "0.3.2": {
         "en": "update onvif lib to fix issues with newer cameras",
         "de": "onvif lib aktualisiert, um Motion Detection Probleme mit neueren Kameras zu beheben",
