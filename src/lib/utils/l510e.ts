@@ -1,5 +1,5 @@
-import P100 from "./p100";
-import { LightSysinfo } from "./types";
+import { LightSysinfo } from "./types.js";
+import P100 from "./p100.js";
 
 export default class L510E extends P100 {
   private _lightSysInfo!: LightSysinfo;
@@ -15,8 +15,8 @@ export default class L510E extends P100 {
     this.log.debug("Constructing L510E on host: " + ipAddress);
   }
 
-  async getDeviceInfo(): Promise<LightSysinfo> {
-    return super.getDeviceInfo().then(() => {
+  async getDeviceInfo(force?: boolean): Promise<LightSysinfo> {
+    return super.getDeviceInfo(force).then(() => {
       return this.getSysInfo();
     });
   }

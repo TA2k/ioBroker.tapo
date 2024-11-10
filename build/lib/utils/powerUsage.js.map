@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../../src/lib/utils/powerUsage.ts"],
-  "sourcesContent": ["import { Usage } from \"./usage\";\n\nexport class PowerUsage{\n    time_usage!:Usage;\n    power_usage!:Usage;\n    saved_power!:Usage;\n}"],
+  "sourcesContent": ["import { Usage } from \"./usage\";\n\nexport class PowerUsage{\n  time_usage!:Usage;\n  power_usage!:Usage;\n  saved_power!:Usage;\n}"],
   "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAEO,MAAM,WAAU;AAIvB;",
   "names": []
 }

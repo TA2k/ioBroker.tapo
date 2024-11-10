@@ -348,7 +348,7 @@ class Tapo extends utils.Adapter {
             },
           ];
           remoteArray.forEach((remote) => {
-            this.extendObjectAsync(id + ".remote." + remote.command, {
+            this.extendObject(id + ".remote." + remote.command, {
               type: "state",
               common: {
                 name: remote.name || "",

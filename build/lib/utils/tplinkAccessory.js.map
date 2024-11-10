@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/utils/tplinkAccessory.ts"],
+  "sourcesContent": ["import { ConsumptionInfo, PlugSysinfo } from \"./types.js\";\nimport { EnergyUsage } from \"./energyUsage.js\";\nimport { PowerUsage } from \"./powerUsage.js\";\n\nexport interface TpLinkAccessory {\n  is_klap: boolean;\n\n  handshake(): Promise<void>;\n\n  login(): Promise<void>;\n\n  handshake_new(): Promise<void>;\n\n  turnOff(): Promise<boolean>;\n\n  turnOn(): Promise<boolean>;\n\n  setPowerState(state: boolean): Promise<boolean>;\n\n  getDeviceInfo(force?: boolean): Promise<PlugSysinfo>;\n\n  getSysInfo(): PlugSysinfo;\n\n  getEnergyUsage?(): Promise<EnergyUsage | PowerUsage>;\n\n  getPowerConsumption?(): ConsumptionInfo;\n\n  setBrightness?(brightness: number): Promise<boolean>;\n\n  setColorTemp?(color_temp: number): Promise<boolean>;\n\n  getColorTemp?(): Promise<number>;\n\n  calculateColorTemp?(tapo_color_temp: number): number;\n\n  setColor?(hue: number, saturation: number): Promise<boolean>;\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;AAAA;AAAA;",
+  "names": []
+}

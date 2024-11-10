@@ -42,8 +42,8 @@ class L530 extends import_l520e.default {
       current: 0
     };
   }
-  async getDeviceInfo() {
-    return super.getDeviceInfo().then(() => {
+  async getDeviceInfo(force) {
+    return super.getDeviceInfo(force).then(() => {
       return this.getSysInfo();
     });
   }
@@ -54,6 +54,7 @@ class L530 extends import_l520e.default {
     if (!saturation) {
       saturation = 0;
     }
+    this.log.debug("Setting color: " + hue + ", " + saturation);
     const payload = '{"method": "set_device_info","params": {"hue": ' + Math.round(hue) + ',"color_temp": 0,"saturation": ' + Math.round(saturation) + '},"requestTimeMils": ' + Math.round(Date.now() * 1e3) + "};";
     return this.sendRequest(payload);
   }
@@ -66,32 +67,71 @@ class L530 extends import_l520e.default {
   }
   async getEnergyUsage() {
     const payload = '{"method": "get_device_usage","requestTimeMils": ' + Math.round(Date.now() * 1e3) + "};";
-    return this.handleRequest(payload).then((response) => {
-      if (response && response.result) {
-        this._consumption = {
-          total: response.result.power_usage.today / 1e3,
-          current: this._consumption ? response.result.power_usage.today - this._consumption.current : 0
-        };
-      } else {
-        this._consumption = {
-          total: 0,
-          current: 0
-        };
-      }
-      return response.result;
-    }).catch((error) => {
-      if (error && error.message.indexOf("9999") > 0) {
-        return this.reconnect().then(() => {
-          return this.handleRequest(payload).then(() => {
-            return true;
+    this.log.debug("getEnergyUsage called");
+    if (this.is_klap) {
+      this.log.debug("getEnergyUsage is klap");
+      return this.handleKlapRequest(payload).then((response) => {
+        this.log.debug("Consumption: " + JSON.stringify(response));
+        if (response && response.result) {
+          this._consumption = {
+            total: response.result.power_usage.today / 1e3,
+            current: this._consumption ? response.result.power_usage.today / this.toHours(response.result.time_usage.today) : 0
+          };
+        } else {
+          this._consumption = {
+            total: 0,
+            current: 0
+          };
+        }
+        return response.result;
+      }).catch((error) => {
+        if (error.message && error.message.indexOf("9999") > 0) {
+          return this.reconnect().then(() => {
+            return this.handleKlapRequest(payload).then(() => {
+              return true;
+            });
           });
-        });
-      }
-      return false;
-    });
+        }
+        return false;
+      });
+    } else {
+      return this.handleRequest(payload).then((response) => {
+        this.log.debug("Consumption: " + response);
+        if (response && response.result) {
+          this._consumption = {
+            total: response.result.power_usage.today / 1e3,
+            current: this._consumption ? response.result.power_usage.today / this.toHours(response.result.time_usage.today) : 0
+          };
+        } else {
+          this._consumption = {
+            total: 0,
+            current: 0
+          };
+        }
+        return response.result;
+      }).catch((error) => {
+        if (error.message && error.message.indexOf("9999") > 0) {
+          return this.reconnect().then(() => {
+            return this.handleRequest(payload).then(() => {
+              return true;
+            });
+          });
+        }
+        return false;
+      });
+    }
   }
   getPowerConsumption() {
+    if (!this.getSysInfo().device_on) {
+      return {
+        total: this._consumption.total,
+        current: 0
+      };
+    }
     return this._consumption;
+  }
+  toHours(minutes) {
+    return minutes / 60;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../../src/lib/utils/energyUsage.ts"],
-  "sourcesContent": ["export class EnergyUsage{\n    current_power!: number;\n}"],
+  "sourcesContent": ["export class EnergyUsage{\n  current_power!: number;\n}"],
   "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAO,MAAM,YAAW;AAExB;",
   "names": []
 }

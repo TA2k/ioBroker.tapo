@@ -40,21 +40,37 @@ class P110 extends import_p100.default {
   }
   async getEnergyUsage() {
     const payload = '{"method": "get_energy_usage","requestTimeMils": ' + Math.round(Date.now() * 1e3) + "};";
-    return this.handleRequest(payload).then((response) => {
-      this.log.debug("getEnergyUsage response: " + JSON.stringify(response));
-      if (response && response.result) {
-        this._consumption = {
-          current: response.result.current_power / 1e3,
-          total: response.result.today_energy / 1e3
-        };
-      } else {
-        this._consumption = {
-          current: 0,
-          total: 0
-        };
-      }
-      return response.result;
-    });
+    if (this.is_klap) {
+      return this.handleKlapRequest(payload).then((response) => {
+        if (response && response.result) {
+          this._consumption = {
+            current: Math.ceil(response.result.current_power / 1e3),
+            total: response.result.today_energy / 1e3
+          };
+        } else {
+          this._consumption = {
+            current: 0,
+            total: 0
+          };
+        }
+        return response.result;
+      });
+    } else {
+      return this.handleRequest(payload).then((response) => {
+        if (response && response.result) {
+          this._consumption = {
+            current: Math.ceil(response.result.current_power / 1e3),
+            total: response.result.today_energy / 1e3
+          };
+        } else {
+          this._consumption = {
+            current: 0,
+            total: 0
+          };
+        }
+        return response.result;
+      });
+    }
   }
   getPowerConsumption() {
     return this._consumption;

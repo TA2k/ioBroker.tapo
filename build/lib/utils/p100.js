@@ -27,9 +27,12 @@ __export(p100_exports, {
   default: () => P100
 });
 module.exports = __toCommonJS(p100_exports);
+var import_tpLinkCipher = __toESM(require("./tpLinkCipher.js"));
 var import_uuid = require("uuid");
-var import_newTpLinkCipher = __toESM(require("./newTpLinkCipher"));
-var import_tpLinkCipher = __toESM(require("./tpLinkCipher"));
+var import_newTpLinkCipher = __toESM(require("./newTpLinkCipher.js"));
+var import_axios2 = __toESM(require("axios"));
+var import_crypto = __toESM(require("crypto"));
+var import_utf8 = __toESM(require("utf8"));
 class P100 {
   constructor(log, ipAddress, email, password, timeout) {
     this.log = log;
@@ -37,10 +40,10 @@ class P100 {
     this.email = email;
     this.password = password;
     this.timeout = timeout;
-    this.crypto = require("crypto");
-    this.axios = require("axios");
-    this.utf8 = require("utf8");
-    this.is_klap = false;
+    this._crypto = import_crypto.default;
+    this._axios = import_axios2.default;
+    this._utf8 = import_utf8.default;
+    this.is_klap = true;
     this.ERROR_CODES = {
       "0": "Success",
       "-1010": "Invalid Public Key Length",
@@ -106,17 +109,17 @@ class P100 {
     this.encodedEmail = import_tpLinkCipher.default.mime_encoder(this.encodedEmail);
   }
   sha_digest_username(data) {
-    const digest = this.crypto.createHash("sha1").update(data).digest("hex");
+    const digest = this._crypto.createHash("sha1").update(data).digest("hex");
     return digest;
   }
   calc_auth_hash(username, password) {
-    const usernameDigest = this.crypto.createHash("sha1").update(Buffer.from(username.normalize("NFKC"))).digest();
-    const passwordDigest = this.crypto.createHash("sha1").update(Buffer.from(password.normalize("NFKC"))).digest();
-    const digest = this.crypto.createHash("sha256").update(Buffer.concat([usernameDigest, passwordDigest])).digest();
+    const usernameDigest = this._crypto.createHash("sha1").update(Buffer.from(username.normalize("NFKC"))).digest();
+    const passwordDigest = this._crypto.createHash("sha1").update(Buffer.from(password.normalize("NFKC"))).digest();
+    const digest = this._crypto.createHash("sha256").update(Buffer.concat([usernameDigest, passwordDigest])).digest();
     return digest;
   }
   createKeyPair() {
-    const { publicKey, privateKey } = this.crypto.generateKeyPairSync("rsa", {
+    const { publicKey, privateKey } = this._crypto.generateKeyPairSync("rsa", {
       publicKeyEncoding: {
         type: "spki",
         format: "pem"
@@ -147,15 +150,17 @@ class P100 {
       timeout: 5e3,
       headers
     };
-    await this.axios.post(URL, payload, config).then((res) => {
+    await this._axios.post(URL, payload, config).then((res) => {
       this.log.debug("Received Handshake P100 on host response: " + this.ip);
-      if (res.data.error_code) {
-        return this.handleError(res.data.error_code, "97");
+      if (res.data.error_code || res.status !== 200) {
+        return this.handleError(res.data.error_code ? res.data.error_code : res.status, "172");
       }
       try {
         const encryptedKey = res.data.result.key.toString("utf8");
         this.decode_handshake_key(encryptedKey);
-        this.cookie = res.headers["set-cookie"][0].split(";")[0];
+        if (res.headers["set-cookie"]) {
+          this.cookie = res.headers["set-cookie"][0].split(";")[0];
+        }
         return;
       } catch (error) {
         return this.handleError(res.data.error_code, "106");
@@ -184,9 +189,9 @@ class P100 {
         headers,
         timeout: this._timeout * 1e3
       };
-      await this.axios.post(URL, securePassthroughPayload, config).then((res) => {
-        if (res.data.error_code) {
-          return this.handleError(res.data.error_code, "146");
+      await this._axios.post(URL, securePassthroughPayload, config).then((res) => {
+        if (res.data.error_code || res.status !== 200) {
+          return this.handleError(res.data.error_code ? res.data.error_code : res.status, "226");
         }
         const decryptedResponse = this.tpLinkCipher.decrypt(res.data.result.response);
         try {
@@ -215,7 +220,7 @@ class P100 {
       "User-Agent": "ioBroker"
     };
     if (this.cookie) {
-      headers["Cookie"] = this.cookie;
+      headers.Cookie = this.cookie;
     }
     const config = {
       timeout: 5e3,
@@ -223,77 +228,63 @@ class P100 {
       headers,
       params
     };
-    return this.axios.post(URL, data, config).then((res) => {
-      this.log.debug("Received request on host " + URL);
-      this.log.debug(JSON.stringify(res.data));
-      if (res.data.error_code) {
-        this.log.debug("Found error code: " + res.data.error_code);
-        return this.handleError(res.data.error_code, "309");
+    return this._axios.post(URL, data, config).then((res) => {
+      this.log.debug("Received request on host response: " + this.ip);
+      if (res.data.error_code || res.status !== 200) {
+        return this.handleError(res.data.error_code ? res.data.error_code : res.status, "273");
       }
-      this.log.debug("Try to parse headers");
       try {
         if (res.headers && res.headers["set-cookie"]) {
+          this.log.debug("Handshake 1 cookie: " + JSON.stringify(res.headers["set-cookie"][0]));
           this.cookie = res.headers["set-cookie"][0].split(";")[0];
+          this.tplink_timeout = Number(res.headers["set-cookie"][0].split(";")[1]);
         }
-        this.log.debug("Return data");
         return res.data;
       } catch (error) {
         return this.handleError(res.data.error_code, "318");
       }
-    }).catch(async (error) => {
-      this.log.debug(JSON.stringify(error));
-      this.log.error("322 Error: " + error ? error.message : "");
-      if (this._reconnect_counter <= 3) {
-        this.log.info("Trying to reconnect...");
-        await this.newReconnect();
+    }).catch((error) => {
+      this.log.error("276 Error: " + error.message);
+      if (error.message.indexOf("403") > -1) {
+        this.reAuthenticate();
       }
       return error;
     });
   }
-  async handshake_new() {
-    const local_seed = this.crypto.randomBytes(16);
-    await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
-      if (!res) {
-        this.log.debug("Empty response");
-        return;
-      }
-      const remote_seed = res.subarray(0, 16);
-      const server_hash = res.subarray(16);
-      this.log.debug("Received remote seed: " + remote_seed.toString("hex"));
-      this.log.debug("Received server hash: " + server_hash.toString("hex"));
-      let auth_hash = void 0;
-      const ah = this.calc_auth_hash(this.email, this.password);
-      this.log.debug("Calculated auth hash: " + ah.toString("hex"));
-      const local_seed_auth_hash = this.crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah])).digest();
-      if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
-        this.log.debug("Handshake 1 successful");
-        auth_hash = ah;
-      } else {
-        this.log.warn("Handshake 1 failed");
-        this.log.debug(local_seed_auth_hash.toString("hex") + " != " + server_hash.toString("hex"));
-        auth_hash = this.calc_auth_hash(this.email, this.password + this.password);
-      }
-      const req = this.crypto.createHash("sha256").update(Buffer.concat([remote_seed, local_seed, auth_hash])).digest();
-      return this.raw_request("handshake2", req, "text").then((res2) => {
-        this.log.debug("Handshake 2 successful");
-        this.newTpLinkCipher = new import_newTpLinkCipher.default(local_seed, remote_seed, auth_hash);
-        this.log.debug("Init cipher successful");
-        return;
-      });
-    });
-  }
   decode_handshake_key(key) {
     const buff = Buffer.from(key, "base64");
-    const decoded = this.crypto.privateDecrypt(
+    const decoded = this._crypto.privateDecrypt(
       {
         key: this.privateKey,
-        padding: this.crypto.constants.RSA_PKCS1_PADDING
+        padding: this._crypto.constants.RSA_PKCS1_PADDING
       },
       buff
     );
     const b_arr = decoded.slice(0, 16);
     const b_arr2 = decoded.slice(16, 32);
     this.tpLinkCipher = new import_tpLinkCipher.default(this.log, b_arr, b_arr2);
+  }
+  async handshake_new() {
+    this.log.debug("Trying new habdshake");
+    const local_seed = this._crypto.randomBytes(16);
+    await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
+      const remote_seed = res.subarray(0, 16);
+      const server_hash = res.subarray(16);
+      let auth_hash = void 0;
+      const ah = this.calc_auth_hash(this.email, this.password);
+      const local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah])).digest();
+      if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
+        this.log.debug("Handshake 1 successful");
+        auth_hash = ah;
+      }
+      const req = this._crypto.createHash("sha256").update(Buffer.concat([remote_seed, local_seed, auth_hash])).digest();
+      return this.raw_request("handshake2", req, "text").then((res2) => {
+        this.log.debug("Handshake 2 successful: " + res2);
+        this.newTpLinkCipher = new import_newTpLinkCipher.default(local_seed, remote_seed, auth_hash, this.log);
+        this.log.debug("Init cipher successful");
+        return;
+      });
+    });
   }
   async turnOff() {
     const payload = '{"method": "set_device_info","params": {"device_on": false},"terminalUUID": "' + this.terminalUUID + '","requestTimeMils": ' + Math.round(Date.now() * 1e3) + "};";
@@ -310,8 +301,8 @@ class P100 {
       return this.turnOff();
     }
   }
-  async getDeviceInfo() {
-    if (this.getSysInfo() && Date.now() - this.getSysInfo().last_update < 2e3) {
+  async getDeviceInfo(force) {
+    if (!force) {
       return new Promise((resolve) => {
         resolve(this.getSysInfo());
       });
@@ -322,7 +313,6 @@ class P100 {
       Cookie: this.cookie
     };
     if (this.tpLinkCipher) {
-      this.log.debug("using old cypher");
       const encryptedPayload = this.tpLinkCipher.encrypt(payload);
       const securePassthroughPayload = {
         method: "securePassthrough",
@@ -334,11 +324,10 @@ class P100 {
         headers,
         timeout: this._timeout * 1e3
       };
-      return this.axios.post(URL, securePassthroughPayload, config).then((res) => {
-        this.log.debug(JSON.stringify(res.data));
+      return this._axios.post(URL, securePassthroughPayload, config).then((res) => {
         if (res.data.error_code) {
           if ((res.data.error_code === "9999" || res.data.error_code === 9999) && this._reconnect_counter <= 3) {
-            this.log.debug(" Error Code: " + res.data.error_code + ", " + this.ERROR_CODES[res.data.error_code]);
+            this.log.error(" Error Code: " + res.data.error_code + ", " + this.ERROR_CODES[res.data.error_code]);
             this.log.debug("Trying to reconnect...");
             return this.reconnect().then(() => {
               return this.getDeviceInfo();
@@ -365,7 +354,6 @@ class P100 {
         return error;
       });
     } else if (this.newTpLinkCipher) {
-      this.log.debug("using new cypher");
       const data = this.newTpLinkCipher.encrypt(payload);
       const URL2 = "http://" + this.ip + "/app/request";
       const headers2 = {
@@ -375,7 +363,7 @@ class P100 {
         "Content-Type": "application/octet-stream"
       };
       if (this.cookie) {
-        headers2["Cookie"] = this.cookie;
+        headers2.Cookie = this.cookie;
       }
       const config = {
         timeout: 5e3,
@@ -383,8 +371,7 @@ class P100 {
         headers: headers2,
         params: { seq: data.seq.toString() }
       };
-      return this.axios.post(URL2, data.encryptedPayload, config).then((res) => {
-        this.log.debug(JSON.stringify(res.data));
+      return this._axios.post(URL2, data.encryptedPayload, config).then((res) => {
         if (res.data.error_code) {
           return this.handleError(res.data.error_code, "309");
         }
@@ -393,21 +380,24 @@ class P100 {
             this.cookie = res.headers["set-cookie"][0].split(";")[0];
           }
           const response = JSON.parse(this.newTpLinkCipher.decrypt(res.data));
-          this.log.debug("Device Info: " + JSON.stringify(response));
           if (response.error_code !== 0) {
             return this.handleError(response.error_code, "333");
           }
           this.setSysInfo(response.result);
+          this.log.debug("Device Info: ", response.result);
           return this.getSysInfo();
         } catch (error) {
+          this.log.debug(this.newTpLinkCipher.decrypt(res.data));
+          this.log.debug("Status: " + res.status);
           return this.handleError(res.data.error_code, "480");
         }
-      }).catch(async (error) => {
-        this.log.error("322 #2 Error: " + error ? error.message : "");
-        if (this._reconnect_counter <= 3) {
-          this.log.info("Trying to reconnect...");
-          await this.newReconnect();
+      }).catch((error) => {
+        this.log.debug("469 Error: " + JSON.stringify(error));
+        this.log.error("469 Error: " + error.message);
+        if (error.message.indexOf("403") > -1) {
+          this.reAuthenticate();
         }
+        return error;
       });
     } else {
       return new Promise((resolve, reject) => {
@@ -435,7 +425,7 @@ class P100 {
   }
   get serialNumber() {
     if (this.getSysInfo()) {
-      this.getSysInfo().hw_id;
+      return this.getSysInfo().hw_id;
     }
     return "";
   }
@@ -460,9 +450,11 @@ class P100 {
   }
   handleError(errorCode, line) {
     const errorMessage = this.ERROR_CODES[errorCode];
-    this.log.debug(line + " Error Code: " + errorCode + ", " + errorMessage + " " + this.ip);
     if (typeof errorCode === "number" && errorCode === 1003) {
+      this.log.info("Trying KLAP Auth");
       this.is_klap = true;
+    } else {
+      this.log.error(line + " Error Code: " + errorCode + ", " + errorMessage + " " + this.ip);
     }
     return false;
   }
@@ -471,7 +463,7 @@ class P100 {
       return this.handleRequest(payload).then((result) => {
         return result ? true : false;
       }).catch((error) => {
-        if (error && error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
+        if (error.message && error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
           return this.reconnect().then(() => {
             return this.handleRequest(payload).then((result) => {
               return result ? true : false;
@@ -482,12 +474,12 @@ class P100 {
         return false;
       });
     } else {
-      return this.newHandleRequest(payload).then((result) => {
+      return this.handleKlapRequest(payload).then((result) => {
         return result ? true : false;
       }).catch((error) => {
-        if (error && error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
+        if (error.message && error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
           return this.newReconnect().then(() => {
-            return this.newHandleRequest(payload).then((result) => {
+            return this.handleKlapRequest(payload).then((result) => {
               return result ? true : false;
             });
           });
@@ -496,22 +488,6 @@ class P100 {
         return false;
       });
     }
-  }
-  async newSendRequest(payload) {
-    return this.handleRequest(payload).then((result) => {
-      return result ? true : false;
-    }).catch((error) => {
-      this.log.debug(JSON.stringify(error));
-      if (error && error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {
-        return this.reconnect().then(() => {
-          return this.handleRequest(payload).then((result) => {
-            return result ? true : false;
-          });
-        });
-      }
-      this._reconnect_counter = 0;
-      return false;
-    });
   }
   handleRequest(payload) {
     const URL = "http://" + this.ip + "/app?token=" + this.token;
@@ -531,8 +507,7 @@ class P100 {
         headers,
         timeout: this._timeout * 1e3
       };
-      return this.axios.post(URL, securePassthroughPayload, config).then((res) => {
-        this.log.debug("Response: " + JSON.stringify(res.data));
+      return this._axios.post(URL, securePassthroughPayload, config).then((res) => {
         if (res.data.error_code) {
           if (res.data.error_code === "9999" || res.data.error_code === 9999 && this._reconnect_counter <= 3) {
             this.log.error(" Error Code: " + res.data.error_code + ", " + this.ERROR_CODES[res.data.error_code]);
@@ -544,7 +519,6 @@ class P100 {
           this._reconnect_counter = 0;
           return this.handleError(res.data.error_code, "357");
         }
-        this.log.debug("Decrypt response");
         const decryptedResponse = this.tpLinkCipher.decrypt(res.data.result.response);
         try {
           const response = JSON.parse(decryptedResponse);
@@ -557,27 +531,20 @@ class P100 {
           return this.handleError(JSON.parse(decryptedResponse).error_code, "368");
         }
       }).catch((error) => {
-        this.log.debug("request error:" + JSON.stringify(error));
-        error.response && this.log.debug("request error response:" + JSON.stringify(error.response));
-        error.message && this.log.debug("request error message:" + JSON.stringify(error.message));
+        return this.handleError(error.message, "656");
       });
     }
-    this.log.debug("No cipher found");
-    if (this.newTpLinkCipher) {
-      return this.newHandleRequest(payload);
-    }
-    this.log.debug("No new cipher found");
     return new Promise((resolve, reject) => {
       reject();
     });
   }
-  newHandleRequest(payload) {
+  handleKlapRequest(payload) {
     if (this.newTpLinkCipher) {
       const data = this.newTpLinkCipher.encrypt(payload);
       return this.raw_request("request", data.encryptedPayload, "arraybuffer", { seq: data.seq.toString() }).then((res) => {
         return JSON.parse(this.newTpLinkCipher.decrypt(res));
       }).catch((error) => {
-        return this.handleError(error.message, "372");
+        return this.handleError(error.message, "671");
       });
     }
     return new Promise((resolve, reject) => {
@@ -597,6 +564,24 @@ class P100 {
     return this.handshake_new().then(() => {
       return;
     });
+  }
+  reAuthenticate() {
+    if (this.is_klap) {
+      this.handshake_new().then(() => {
+        this.log.info("KLAP Authenticated successfully");
+      }).catch(() => {
+        this.log.error("KLAP Handshake failed");
+        this.is_klap = false;
+      });
+    } else {
+      this.handshake().then(() => {
+        this.login().then(() => {
+          this.log.info("Authenticated successfully");
+        }).catch(() => {
+          this.log.error("Login failed");
+        });
+      });
+    }
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

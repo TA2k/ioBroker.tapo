@@ -27,7 +27,7 @@ __export(l510e_exports, {
   default: () => L510E
 });
 module.exports = __toCommonJS(l510e_exports);
-var import_p100 = __toESM(require("./p100"));
+var import_p100 = __toESM(require("./p100.js"));
 class L510E extends import_p100.default {
   constructor(log, ipAddress, email, password, timeout) {
     super(log, ipAddress, email, password, timeout);
@@ -38,8 +38,8 @@ class L510E extends import_p100.default {
     this.timeout = timeout;
     this.log.debug("Constructing L510E on host: " + ipAddress);
   }
-  async getDeviceInfo() {
-    return super.getDeviceInfo().then(() => {
+  async getDeviceInfo(force) {
+    return super.getDeviceInfo(force).then(() => {
       return this.getSysInfo();
     });
   }
