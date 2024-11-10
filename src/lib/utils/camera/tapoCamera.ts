@@ -724,4 +724,42 @@ export class TAPOCamera extends OnvifCamera {
       led: led ? led.result.led.config.enabled === "on" : undefined,
     };
   }
+  async setForceWhitelampState(value: boolean) {
+    const json = await this.apiRequest({
+      method: "multipleRequest",
+      params: {
+        requests: [
+          {
+            method: "setForceWhitelampState",
+            params: {
+              image: {
+                switch: {
+                  force_wtl_state: value ? "on" : "off",
+                },
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    return json.error_code !== 0;
+  }
+  async moveMotorStep(angle: string) {
+    angle = angle.toString();
+    const json = await this.apiRequest({ method: "do", motor: { movestep: { direction: angle } } });
+
+    return json.error_code !== 0;
+  }
+
+  async moveMotor(x: number, y: number) {
+    const json = await this.apiRequest({
+      method: "multipleRequest",
+      params: {
+        requests: [{ method: "do", motor: { move: { x_coord: x, y_coord: y } } }],
+      },
+    });
+
+    return json.error_code !== 0;
+  }
 }

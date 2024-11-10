@@ -512,6 +512,40 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
       led: led ? led.result.led.config.enabled === "on" : void 0
     };
   }
+  async setForceWhitelampState(value) {
+    const json = await this.apiRequest({
+      method: "multipleRequest",
+      params: {
+        requests: [
+          {
+            method: "setForceWhitelampState",
+            params: {
+              image: {
+                switch: {
+                  force_wtl_state: value ? "on" : "off"
+                }
+              }
+            }
+          }
+        ]
+      }
+    });
+    return json.error_code !== 0;
+  }
+  async moveMotorStep(angle) {
+    angle = angle.toString();
+    const json = await this.apiRequest({ method: "do", motor: { movestep: { direction: angle } } });
+    return json.error_code !== 0;
+  }
+  async moveMotor(x, y) {
+    const json = await this.apiRequest({
+      method: "multipleRequest",
+      params: {
+        requests: [{ method: "do", motor: { move: { x_coord: x, y_coord: y } } }]
+      }
+    });
+    return json.error_code !== 0;
+  }
 };
 let TAPOCamera = _TAPOCamera;
 TAPOCamera.SERVICE_MAP = {
