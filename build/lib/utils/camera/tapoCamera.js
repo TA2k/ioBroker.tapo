@@ -27,7 +27,6 @@ __export(tapoCamera_exports, {
   TAPOCamera: () => TAPOCamera
 });
 module.exports = __toCommonJS(tapoCamera_exports);
-var import_node_fetch = __toESM(require("node-fetch"));
 var import_crypto = __toESM(require("crypto"));
 var import_onvifCamera = require("./onvifCamera");
 var import_undici = require("undici");
@@ -94,7 +93,7 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
     }
   }
   fetch(url, data) {
-    return (0, import_node_fetch.default)(url, {
+    return fetch(url, {
       headers: this.getHeaders(),
       dispatcher: this.fetchAgent,
       ...data

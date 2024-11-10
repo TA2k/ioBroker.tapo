@@ -1,4 +1,3 @@
-import fetch, { RequestInit } from "node-fetch";
 // import https, { Agent } from "https";
 import crypto from "crypto";
 import { OnvifCamera } from "./onvifCamera";
