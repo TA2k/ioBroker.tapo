@@ -535,7 +535,9 @@ class Tapo extends utils.Adapter {
         streamUser: this.config.streamusername,
         streamPassword: this.config.streampassword,
         disableStreaming: true,
-      }); //new Camera(this.log, device.ip, this.config.username, this.config.password, 2);
+      });
+
+      //new Camera(this.log, device.ip, this.config.username, this.config.password, 2);
 
       this.deviceObjects[id] = deviceObject;
       const deviceInfo = await deviceObject.getDeviceInfo();

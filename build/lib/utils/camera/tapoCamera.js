@@ -89,7 +89,7 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
     } else if (this.passwordEncryptionMethod === "sha256") {
       return this.hashedSha256Password;
     } else {
-      throw new Error("Unknown password encryption method");
+      this.log.error("Unknown password encryption method");
     }
   }
   fetch(url, data) {
@@ -166,12 +166,12 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
     let response, responseData;
     if (!responseLoginData) {
       this.log.debug("refreshStok: empty response login data, raising exception", responseLogin.status);
-      throw new Error("Empty response login data");
+      this.log.error("Empty response login data");
     }
     this.log.debug("refreshStok: Login response", responseLogin.status, responseLoginData);
     if (responseLogin.status === 401 && ((_b = (_a = responseLoginData.result) == null ? void 0 : _a.data) == null ? void 0 : _b.code) === -40411) {
       this.log.debug("refreshStok: invalid credentials, raising exception", responseLogin.status);
-      throw new Error("Invalid credentials");
+      this.log.error("Invalid credentials");
     }
     if (isSecureConnection) {
       const nonce = (_d = (_c = responseLoginData.result) == null ? void 0 : _c.data) == null ? void 0 : _d.nonce;
@@ -199,13 +199,13 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
         responseData = await response.json();
         if (!responseData) {
           this.log.debug("refreshStock: empty response start_seq data, raising exception", response.status);
-          throw new Error("Empty response start_seq data");
+          this.log.error("Empty response start_seq data");
         }
         this.log.debug("refreshStok: start_seq response", response.status, JSON.stringify(responseData));
         if ((_g = responseData.result) == null ? void 0 : _g.start_seq) {
           if (((_h = responseData.result) == null ? void 0 : _h.user_group) !== "root") {
             this.log.debug("refreshStock: Incorrect user_group detected");
-            throw new Error("Incorrect user_group detected");
+            this.log.error("Incorrect user_group detected");
           }
           this.lsk = this.generateEncryptionToken("lsk", nonce);
           this.ivb = this.generateEncryptionToken("ivb", nonce);
@@ -225,7 +225,7 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
           loginRetryCount,
           responseLoginData
         );
-        throw new Error("Invalid device confirm");
+        this.log.error("Invalid device confirm");
       }
     } else {
       this.passwordEncryptionMethod = "md5";
@@ -234,11 +234,11 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
     }
     if (((_j = (_i = responseData.result) == null ? void 0 : _i.data) == null ? void 0 : _j.sec_left) && responseData.result.data.sec_left > 0) {
       this.log.debug("refreshStok: temporary suspension", responseData);
-      throw new Error(`Temporary Suspension: Try again in ${responseData.result.data.sec_left} seconds`);
+      this.log.error(`Temporary Suspension: Try again in ${responseData.result.data.sec_left} seconds`);
     }
     if (((_k = responseData == null ? void 0 : responseData.data) == null ? void 0 : _k.code) === -40404 && ((_l = responseData == null ? void 0 : responseData.data) == null ? void 0 : _l.sec_left) && responseData.data.sec_left > 0) {
       this.log.debug("refreshStok: temporary suspension", responseData);
-      throw new Error(`refreshStok: Temporary Suspension: Try again in ${responseData.data.sec_left} seconds`);
+      this.log.error(`refreshStok: Temporary Suspension: Try again in ${responseData.data.sec_left} seconds`);
     }
     if ((_m = responseData == null ? void 0 : responseData.result) == null ? void 0 : _m.stok) {
       this.stok = responseData.result.stok;
@@ -254,7 +254,7 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
       return this.refreshStok(loginRetryCount + 1);
     }
     this.log.debug("refreshStock: Unexpected end of flow, raising exception");
-    throw new Error("Invalid authentication data");
+    this.log.error("Invalid authentication data");
   }
   async isSecureConnection() {
     var _a, _b, _c;
@@ -286,7 +286,7 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
       }
       this.stokPromise().then(() => {
         if (!this.stok) {
-          throw new Error("STOK not found");
+          this.log.error("STOK not found");
         }
         resolve(this.stok);
       }).finally(() => {
@@ -318,11 +318,11 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
   encryptUnpad(text, blockSize) {
     const paddingLength = Number(text[text.length - 1]) || 0;
     if (paddingLength > blockSize || paddingLength > text.length) {
-      throw new Error("Invalid padding");
+      this.log.error("Invalid padding");
     }
     for (let i = text.length - paddingLength; i < text.length; i++) {
       if (text.charCodeAt(i) !== paddingLength) {
-        throw new Error("Invalid padding");
+        this.log.error("Invalid padding");
       }
     }
     return text.slice(0, text.length - paddingLength).toString();
@@ -409,12 +409,12 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
       }
     });
     if (responseData.error_code !== 0) {
-      throw new Error(`Failed to perform ${service} action`);
+      this.log.error(`Failed to perform ${service} action`);
     }
     const method = _TAPOCamera.SERVICE_MAP[service](value).method;
     const operation = responseData.result.responses.find((e) => e.method === method);
     if ((operation == null ? void 0 : operation.error_code) !== 0) {
-      throw new Error(`Failed to perform ${service} action`);
+      this.log.error(`Failed to perform ${service} action`);
     }
     return operation.result;
   }
