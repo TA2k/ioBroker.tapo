@@ -30,7 +30,7 @@ module.exports = __toCommonJS(tapoCamera_exports);
 var import_node_fetch = __toESM(require("node-fetch"));
 var import_crypto = __toESM(require("crypto"));
 var import_onvifCamera = require("./onvifCamera");
-var import_undici = require("undici");
+var import_https = __toESM(require("https"));
 const MAX_LOGIN_RETRIES = 3;
 const AES_BLOCK_SIZE = 16;
 const ERROR_CODES_MAP = {
@@ -56,12 +56,9 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
     this.passwordEncryptionMethod = null;
     this.isSecureConnectionValue = null;
     this.pendingAPIRequests = /* @__PURE__ */ new Map();
-    this.fetchAgent = new import_undici.Agent({
-      connectTimeout: 5e3,
-      connect: {
-        rejectUnauthorized: false,
-        ciphers: "AES256-SHA:AES128-GCM-SHA256"
-      }
+    this.fetchAgent = new import_https.default.Agent({
+      rejectUnauthorized: false,
+      secureOptions: import_crypto.default.constants.SSL_OP_LEGACY_SERVER_CONNECT
     });
     this.cnonce = this.generateCnonce();
     this.hashedPassword = import_crypto.default.createHash("md5").update(config.password).digest("hex").toUpperCase();

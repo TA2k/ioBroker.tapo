@@ -559,7 +559,7 @@ class Tapo extends utils.Adapter {
       this.log.debug('Init event listener for "motion"');
       eventEmitter.addListener("motion", async (motionDetected: any) => {
         await this.setStateAsync(id + ".motionEvent", motionDetected, true);
-        this.log.info(`[${device.deviceName}] "Motion detected" ${motionDetected}`);
+        this.log.debug(`[${device.deviceName}] "Motion detected" ${motionDetected}`);
       });
       return;
     } else {

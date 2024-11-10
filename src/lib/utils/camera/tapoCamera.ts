@@ -17,7 +17,7 @@ import type {
 const MAX_LOGIN_RETRIES = 3;
 const AES_BLOCK_SIZE = 16;
 
-import { Agent } from "undici";
+import https, { Agent } from "https";
 
 const ERROR_CODES_MAP = {
   "-40401": "Invalid stok value",
@@ -100,13 +100,9 @@ export class TAPOCamera extends OnvifCamera {
   ) {
     super(log, config);
 
-    this.fetchAgent = new Agent({
-      connectTimeout: 5_000,
-      connect: {
-        // TAPO devices have self-signed certificates
-        rejectUnauthorized: false,
-        ciphers: "AES256-SHA:AES128-GCM-SHA256",
-      },
+    this.fetchAgent = new https.Agent({
+      rejectUnauthorized: false,
+      secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
     });
 
     this.cnonce = this.generateCnonce();
