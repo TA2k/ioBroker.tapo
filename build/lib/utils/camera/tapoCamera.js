@@ -200,6 +200,7 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
         if (!responseData) {
           this.log.debug("refreshStock: empty response start_seq data, raising exception", response.status);
           this.log.error("Empty response start_seq data");
+          return;
         }
         this.log.debug("refreshStok: start_seq response", response.status, JSON.stringify(responseData));
         if ((_g = responseData.result) == null ? void 0 : _g.start_seq) {
@@ -225,7 +226,8 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
           loginRetryCount,
           responseLoginData
         );
-        this.log.error("Invalid device confirm");
+        this.log.error("Invalid device confirm. Firmware Fix by TP-Link expected in Dezember 2024. Only motion detection is supported.");
+        return;
       }
     } else {
       this.passwordEncryptionMethod = "md5";
