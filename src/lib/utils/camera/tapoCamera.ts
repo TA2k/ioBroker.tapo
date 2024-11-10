@@ -326,6 +326,7 @@ export class TAPOCamera extends OnvifCamera {
           responseLoginData,
         );
         this.log.error("Invalid device confirm. Firmware Fix by TP-Link expected in Dezember 2024. Only motion detection is supported.");
+        this.log.error("Or follow https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/blob/main/add_camera_with_new_firmware.md");
         return;
       }
     } else {
