@@ -629,7 +629,7 @@ class Tapo extends utils.Adapter {
           continue;
         }
         if (!this.deviceObjects[deviceId]._connected) {
-          continue;
+          //  continue;
         }
 
         this.deviceObjects[deviceId]

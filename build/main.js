@@ -598,7 +598,6 @@ class Tapo extends utils.Adapter {
           continue;
         }
         if (!this.deviceObjects[deviceId]._connected) {
-          continue;
         }
         this.deviceObjects[deviceId].getDeviceInfo().then(async (sysInfo) => {
           this.log.debug(JSON.stringify(sysInfo));
