@@ -598,6 +598,7 @@ class Tapo extends utils.Adapter {
           continue;
         }
         if (!this.deviceObjects[deviceId]._connected) {
+          continue;
         }
         this.deviceObjects[deviceId].getDeviceInfo(true).then(async (sysInfo) => {
           this.log.debug(JSON.stringify(sysInfo));
@@ -705,7 +706,7 @@ class Tapo extends utils.Adapter {
         const stateName = idArray[idArray.length - 1];
         const deviceId = id.split(".")[2];
         if (resultDict[stateName]) {
-          await this.setStateAsync(deviceId + ".remote." + resultDict[stateName], state.val, true);
+          await this.setState(deviceId + ".remote." + resultDict[stateName], state.val, true);
         }
       }
     }
