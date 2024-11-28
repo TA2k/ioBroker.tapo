@@ -302,7 +302,7 @@ class Tapo extends utils.Adapter {
             name = Buffer.from(device.alias, "base64").toString("utf8");
           }
           this.log.debug(`Found device ${id} ${name}`);
-          await this.extendObjectAsync(id, {
+          await this.extendObject(id, {
             type: "device",
             common: {
               name: name,
@@ -361,7 +361,7 @@ class Tapo extends utils.Adapter {
               native: {},
             });
           });
-          this.json2iob.parse(id, device);
+          this.json2iob.parse(id, device, { channelName: name });
 
           //try new API
 
