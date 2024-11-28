@@ -118,9 +118,9 @@ class Tapo extends utils.Adapter {
     this.log.info("Wait for connections for non camera devices");
     await this.sleep(10000);
     this.log.info("Start first Update");
-    await this.updateDevices();
+    this.updateDevices();
     this.updateInterval = setInterval(async () => {
-      await this.updateDevices();
+      this.updateDevices();
     }, this.config.interval * 1000);
   }
   async login(): Promise<void> {
