@@ -676,7 +676,7 @@ class Tapo extends utils.Adapter {
     }
     try {
       const strWithoutPadding = str.replace(/=*$/, "");
-      return btoa(atob(strWithoutPadding)) === strWithoutPadding;
+      return btoa(atob(strWithoutPadding)) === strWithoutPadding || btoa(atob(str)) === str;
     } catch (err) {
       return false;
     }
