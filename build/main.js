@@ -300,7 +300,7 @@ class Tapo extends utils.Adapter {
           name = Buffer.from(device.alias, "base64").toString("utf8");
         }
         this.log.debug(`Found device ${id} ${name}`);
-        await this.extendObjectAsync(id, {
+        await this.extendObject(id, {
           type: "device",
           common: {
             name
@@ -357,7 +357,7 @@ class Tapo extends utils.Adapter {
             native: {}
           });
         });
-        this.json2iob.parse(id, device);
+        this.json2iob.parse(id, device, { channelName: name });
         await this.requestClient({
           method: "get",
           url: "https://euw1-app-server.iot.i.tplinknbu.com/v1/things/" + id + "/details",
@@ -638,7 +638,7 @@ class Tapo extends utils.Adapter {
     }
     try {
       const strWithoutPadding = str.replace(/=*$/, "");
-      return btoa(atob(strWithoutPadding)) === strWithoutPadding;
+      return btoa(atob(strWithoutPadding)) === strWithoutPadding || btoa(atob(str)) === str;
     } catch (err) {
       return false;
     }
