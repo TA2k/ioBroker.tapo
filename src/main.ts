@@ -633,7 +633,7 @@ class Tapo extends utils.Adapter {
         }
 
         this.deviceObjects[deviceId]
-          .getDeviceInfo()
+          .getDeviceInfo(true)
           .then(async (sysInfo: any) => {
             this.log.debug(JSON.stringify(sysInfo));
             if (!sysInfo || sysInfo.name === "Error" || sysInfo.request) {

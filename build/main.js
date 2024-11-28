@@ -599,7 +599,7 @@ class Tapo extends utils.Adapter {
         }
         if (!this.deviceObjects[deviceId]._connected) {
         }
-        this.deviceObjects[deviceId].getDeviceInfo().then(async (sysInfo) => {
+        this.deviceObjects[deviceId].getDeviceInfo(true).then(async (sysInfo) => {
           this.log.debug(JSON.stringify(sysInfo));
           if (!sysInfo || sysInfo.name === "Error" || sysInfo.request) {
             this.log.debug("Malformed response sysinfo");
