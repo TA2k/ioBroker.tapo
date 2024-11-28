@@ -518,7 +518,7 @@ class Tapo extends utils.Adapter {
         disableStreaming: true
       });
       this.deviceObjects[id] = deviceObject;
-      const deviceInfo = await deviceObject.getDeviceInfo();
+      const deviceInfo = await deviceObject.getDeviceInfo(true);
       this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
       this.log.debug(JSON.stringify(deviceInfo));
       this.json2iob.parse(id, deviceInfo);
@@ -562,7 +562,7 @@ class Tapo extends utils.Adapter {
           this.deviceObjects[id]._connected = false;
         });
       }
-      deviceObject.getDeviceInfo().then(async (sysInfo) => {
+      deviceObject.getDeviceInfo(true).then(async (sysInfo) => {
         this.log.debug(JSON.stringify(sysInfo));
         if (sysInfo.request) {
           this.log.error("Malformed response sysinfo");
@@ -672,7 +672,7 @@ class Tapo extends utils.Adapter {
           return;
         }
         if (command === "Refresh") {
-          this.deviceObjects[deviceId].getDeviceInfo().then((sysInfo) => {
+          this.deviceObjects[deviceId].getDeviceInfo(true).then((sysInfo) => {
             this.log.debug(JSON.stringify(sysInfo));
             this.json2iob.parse(deviceId, sysInfo);
           }).catch((error) => {

@@ -540,7 +540,7 @@ class Tapo extends utils.Adapter {
       //new Camera(this.log, device.ip, this.config.username, this.config.password, 2);
 
       this.deviceObjects[id] = deviceObject;
-      const deviceInfo = await deviceObject.getDeviceInfo();
+      const deviceInfo = await deviceObject.getDeviceInfo(true);
       this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
       this.log.debug(JSON.stringify(deviceInfo));
       this.json2iob.parse(id, deviceInfo);
@@ -587,7 +587,7 @@ class Tapo extends utils.Adapter {
           });
         }
         deviceObject
-          .getDeviceInfo()
+          .getDeviceInfo(true)
           .then(async (sysInfo: any) => {
             this.log.debug(JSON.stringify(sysInfo));
             if (sysInfo.request) {
@@ -719,7 +719,7 @@ class Tapo extends utils.Adapter {
 
         if (command === "Refresh") {
           this.deviceObjects[deviceId]
-            .getDeviceInfo()
+            .getDeviceInfo(true)
             .then((sysInfo: any) => {
               this.log.debug(JSON.stringify(sysInfo));
               this.json2iob.parse(deviceId, sysInfo);
