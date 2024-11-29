@@ -1,9 +1,9 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "news": {
-      "0.4.0": {
+      "0.4.1": {
         "en": "fixed Get Device Info failed error",
         "de": "Get Device Info failed Fehler behoben",
         "ru": "неудачная ошибка",
@@ -71,10 +71,6 @@
       "0.2.8": {
         "en": "Add support for P110M",
         "de": "Unterstützung für P110M hinzugefügt"
-      },
-      "0.2.6": {
-        "en": "Improve P1XX handling",
-        "de": "Verbesserte P1XX Unterstützung"
       }
     },
     "titleLang": {
