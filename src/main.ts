@@ -28,6 +28,7 @@ class Tapo extends utils.Adapter {
   session: any = {};
   refreshTimeout: any;
   refreshTokenInterval: any;
+
   termId: any;
   public constructor(options: Partial<utils.AdapterOptions> = {}) {
     super({
@@ -626,6 +627,11 @@ class Tapo extends utils.Adapter {
           const status = await this.deviceObjects[deviceId].getStatus();
           this.log.debug(JSON.stringify(status));
           this.json2iob.parse(deviceId, status);
+          if (this.deviceObjects[deviceId].stok === undefined) {
+            this.log.error("No stok found for: " + deviceId + " Ingore device until next restart");
+
+            delete this.deviceObjects[deviceId];
+          }
           continue;
         }
         if (!this.deviceObjects[deviceId]._connected) {

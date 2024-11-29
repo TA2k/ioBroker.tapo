@@ -595,6 +595,10 @@ class Tapo extends utils.Adapter {
           const status = await this.deviceObjects[deviceId].getStatus();
           this.log.debug(JSON.stringify(status));
           this.json2iob.parse(deviceId, status);
+          if (this.deviceObjects[deviceId].stok === void 0) {
+            this.log.error("No stok found for: " + deviceId + " Ingore device until next restart");
+            delete this.deviceObjects[deviceId];
+          }
           continue;
         }
         if (!this.deviceObjects[deviceId]._connected) {
