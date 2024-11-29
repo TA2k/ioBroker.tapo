@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.3.4",
+    "version": "0.4.0",
     "news": {
+      "0.4.0": {
+        "en": "fixed Get Device Info failed error",
+        "de": "Get Device Info failed Fehler behoben",
+        "ru": "неудачная ошибка",
+        "pt": "corrigido Get Device Info erro falhado",
+        "nl": "fixed Apparaatinformatie foutmelding verkrijgen",
+        "fr": "correction Erreur échouée de l'erreur Get Device Info",
+        "it": "corretto Ottieni Informazioni dispositivo errore fallito",
+        "es": "corregido Obtener información del dispositivo falló error",
+        "pl": "naprawiony błąd Get Device Info",
+        "uk": "виправлений Отримати пристрій інформація не вдалося помилки",
+        "zh-cn": "固定获取设备信息失败"
+      },
       "0.3.4": {
         "en": "updated Tapo local lib",
         "de": "Tapo lokale Bibliothek aktualisiert",
@@ -62,10 +75,6 @@
       "0.2.6": {
         "en": "Improve P1XX handling",
         "de": "Verbesserte P1XX Unterstützung"
-      },
-      "0.2.3": {
-        "en": "Add Camera movment",
-        "de": "Kamera Bewegungskontrolle hinzugefügt"
       }
     },
     "titleLang": {
