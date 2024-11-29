@@ -661,11 +661,11 @@ class Tapo extends utils.Adapter {
               await this.json2iob.parse(deviceId, power_usage);
             }
           })
-          .catch((error) => {
+          .catch((error: any) => {
             this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
           });
       }
-    } catch (error) {
+    } catch (error: any) {
       this.log.warn(error);
     }
   }
@@ -742,7 +742,7 @@ class Tapo extends utils.Adapter {
             }
             this.refreshTimeout && clearTimeout(this.refreshTimeout);
             this.refreshTimeout = setTimeout(async () => {
-              await this.updateDevices();
+              this.updateDevices();
             }, 2 * 1000);
           } else {
             this.log.error(`Device ${deviceId} has no command ${command}`);

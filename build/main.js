@@ -692,7 +692,7 @@ class Tapo extends utils.Adapter {
             }
             this.refreshTimeout && clearTimeout(this.refreshTimeout);
             this.refreshTimeout = setTimeout(async () => {
-              await this.updateDevices();
+              this.updateDevices();
             }, 2 * 1e3);
           } else {
             this.log.error(`Device ${deviceId} has no command ${command}`);
