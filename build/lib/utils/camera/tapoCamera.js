@@ -392,9 +392,9 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
             this.log.debug(`API request failed with specific error code ${errorCode}: ${errorMessage}`);
           }
           if (!responseData || responseData.error_code === -40401 || responseData.error_code === -1) {
-            this.log.debug("API request failed, reauth now and trying same request again", responseData);
+            this.log.debug("API request failed", responseData);
             this.stok = void 0;
-            return this.apiRequest(req, loginRetryCount + 1);
+            return {};
           }
           return responseData;
         } finally {
@@ -488,6 +488,16 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
         ]
       }
     });
+    if (!responseData || !responseData.result || !responseData.result.responses) {
+      this.log.error("No response data found");
+      return {
+        alarm: void 0,
+        eyes: void 0,
+        notifications: void 0,
+        motionDetection: void 0,
+        led: void 0
+      };
+    }
     const operations = responseData.result.responses;
     const alert = operations.find((r) => r.method === "getAlertConfig");
     const lensMask = operations.find((r) => r.method === "getLensMaskConfig");

@@ -629,6 +629,7 @@ class Tapo extends utils.Adapter {
           this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
         });
       }
+      this.log.debug("Update done");
     } catch (error) {
       this.log.warn(error);
     }

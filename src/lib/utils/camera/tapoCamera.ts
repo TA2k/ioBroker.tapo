@@ -539,9 +539,10 @@ export class TAPOCamera extends OnvifCamera {
           }
 
           if (!responseData || responseData.error_code === -40401 || responseData.error_code === -1) {
-            this.log.debug("API request failed, reauth now and trying same request again", responseData);
+            this.log.debug("API request failed", responseData);
             this.stok = undefined;
-            return this.apiRequest(req, loginRetryCount + 1);
+            return {} as TAPOCameraResponse;
+            //  return this.apiRequest(req, loginRetryCount + 1);
           }
 
           // Success
@@ -701,6 +702,16 @@ export class TAPOCamera extends OnvifCamera {
       },
     });
 
+    if (!responseData || !responseData.result || !responseData.result.responses) {
+      this.log.error("No response data found");
+      return {
+        alarm: undefined,
+        eyes: undefined,
+        notifications: undefined,
+        motionDetection: undefined,
+        led: undefined,
+      };
+    }
     const operations = responseData.result.responses;
 
     const alert = operations.find((r) => r.method === "getAlertConfig");
