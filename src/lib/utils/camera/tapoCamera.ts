@@ -325,8 +325,8 @@ export class TAPOCamera extends OnvifCamera {
           loginRetryCount,
           responseLoginData,
         );
-        this.log.error("Invalid device confirm. Firmware Fix by TP-Link expected in Dezember 2024. Only motion detection is supported.");
-        this.log.error("Or follow https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/blob/main/add_camera_with_new_firmware.md");
+        this.log.info("Invalid device confirm. Firmware Fix by TP-Link expected in Dezember 2024. Only motion detection is supported.");
+        this.log.info("Or follow https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/blob/main/add_camera_with_new_firmware.md");
         return;
       }
     } else {
@@ -404,7 +404,7 @@ export class TAPOCamera extends OnvifCamera {
       this.stokPromise()
         .then(() => {
           if (!this.stok) {
-            this.log.error("STOK not found");
+            this.log.info("STOK not found");
           }
           resolve(this.stok!);
         })
@@ -703,7 +703,7 @@ export class TAPOCamera extends OnvifCamera {
     });
 
     if (!responseData || !responseData.result || !responseData.result.responses) {
-      this.log.error("No response data found");
+      this.log.info("No response data found");
       return {
         alarm: undefined,
         eyes: undefined,
