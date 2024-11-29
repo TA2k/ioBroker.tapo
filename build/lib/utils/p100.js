@@ -393,7 +393,7 @@ class P100 {
         }
       }).catch((error) => {
         this.log.debug("469 Error: " + JSON.stringify(error));
-        this.log.error("469 Error: " + error.message);
+        this.log.info("469 Error: " + error.message);
         if (error.message.indexOf("403") > -1) {
           this.reAuthenticate();
         }
