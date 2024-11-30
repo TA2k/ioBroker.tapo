@@ -161,7 +161,15 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
         })
       };
     }
-    const responseLogin = await this.fetch(`https://${this.config.ipAddress}`, fetchParams);
+    const responseLogin = await this.fetch(`https://${this.config.ipAddress}`, fetchParams).catch((e) => {
+      this.log.debug("refreshStok: Error during login", e);
+      return null;
+    });
+    if (!responseLogin) {
+      this.log.debug("refreshStok: empty response login, raising exception");
+      this.log.error("Empty response login");
+      return;
+    }
     const responseLoginData = await responseLogin.json();
     let response, responseData;
     if (!responseLoginData) {
