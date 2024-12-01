@@ -332,11 +332,15 @@ export default class P100 implements TpLinkAccessory {
 
   //new tapo klap requests
   async handshake_new(): Promise<void> {
-    this.log.debug("Trying new habdshake");
+    this.log.debug("Trying new handshake");
 
     const local_seed = this._crypto.randomBytes(16);
 
     await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
+      if (!res) {
+        this.log.debug("Handshake 1 failed");
+        return;
+      }
       const remote_seed: Buffer = res.subarray(0, 16);
       const server_hash: Buffer = res.subarray(16);
 
@@ -743,7 +747,7 @@ export default class P100 implements TpLinkAccessory {
           this.log.info("KLAP Authenticated successfully");
         })
         .catch(() => {
-          this.log.error("KLAP Handshake failed");
+          this.log.error("KLAP Handshake New failed");
           this.is_klap = false;
         });
     } else {

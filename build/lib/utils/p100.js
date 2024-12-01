@@ -265,9 +265,13 @@ class P100 {
     this.tpLinkCipher = new import_tpLinkCipher.default(this.log, b_arr, b_arr2);
   }
   async handshake_new() {
-    this.log.debug("Trying new habdshake");
+    this.log.debug("Trying new handshake");
     const local_seed = this._crypto.randomBytes(16);
     await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
+      if (!res) {
+        this.log.debug("Handshake 1 failed");
+        return;
+      }
       const remote_seed = res.subarray(0, 16);
       const server_hash = res.subarray(16);
       let auth_hash = void 0;
@@ -570,7 +574,7 @@ class P100 {
       this.handshake_new().then(() => {
         this.log.info("KLAP Authenticated successfully");
       }).catch(() => {
-        this.log.error("KLAP Handshake failed");
+        this.log.error("KLAP Handshake New failed");
         this.is_klap = false;
       });
     } else {

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.1",
+    "version": "0.4.2-beta.0",
     "news": {
+      "0.4.2-beta.0": {
+        "en": "improve handshake for old devices",
+        "de": "handshake für alte geräte verbessern",
+        "ru": "улучшить рукопожатие для старых устройств",
+        "pt": "melhorar o aperto de mão para dispositivos antigos",
+        "nl": "verbetering van de handdruk voor oude apparaten",
+        "fr": "améliorer la poignée de main pour les anciens appareils",
+        "it": "migliorare la stretta di mano per i vecchi dispositivi",
+        "es": "mejorar el apretón de manos para dispositivos antiguos",
+        "pl": "poprawić uścisk dłoni dla starych urządzeń",
+        "uk": "поліпшити хек для старих пристроїв",
+        "zh-cn": "改进旧设备的握手方式"
+      },
       "0.4.1": {
         "en": "fixed Get Device Info failed error",
         "de": "Get Device Info failed Fehler behoben",
@@ -97,8 +110,13 @@
       "pl": "Adapter do TP-Link Tapo",
       "zh-cn": "TP-Link Tapo 适配器"
     },
-    "authors": ["TA2k <tombox2020@gmail.com>"],
-    "keywords": ["tp-link", "tapo"],
+    "authors": [
+      "TA2k <tombox2020@gmail.com>"
+    ],
+    "keywords": [
+      "tp-link",
+      "tapo"
+    ],
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "main": "build/main.js",
@@ -132,8 +150,12 @@
       }
     ]
   },
-  "encryptedNative": ["password"],
-  "protectedNative": ["password"],
+  "encryptedNative": [
+    "password"
+  ],
+  "protectedNative": [
+    "password"
+  ],
   "native": {
     "username": "",
     "password": "",
