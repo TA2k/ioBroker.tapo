@@ -742,14 +742,14 @@ class Tapo extends utils.Adapter {
         }
         try {
           if (this.deviceObjects[deviceId] && this.deviceObjects[deviceId][command]) {
+            let result;
             if (command === "setColor" || command === "moveMotor") {
               const valueSplit = state.val.replace(" ", "").split(",");
-              const result = await this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]);
-              this.log.info(command + " result: " + JSON.stringify(result));
+              result = await this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]);
             } else {
-              const result = await this.deviceObjects[deviceId][command](state.val);
-              this.log.info(command + " result: " + JSON.stringify(result));
+              result = await this.deviceObjects[deviceId][command](state.val);
             }
+            this.log.info(command + " was set to : " + JSON.stringify(result));
             this.refreshTimeout && clearTimeout(this.refreshTimeout);
             this.refreshTimeout = setTimeout(async () => {
               this.updateDevices();

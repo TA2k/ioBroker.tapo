@@ -337,7 +337,7 @@ export default class P100 implements TpLinkAccessory {
     const local_seed = this._crypto.randomBytes(16);
 
     await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
-      if (!res) {
+      if (!res || !res.subarray) {
         this.log.debug("Handshake 1 failed");
         return;
       }
