@@ -163,7 +163,7 @@ export default class P100 implements TpLinkAccessory {
         requestTimeMils: Math.round(Date.now() * 1000),
       },
     };
-    this.log.debug("Handshake P100 on host: " + this.ip);
+    this.log.debug("Old Handshake P100 on host: " + this.ip);
 
     const headers = {
       Connection: "Keep-Alive",
@@ -176,7 +176,7 @@ export default class P100 implements TpLinkAccessory {
     await this._axios
       .post(URL, payload, config)
       .then((res: AxiosResponse) => {
-        this.log.debug("Received Handshake P100 on host response: " + this.ip);
+        this.log.debug("Received Old Handshake P100 on host response: " + this.ip);
 
         if (res.data.error_code || res.status !== 200) {
           return this.handleError(res.data!.error_code ? res.data.error_code : res.status, "172");
@@ -222,6 +222,10 @@ export default class P100 implements TpLinkAccessory {
       Connection: "Keep-Alive",
     };
 
+    this.log.debug("Old Login to P100 with url " + URL);
+    this.log.debug("Payload " + payload);
+    this.log.debug("Headers " + JSON.stringify(headers));
+    this.log.debug("Cipher: " + this.tpLinkCipher);
     if (this.tpLinkCipher) {
       const encryptedPayload = this.tpLinkCipher.encrypt(payload);
 
@@ -236,7 +240,7 @@ export default class P100 implements TpLinkAccessory {
         headers: headers,
         timeout: this._timeout * 1000,
       };
-
+      this.log.debug("Post request");
       await this._axios
         .post(URL, securePassthroughPayload, config)
         .then((res: AxiosResponse) => {
@@ -244,6 +248,7 @@ export default class P100 implements TpLinkAccessory {
             return this.handleError(res.data!.error_code ? res.data.error_code : res.status, "226");
           }
           const decryptedResponse = this.tpLinkCipher.decrypt(res.data.result.response);
+          this.log.debug("Decrypted Response: " + decryptedResponse);
           try {
             const response = JSON.parse(decryptedResponse);
             if (response.error_code !== 0) {
@@ -338,7 +343,7 @@ export default class P100 implements TpLinkAccessory {
 
     await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
       if (!res || !res.subarray) {
-        this.log.debug("Handshake 1 failed");
+        this.log.debug("New Handshake 1 failed");
         return;
       }
       const remote_seed: Buffer = res.subarray(0, 16);
@@ -352,7 +357,7 @@ export default class P100 implements TpLinkAccessory {
         .digest();
 
       if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
-        this.log.debug("Handshake 1 successful");
+        this.log.debug("New Handshake 1 successful");
         auth_hash = ah;
       }
       const req = this._crypto
@@ -361,10 +366,10 @@ export default class P100 implements TpLinkAccessory {
         .digest();
 
       return this.raw_request("handshake2", req, "text").then((res) => {
-        this.log.debug("Handshake 2 successful: " + res);
+        this.log.debug("New Handshake 2 successful: " + res);
 
         this.newTpLinkCipher = new NewTpLinkCipher(local_seed, remote_seed, auth_hash, this.log);
-        this.log.debug("Init cipher successful");
+        this.log.debug("New Init cipher successful");
 
         return;
       });

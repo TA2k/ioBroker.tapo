@@ -579,7 +579,7 @@ class Tapo extends utils.Adapter {
             this.log.error(error);
             this.log.error("KLAP Handshake failed. Try old handshake");
             deviceObject.is_klap = false;
-            await deviceObject.login().catch(() => {
+            await deviceObject.reAuthenticate().catch(() => {
               this.log.error("Login failed");
               this.deviceObjects[id]._connected = false;
             });
@@ -749,7 +749,9 @@ class Tapo extends utils.Adapter {
             } else {
               result = await this.deviceObjects[deviceId][command](state.val);
             }
-            this.log.info(command + " was set to : " + JSON.stringify(result));
+            this.log.info(
+              command + " was set to : " + state.val + " for device " + deviceId + " was successful: " + JSON.stringify(result),
+            );
             this.refreshTimeout && clearTimeout(this.refreshTimeout);
             this.refreshTimeout = setTimeout(async () => {
               this.updateDevices();

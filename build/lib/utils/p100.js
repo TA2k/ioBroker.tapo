@@ -142,7 +142,7 @@ class P100 {
         requestTimeMils: Math.round(Date.now() * 1e3)
       }
     };
-    this.log.debug("Handshake P100 on host: " + this.ip);
+    this.log.debug("Old Handshake P100 on host: " + this.ip);
     const headers = {
       Connection: "Keep-Alive"
     };
@@ -151,7 +151,7 @@ class P100 {
       headers
     };
     await this._axios.post(URL, payload, config).then((res) => {
-      this.log.debug("Received Handshake P100 on host response: " + this.ip);
+      this.log.debug("Received Old Handshake P100 on host response: " + this.ip);
       if (res.data.error_code || res.status !== 200) {
         return this.handleError(res.data.error_code ? res.data.error_code : res.status, "172");
       }
@@ -177,6 +177,10 @@ class P100 {
       Cookie: this.cookie,
       Connection: "Keep-Alive"
     };
+    this.log.debug("Old Login to P100 with url " + URL);
+    this.log.debug("Payload " + payload);
+    this.log.debug("Headers " + JSON.stringify(headers));
+    this.log.debug("Cipher: " + this.tpLinkCipher);
     if (this.tpLinkCipher) {
       const encryptedPayload = this.tpLinkCipher.encrypt(payload);
       const securePassthroughPayload = {
@@ -189,11 +193,13 @@ class P100 {
         headers,
         timeout: this._timeout * 1e3
       };
+      this.log.debug("Post request");
       await this._axios.post(URL, securePassthroughPayload, config).then((res) => {
         if (res.data.error_code || res.status !== 200) {
           return this.handleError(res.data.error_code ? res.data.error_code : res.status, "226");
         }
         const decryptedResponse = this.tpLinkCipher.decrypt(res.data.result.response);
+        this.log.debug("Decrypted Response: " + decryptedResponse);
         try {
           const response = JSON.parse(decryptedResponse);
           if (response.error_code !== 0) {
@@ -268,8 +274,8 @@ class P100 {
     this.log.debug("Trying new handshake");
     const local_seed = this._crypto.randomBytes(16);
     await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
-      if (!res) {
-        this.log.debug("Handshake 1 failed");
+      if (!res || !res.subarray) {
+        this.log.debug("New Handshake 1 failed");
         return;
       }
       const remote_seed = res.subarray(0, 16);
@@ -278,14 +284,14 @@ class P100 {
       const ah = this.calc_auth_hash(this.email, this.password);
       const local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah])).digest();
       if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
-        this.log.debug("Handshake 1 successful");
+        this.log.debug("New Handshake 1 successful");
         auth_hash = ah;
       }
       const req = this._crypto.createHash("sha256").update(Buffer.concat([remote_seed, local_seed, auth_hash])).digest();
       return this.raw_request("handshake2", req, "text").then((res2) => {
-        this.log.debug("Handshake 2 successful: " + res2);
+        this.log.debug("New Handshake 2 successful: " + res2);
         this.newTpLinkCipher = new import_newTpLinkCipher.default(local_seed, remote_seed, auth_hash, this.log);
-        this.log.debug("Init cipher successful");
+        this.log.debug("New Init cipher successful");
         return;
       });
     });
