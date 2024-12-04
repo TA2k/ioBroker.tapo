@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.2-beta.0",
+    "version": "0.4.2-beta.1",
     "news": {
+      "0.4.2-beta.1": {
+        "en": "improve handshake for old devices",
+        "de": "handshake für alte geräte verbessern",
+        "ru": "улучшить рукопожатие для старых устройств",
+        "pt": "melhorar o aperto de mão para dispositivos antigos",
+        "nl": "verbetering van de handdruk voor oude apparaten",
+        "fr": "améliorer la poignée de main pour les anciens appareils",
+        "it": "migliorare la stretta di mano per i vecchi dispositivi",
+        "es": "mejorar el apretón de manos para dispositivos antiguos",
+        "pl": "poprawić uścisk dłoni dla starych urządzeń",
+        "uk": "поліпшити хек для старих пристроїв",
+        "zh-cn": "改进旧设备的握手方式"
+      },
       "0.4.2-beta.0": {
         "en": "improve handshake for old devices",
         "de": "handshake für alte geräte verbessern",
@@ -80,10 +93,6 @@
         "pl": "naprawić wtyczki tapo i setLensMask",
         "uk": "фіксувати тапочки та встановитиLensMask",
         "zh-cn": "修复管道插件和设置LensMask"
-      },
-      "0.2.8": {
-        "en": "Add support for P110M",
-        "de": "Unterstützung für P110M hinzugefügt"
       }
     },
     "titleLang": {
