@@ -275,7 +275,6 @@ export default class P100 implements TpLinkAccessory {
       Host: this.ip,
       Accept: "*/*",
       "Content-Type": "application/octet-stream",
-      "User-Agent": "ioBroker",
     };
 
     if (this.cookie) {
@@ -289,6 +288,12 @@ export default class P100 implements TpLinkAccessory {
       headers: headers,
       params: params,
     };
+    this.log.debug("Raw request to P100 with url " + URL);
+    this.log.debug("Data: " + data.toString("hex"));
+    this.log.debug("Headers: " + JSON.stringify(headers));
+    this.log.debug("Params: " + JSON.stringify(params));
+    this.log.debug("Cipher: " + this.tpLinkCipher);
+
     //@ts-ignore
     return this._axios
       .post(URL, data, config)

@@ -222,8 +222,7 @@ class P100 {
       Connection: "Keep-Alive",
       Host: this.ip,
       Accept: "*/*",
-      "Content-Type": "application/octet-stream",
-      "User-Agent": "ioBroker"
+      "Content-Type": "application/octet-stream"
     };
     if (this.cookie) {
       headers.Cookie = this.cookie;
@@ -234,6 +233,11 @@ class P100 {
       headers,
       params
     };
+    this.log.debug("Raw request to P100 with url " + URL);
+    this.log.debug("Data: " + data.toString("hex"));
+    this.log.debug("Headers: " + JSON.stringify(headers));
+    this.log.debug("Params: " + JSON.stringify(params));
+    this.log.debug("Cipher: " + this.tpLinkCipher);
     return this._axios.post(URL, data, config).then((res) => {
       this.log.debug("Received request on host response: " + this.ip);
       if (res.data.error_code || res.status !== 200) {
