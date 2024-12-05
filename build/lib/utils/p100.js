@@ -178,7 +178,6 @@ class P100 {
       Connection: "Keep-Alive"
     };
     this.log.debug("Old Login to P100 with url " + URL);
-    this.log.debug("Payload " + payload);
     this.log.debug("Headers " + JSON.stringify(headers));
     this.log.debug("Cipher: " + this.tpLinkCipher);
     if (this.tpLinkCipher) {
@@ -580,6 +579,7 @@ class P100 {
     });
   }
   reAuthenticate() {
+    this.log.debug("Reauthenticating");
     if (this.is_klap) {
       this.handshake_new().then(() => {
         this.log.info("KLAP Authenticated successfully");

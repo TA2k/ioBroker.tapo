@@ -223,7 +223,6 @@ export default class P100 implements TpLinkAccessory {
     };
 
     this.log.debug("Old Login to P100 with url " + URL);
-    this.log.debug("Payload " + payload);
     this.log.debug("Headers " + JSON.stringify(headers));
     this.log.debug("Cipher: " + this.tpLinkCipher);
     if (this.tpLinkCipher) {
@@ -751,6 +750,7 @@ export default class P100 implements TpLinkAccessory {
   }
 
   private reAuthenticate(): void {
+    this.log.debug("Reauthenticating");
     if (this.is_klap) {
       this.handshake_new()
         .then(() => {
