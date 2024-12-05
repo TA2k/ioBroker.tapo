@@ -97,6 +97,9 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
       headers: this.getHeaders(),
       dispatcher: this.fetchAgent,
       ...data
+    }).catch((e) => {
+      this.log.debug("Error during fetch", e);
+      return null;
     });
   }
   generateEncryptionToken(tokenType, nonce) {
