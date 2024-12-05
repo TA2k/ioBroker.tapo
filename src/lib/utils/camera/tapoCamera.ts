@@ -148,9 +148,6 @@ export class TAPOCamera extends OnvifCamera {
       // @ts-expect-error Dispatcher type not there
       dispatcher: this.fetchAgent,
       ...data,
-    }).catch((e) => {
-      this.log.debug("Error during camera fetch", e);
-      return;
     });
   }
 
@@ -517,7 +514,10 @@ export class TAPOCamera extends OnvifCamera {
             fetchParams.body = JSON.stringify(req);
           }
 
-          const response = await this.fetch(url, fetchParams);
+          const response = await this.fetch(url, fetchParams).catch((e) => {
+            this.log.debug("Error during camera fetch", e);
+            return;
+          });
           if (!response) {
             this.log.debug("API request failed, empty response");
             return {} as TAPOCameraResponse;
