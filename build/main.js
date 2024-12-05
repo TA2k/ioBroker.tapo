@@ -595,7 +595,10 @@ class Tapo extends utils.Adapter {
       for (const deviceId in this.deviceObjects) {
         if (this.deviceObjects[deviceId].getStatus) {
           this.log.debug("Receive camera status");
-          const status = await this.deviceObjects[deviceId].getStatus();
+          const status = await this.deviceObjects[deviceId].getStatus().catch((error) => {
+            this.log.info("Get camera Status failed");
+            this.log.debug(JSON.stringify(error));
+          });
           this.log.debug(JSON.stringify(status));
           this.json2iob.parse(deviceId, status);
           if (this.deviceObjects[deviceId].stok === void 0) {
