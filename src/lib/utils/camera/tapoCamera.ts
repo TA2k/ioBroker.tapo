@@ -149,8 +149,8 @@ export class TAPOCamera extends OnvifCamera {
       dispatcher: this.fetchAgent,
       ...data,
     }).catch((e) => {
-      this.log.debug("Error during fetch", e);
-      return null;
+      this.log.debug("Error during camera fetch", e);
+      return;
     });
   }
 
@@ -518,6 +518,10 @@ export class TAPOCamera extends OnvifCamera {
           }
 
           const response = await this.fetch(url, fetchParams);
+          if (!response) {
+            this.log.debug("API request failed, empty response");
+            return {} as TAPOCameraResponse;
+          }
           const responseDataTmp = await response.json();
 
           // Apparently the Tapo C200 returns 500 on successful requests,

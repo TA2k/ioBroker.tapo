@@ -98,8 +98,8 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
       dispatcher: this.fetchAgent,
       ...data
     }).catch((e) => {
-      this.log.debug("Error during fetch", e);
-      return null;
+      this.log.debug("Error during camera fetch", e);
+      return;
     });
   }
   generateEncryptionToken(tokenType, nonce) {
@@ -381,6 +381,10 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
             fetchParams.body = JSON.stringify(req);
           }
           const response = await this.fetch(url, fetchParams);
+          if (!response) {
+            this.log.debug("API request failed, empty response");
+            return {};
+          }
           const responseDataTmp = await response.json();
           if (isSecureConnection && response.status === 500) {
             this.log.debug("Stok expired, reauthenticating on next request, setting STOK to undefined");
