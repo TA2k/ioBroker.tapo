@@ -276,7 +276,23 @@ class P100 {
   async handshake_new() {
     this.log.debug("Trying new handshake");
     const local_seed = this._crypto.randomBytes(16);
-    await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
+    const responseFetch = await fetch("http://" + this.ip + "/app/handshake1", {
+      method: "POST",
+      headers: {
+        Connection: "Keep-Alive",
+        Accept: "*/*",
+        "Content-Type": "application/octet-stream"
+      },
+      body: local_seed
+    }).then((responseFetch2) => {
+      this.log.debug("Handshake 1 response via fetch: " + responseFetch2.status);
+      this.log.debug("Handshake 1 response via fetch: " + responseFetch2.statusText);
+      this.log.debug("Handshake 1 response data via fetch: " + responseFetch2.body);
+    }).catch((error) => {
+      this.log.error("Handshake 1 via fetch failed: " + error.message);
+      return error;
+    });
+    const response = await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
       if (!res || !res.subarray) {
         this.log.debug("New Handshake 1 failed");
         return;

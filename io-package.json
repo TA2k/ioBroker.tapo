@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.2-beta.2",
+    "version": "0.4.2-beta.3",
     "news": {
+      "0.4.2-beta.3": {
+        "en": "improve handshake for old devices",
+        "de": "handshake für alte geräte verbessern",
+        "ru": "улучшить рукопожатие для старых устройств",
+        "pt": "melhorar o aperto de mão para dispositivos antigos",
+        "nl": "verbetering van de handdruk voor oude apparaten",
+        "fr": "améliorer la poignée de main pour les anciens appareils",
+        "it": "migliorare la stretta di mano per i vecchi dispositivi",
+        "es": "mejorar el apretón de manos para dispositivos antiguos",
+        "pl": "poprawić uścisk dłoni dla starych urządzeń",
+        "uk": "поліпшити хек для старих пристроїв",
+        "zh-cn": "改进旧设备的握手方式"
+      },
       "0.4.2-beta.2": {
         "en": "improve handshake for old devices",
         "de": "handshake für alte geräte verbessern",
@@ -80,19 +93,6 @@
         "pl": "ignoruj błąd spuścizny ssl\n",
         "uk": "ігнорувати помилку sssl\n",
         "zh-cn": "忽略 ssl 遗留错误\n"
-      },
-      "0.3.2": {
-        "en": "update onvif lib to fix issues with newer cameras",
-        "de": "onvif lib aktualisiert, um Motion Detection Probleme mit neueren Kameras zu beheben",
-        "ru": "обновление onvif lib для решения проблем с новыми камерами",
-        "pt": "atualizar onvif lib para corrigir problemas com câmeras mais recentes",
-        "nl": "update onvif lib om problemen met nieuwere camera's op te lossen",
-        "fr": "update onvif lib pour résoudre les problèmes avec les caméras plus récentes",
-        "it": "aggiornamento onvif lib per risolvere i problemi con le nuove telecamere",
-        "es": "actualizar onvif lib para solucionar problemas con cámaras nuevas",
-        "pl": "aktualizacja onvif lib w celu rozwiązania problemów z nowszymi kamerami",
-        "uk": "оновлення onvif lib для виправлення проблем з новими камерами",
-        "zh-cn": "更新 onvif lib 以更新相机处理问题"
       }
     },
     "titleLang": {
