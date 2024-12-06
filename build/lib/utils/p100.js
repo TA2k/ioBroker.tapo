@@ -276,22 +276,6 @@ class P100 {
   async handshake_new() {
     this.log.debug("Trying new handshake");
     const local_seed = this._crypto.randomBytes(16);
-    const responseFetch = await fetch("http://" + this.ip + "/app/handshake1", {
-      method: "POST",
-      headers: {
-        Connection: "Keep-Alive",
-        Accept: "*/*",
-        "Content-Type": "application/octet-stream"
-      },
-      body: local_seed
-    }).then((responseFetch2) => {
-      this.log.debug("Handshake 1 response via fetch: " + responseFetch2.status);
-      this.log.debug("Handshake 1 response via fetch: " + responseFetch2.statusText);
-      this.log.debug("Handshake 1 response data via fetch: " + responseFetch2.body);
-    }).catch((error) => {
-      this.log.error("Handshake 1 via fetch failed: " + error.message);
-      return error;
-    });
     const response = await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
       if (!res || !res.subarray) {
         this.log.debug("New Handshake 1 failed");
@@ -299,9 +283,12 @@ class P100 {
       }
       const remote_seed = res.subarray(0, 16);
       const server_hash = res.subarray(16);
+      this.log.debug("Extracted hashes");
       let auth_hash = void 0;
       const ah = this.calc_auth_hash(this.email, this.password);
+      this.log.debug("Calculated auth hash");
       const local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah])).digest();
+      this.log.debug("Calculated local seed auth hash");
       if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
         this.log.debug("New Handshake 1 successful");
         auth_hash = ah;

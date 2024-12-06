@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.2-beta.3",
+    "version": "0.4.2-beta.4",
     "news": {
+      "0.4.2-beta.4": {
+        "en": "improve handshake for old devices",
+        "de": "handshake für alte geräte verbessern",
+        "ru": "улучшить рукопожатие для старых устройств",
+        "pt": "melhorar o aperto de mão para dispositivos antigos",
+        "nl": "verbetering van de handdruk voor oude apparaten",
+        "fr": "améliorer la poignée de main pour les anciens appareils",
+        "it": "migliorare la stretta di mano per i vecchi dispositivi",
+        "es": "mejorar el apretón de manos para dispositivos antiguos",
+        "pl": "poprawić uścisk dłoni dla starych urządzeń",
+        "uk": "поліпшити хек для старих пристроїв",
+        "zh-cn": "改进旧设备的握手方式"
+      },
       "0.4.2-beta.3": {
         "en": "improve handshake for old devices",
         "de": "handshake für alte geräte verbessern",
@@ -80,19 +93,6 @@
         "pl": "aktualizacja tapo lib lokalny",
         "uk": "оновлення Тапо локальної свободи",
         "zh-cn": "更新 Tapo 本地权限"
-      },
-      "0.3.3": {
-        "en": "ignore ssl legacy error\n",
-        "de": "ignorieren ssl legacy fehler\n",
-        "ru": "игнорировать ошибки\n",
-        "pt": "ignorar erro legado ssl\n",
-        "nl": "ssl legacy-fout negeren\n",
-        "fr": "ignorer l'erreur legs ssl\n",
-        "it": "ignorare errore legacy ssl\n",
-        "es": "ignorar el error legado ssl\n",
-        "pl": "ignoruj błąd spuścizny ssl\n",
-        "uk": "ігнорувати помилку sssl\n",
-        "zh-cn": "忽略 ssl 遗留错误\n"
       }
     },
     "titleLang": {
