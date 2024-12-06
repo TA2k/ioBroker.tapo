@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.2-beta.4",
+    "version": "0.4.2-beta.5",
     "news": {
+      "0.4.2-beta.5": {
+        "en": "improve handshake for old devices",
+        "de": "handshake für alte geräte verbessern",
+        "ru": "улучшить рукопожатие для старых устройств",
+        "pt": "melhorar o aperto de mão para dispositivos antigos",
+        "nl": "verbetering van de handdruk voor oude apparaten",
+        "fr": "améliorer la poignée de main pour les anciens appareils",
+        "it": "migliorare la stretta di mano per i vecchi dispositivi",
+        "es": "mejorar el apretón de manos para dispositivos antiguos",
+        "pl": "poprawić uścisk dłoni dla starych urządzeń",
+        "uk": "поліпшити хек для старих пристроїв",
+        "zh-cn": "改进旧设备的握手方式"
+      },
       "0.4.2-beta.4": {
         "en": "improve handshake for old devices",
         "de": "handshake für alte geräte verbessern",
@@ -80,19 +93,6 @@
         "pl": "naprawiony błąd Get Device Info",
         "uk": "виправлений Отримати пристрій інформація не вдалося помилки",
         "zh-cn": "固定获取设备信息失败"
-      },
-      "0.3.4": {
-        "en": "updated Tapo local lib",
-        "de": "Tapo lokale Bibliothek aktualisiert",
-        "ru": "обновление Tapo Local lib",
-        "pt": "atualização Tapo local lib",
-        "nl": "tapo lokale lib bijwerken",
-        "fr": "mettre à jour la lib locale de Tapo",
-        "it": "aggiornamento Tapo locale lib",
-        "es": "actualización Tapo local lib",
-        "pl": "aktualizacja tapo lib lokalny",
-        "uk": "оновлення Тапо локальної свободи",
-        "zh-cn": "更新 Tapo 本地权限"
       }
     },
     "titleLang": {
