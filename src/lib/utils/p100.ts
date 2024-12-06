@@ -355,10 +355,12 @@ export default class P100 implements TpLinkAccessory {
       },
       body: local_seed,
     })
-      .then((responseFetch: any) => {
+      .then(async (responseFetch: any) => {
         this.log.debug("Handshake 1 response via fetch: " + responseFetch.status);
         this.log.debug("Handshake 1 response via fetch: " + responseFetch.statusText);
-        this.log.debug("Handshake 1 response data via fetch: " + responseFetch.body.toString("hex"));
+        const data = await responseFetch.arrayBuffer();
+        this.log.debug("Handshake 1 response data via fetch: " + data.toString("hex"));
+        return data;
       })
       .catch((error: Error) => {
         this.log.error("Handshake 1 via fetch failed: " + error.message);

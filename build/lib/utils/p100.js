@@ -284,10 +284,12 @@ class P100 {
         "Content-Type": "application/octet-stream"
       },
       body: local_seed
-    }).then((responseFetch2) => {
+    }).then(async (responseFetch2) => {
       this.log.debug("Handshake 1 response via fetch: " + responseFetch2.status);
       this.log.debug("Handshake 1 response via fetch: " + responseFetch2.statusText);
-      this.log.debug("Handshake 1 response data via fetch: " + responseFetch2.body.toString("hex"));
+      const data = await responseFetch2.arrayBuffer();
+      this.log.debug("Handshake 1 response data via fetch: " + data.toString("hex"));
+      return data;
     }).catch((error) => {
       this.log.error("Handshake 1 via fetch failed: " + error.message);
       return error;
