@@ -33,6 +33,7 @@ var import_newTpLinkCipher = __toESM(require("./newTpLinkCipher.js"));
 var import_axios2 = __toESM(require("axios"));
 var import_crypto = __toESM(require("crypto"));
 var import_utf8 = __toESM(require("utf8"));
+var import_got = __toESM(require("got"));
 class P100 {
   constructor(log, ipAddress, email, password, timeout) {
     this.log = log;
@@ -292,6 +293,23 @@ class P100 {
       return data;
     }).catch((error) => {
       this.log.error("Handshake 1 via fetch failed: " + error.message);
+      return error;
+    });
+    const responseGot = await import_got.default.post("http://" + this.ip + "/app/handshake1", {
+      headers: {
+        Connection: "Keep-Alive",
+        Accept: "*/*",
+        "Content-Type": "application/octet-stream"
+      },
+      body: local_seed,
+      responseType: "buffer"
+    }).then((responseGot2) => {
+      this.log.debug("Handshake 1 response via got: " + responseGot2.statusCode);
+      this.log.debug("Handshake 1 response via got: " + responseGot2.statusMessage);
+      this.log.debug("Handshake 1 response data via got: " + responseGot2.body.toString("hex"));
+      return responseGot2.body;
+    }).catch((error) => {
+      this.log.error("Handshake 1 via got failed: " + error.message);
       return error;
     });
     const response = await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
