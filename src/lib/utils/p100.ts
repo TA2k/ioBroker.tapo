@@ -10,7 +10,6 @@ import { TpLinkAccessory } from "./tplinkAccessory.js";
 import axios from "axios";
 import crypto from "crypto";
 import utf8 from "utf8";
-import got from "got";
 
 export default class P100 implements TpLinkAccessory {
   private _crypto = crypto;
@@ -368,26 +367,6 @@ export default class P100 implements TpLinkAccessory {
         return error;
       });
 
-    const responseGot = await got
-      .post("http://" + this.ip + "/app/handshake1", {
-        headers: {
-          Connection: "Keep-Alive",
-          Accept: "*/*",
-          "Content-Type": "application/octet-stream",
-        },
-        body: local_seed,
-        responseType: "buffer",
-      })
-      .then((responseGot: any) => {
-        this.log.debug("Handshake 1 response via got: " + responseGot.statusCode);
-        this.log.debug("Handshake 1 response via got: " + responseGot.statusMessage);
-        this.log.debug("Handshake 1 response data via got: " + responseGot.body.toString("hex"));
-        return responseGot.body;
-      })
-      .catch((error: Error) => {
-        this.log.error("Handshake 1 via got failed: " + error.message);
-        return error;
-      });
     const response = await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
       if (!res || !res.subarray) {
         this.log.debug("New Handshake 1 failed");
