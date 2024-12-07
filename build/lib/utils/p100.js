@@ -287,7 +287,7 @@ class P100 {
     }).then(async (responseFetch2) => {
       this.log.debug("Handshake 1 response via fetch: " + responseFetch2.status);
       this.log.debug("Handshake 1 response via fetch: " + responseFetch2.statusText);
-      const data = await responseFetch2.arrayBuffer();
+      const data = Buffer.from(await responseFetch2.arrayBuffer());
       this.log.debug("Handshake 1 response data via fetch: " + data.toString("hex"));
       return data;
     }).catch((error) => {
@@ -305,9 +305,10 @@ class P100 {
       this.log.debug("Extracted hashes");
       let auth_hash = void 0;
       const ah = this.calc_auth_hash(this.email, this.password);
-      this.log.debug("Calculated auth hash");
+      this.log.debug("Calculated auth hash: " + ah.toString("hex"));
       const local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah])).digest();
-      this.log.debug("Calculated local seed auth hash");
+      this.log.debug("Calculated local seed auth hash: " + local_seed_auth_hash.toString("hex"));
+      this.log.debug("Server hash: " + server_hash.toString("hex"));
       if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
         this.log.debug("New Handshake 1 successful");
         auth_hash = ah;

@@ -358,7 +358,8 @@ export default class P100 implements TpLinkAccessory {
       .then(async (responseFetch: any) => {
         this.log.debug("Handshake 1 response via fetch: " + responseFetch.status);
         this.log.debug("Handshake 1 response via fetch: " + responseFetch.statusText);
-        const data = await responseFetch.arrayBuffer();
+
+        const data = Buffer.from(await responseFetch.arrayBuffer());
         this.log.debug("Handshake 1 response data via fetch: " + data.toString("hex"));
         return data;
       })
@@ -378,12 +379,13 @@ export default class P100 implements TpLinkAccessory {
       this.log.debug("Extracted hashes");
       let auth_hash: any = undefined;
       const ah = this.calc_auth_hash(this.email, this.password);
-      this.log.debug("Calculated auth hash");
+      this.log.debug("Calculated auth hash: " + ah.toString("hex"));
       const local_seed_auth_hash = this._crypto
         .createHash("sha256")
         .update(Buffer.concat([local_seed, remote_seed, ah]))
         .digest();
-      this.log.debug("Calculated local seed auth hash");
+      this.log.debug("Calculated local seed auth hash: " + local_seed_auth_hash.toString("hex"));
+      this.log.debug("Server hash: " + server_hash.toString("hex"));
       if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
         this.log.debug("New Handshake 1 successful");
         auth_hash = ah;
