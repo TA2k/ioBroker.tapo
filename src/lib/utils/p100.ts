@@ -344,6 +344,8 @@ export default class P100 implements TpLinkAccessory {
     this.log.debug("Trying new handshake");
 
     const local_seed = this._crypto.randomBytes(16);
+
+    const ah = this.calc_auth_hash(this.email, this.password);
     //send handshake1 via native fetch
 
     const responseFetch = await fetch("http://" + this.ip + "/app/handshake1", {
@@ -361,6 +363,13 @@ export default class P100 implements TpLinkAccessory {
 
         const data = Buffer.from(await responseFetch.arrayBuffer());
         this.log.debug("Handshake 1 response data via fetch: " + data.toString("hex"));
+        this.log.debug("Handshake 1 remote seed via fetch: " + data.subarray(0, 16).toString("hex"));
+        this.log.debug("Handshake 1 server hash via fetch: " + data.subarray(16).toString("hex"));
+        const local_seed_auth_hash = this._crypto
+          .createHash("sha256")
+          .update(Buffer.concat([local_seed, data.subarray(0, 16), ah]))
+          .digest();
+        this.log.debug("Handshake 1 local seed auth hash via fetch: " + local_seed_auth_hash.toString("hex"));
         return data;
       })
       .catch((error: Error) => {
@@ -378,7 +387,6 @@ export default class P100 implements TpLinkAccessory {
       const server_hash: Buffer = res.subarray(16);
       this.log.debug("Extracted hashes");
       let auth_hash: any = undefined;
-      const ah = this.calc_auth_hash(this.email, this.password);
       this.log.debug("Calculated auth hash: " + ah.toString("hex"));
       const local_seed_auth_hash = this._crypto
         .createHash("sha256")
@@ -388,6 +396,10 @@ export default class P100 implements TpLinkAccessory {
       this.log.debug("Server hash: " + server_hash.toString("hex"));
       if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
         this.log.debug("New Handshake 1 successful");
+        auth_hash = ah;
+      } else {
+        this.log.debug("New Handshake 1 failed");
+        this.log.debug("Local seed auth hash doesnt match server hash");
         auth_hash = ah;
       }
       const req = this._crypto
