@@ -33,7 +33,6 @@ var import_newTpLinkCipher = __toESM(require("./newTpLinkCipher.js"));
 var import_axios2 = __toESM(require("axios"));
 var import_crypto = __toESM(require("crypto"));
 var import_utf8 = __toESM(require("utf8"));
-var import_got = __toESM(require("got"));
 class P100 {
   constructor(log, ipAddress, email, password, timeout) {
     this.log = log;
@@ -278,7 +277,7 @@ class P100 {
     this.log.debug("Trying new handshake");
     const local_seed = this._crypto.randomBytes(16);
     const ah = this.calc_auth_hash(this.email, this.password);
-    const res = await fetch("http://" + this.ip + "/app/handshake1", {
+    let res = await fetch("http://" + this.ip + "/app/handshake1", {
       method: "POST",
       headers: {
         Connection: "Keep-Alive",
@@ -298,26 +297,36 @@ class P100 {
       this.log.error("Handshake 1 via fetch failed: " + error.message);
       return null;
     });
-    const responseGot = await import_got.default.post("http://" + this.ip + "/app/handshake1", {
+    const http = require("http");
+    const options = {
+      method: "POST",
+      hostname: this.ip,
+      path: "/app/handshake1",
       headers: {
-        Connection: "Keep-Alive",
-        Accept: "*/*",
-        "Content-Type": "application/octet-stream"
+        "Content-Type": "application/octet-stream",
+        "Content-Length": local_seed.length
       },
-      body: local_seed,
-      responseType: "buffer"
-    }).then((response) => {
-      this.log.debug("Handshake 1 response via got: " + response.statusCode);
-      this.log.debug("Handshake 1 response via got: " + response.statusMessage);
-      const data = Buffer.from(response.body);
-      this.log.debug("Handshake 1 response data via got: " + data.toString("hex"));
-      this.log.debug("Handshake 1 remote seed via got: " + data.subarray(0, 16).toString("hex"));
-      this.log.debug("Handshake 1 server hash via got: " + data.subarray(16).toString("hex"));
-      return data;
-    }).catch((error) => {
-      this.log.error("Handshake 1 via got failed: " + error.message);
-      return null;
+      maxRedirects: 20
+    };
+    const promise = new Promise((resolve, reject) => {
+      const request = http.request(options, (res2) => {
+        let chunks = [];
+        res2.on("data", (chunk) => {
+          chunks.push(chunk);
+        });
+        res2.on("end", (chunk) => {
+          var body = Buffer.concat(chunks);
+          res2 = body;
+          console.log(body.toString());
+        });
+        res2.on("error", (error) => {
+          console.error(error);
+        });
+      });
+      request.write(local_seed);
+      request.end();
     });
+    await promise;
     if (!res || !res.subarray) {
       this.log.debug("New Handshake 1 failed");
       return;

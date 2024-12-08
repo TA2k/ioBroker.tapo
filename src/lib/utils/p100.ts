@@ -349,7 +349,7 @@ export default class P100 implements TpLinkAccessory {
     const ah = this.calc_auth_hash(this.email, this.password);
     //send handshake1 via native fetch
 
-    const res = await fetch("http://" + this.ip + "/app/handshake1", {
+    let res = await fetch("http://" + this.ip + "/app/handshake1", {
       method: "POST",
       headers: {
         Connection: "Keep-Alive",
@@ -373,31 +373,42 @@ export default class P100 implements TpLinkAccessory {
         return null;
       });
 
-    const responseGot = await got
-      .post("http://" + this.ip + "/app/handshake1", {
-        headers: {
-          Connection: "Keep-Alive",
-          Accept: "*/*",
-          "Content-Type": "application/octet-stream",
-        },
-        body: local_seed,
-        responseType: "buffer",
-      })
-      .then((response: any) => {
-        this.log.debug("Handshake 1 response via got: " + response.statusCode);
-        this.log.debug("Handshake 1 response via got: " + response.statusMessage);
+    const http = require("http");
+    const options = {
+      method: "POST",
+      hostname: this.ip,
+      path: "/app/handshake1",
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "Content-Length": local_seed.length,
+      },
+      maxRedirects: 20,
+    };
 
-        const data = Buffer.from(response.body);
-        this.log.debug("Handshake 1 response data via got: " + data.toString("hex"));
-        this.log.debug("Handshake 1 remote seed via got: " + data.subarray(0, 16).toString("hex"));
-        this.log.debug("Handshake 1 server hash via got: " + data.subarray(16).toString("hex"));
-        return data;
-      })
-      .catch((error: Error) => {
-        this.log.error("Handshake 1 via got failed: " + error.message);
-        return null;
+    const promise = new Promise((resolve, reject) => {
+      const request = http.request(options, (res: any) => {
+        let chunks: any = [];
+
+        res.on("data", (chunk: any) => {
+          chunks.push(chunk);
+        });
+
+        res.on("end", (chunk: any) => {
+          var body = Buffer.concat(chunks);
+          res = body;
+          console.log(body.toString());
+        });
+
+        res.on("error", (error: any) => {
+          console.error(error);
+        });
       });
 
+      request.write(local_seed);
+
+      request.end();
+    });
+    await promise;
     // const response = await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
     //axios not working for handshake1
     if (!res || !res.subarray) {
