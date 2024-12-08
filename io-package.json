@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.2-beta.5",
+    "version": "0.4.2-beta.6",
     "news": {
+      "0.4.2-beta.6": {
+        "en": "improve handshake for old devices",
+        "de": "handshake für alte geräte verbessern",
+        "ru": "улучшить рукопожатие для старых устройств",
+        "pt": "melhorar o aperto de mão para dispositivos antigos",
+        "nl": "verbetering van de handdruk voor oude apparaten",
+        "fr": "améliorer la poignée de main pour les anciens appareils",
+        "it": "migliorare la stretta di mano per i vecchi dispositivi",
+        "es": "mejorar el apretón de manos para dispositivos antiguos",
+        "pl": "poprawić uścisk dłoni dla starych urządzeń",
+        "uk": "поліпшити хек для старих пристроїв",
+        "zh-cn": "改进旧设备的握手方式"
+      },
       "0.4.2-beta.5": {
         "en": "improve handshake for old devices",
         "de": "handshake für alte geräte verbessern",
@@ -80,19 +93,6 @@
         "pl": "poprawić uścisk dłoni dla starych urządzeń",
         "uk": "поліпшити хек для старих пристроїв",
         "zh-cn": "改进旧设备的握手方式"
-      },
-      "0.4.1": {
-        "en": "fixed Get Device Info failed error",
-        "de": "Get Device Info failed Fehler behoben",
-        "ru": "неудачная ошибка",
-        "pt": "corrigido Get Device Info erro falhado",
-        "nl": "fixed Apparaatinformatie foutmelding verkrijgen",
-        "fr": "correction Erreur échouée de l'erreur Get Device Info",
-        "it": "corretto Ottieni Informazioni dispositivo errore fallito",
-        "es": "corregido Obtener información del dispositivo falló error",
-        "pl": "naprawiony błąd Get Device Info",
-        "uk": "виправлений Отримати пристрій інформація не вдалося помилки",
-        "zh-cn": "固定获取设备信息失败"
       }
     },
     "titleLang": {

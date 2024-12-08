@@ -277,7 +277,7 @@ class P100 {
     this.log.debug("Trying new handshake");
     const local_seed = this._crypto.randomBytes(16);
     const ah = this.calc_auth_hash(this.email, this.password);
-    const responseFetch = await fetch("http://" + this.ip + "/app/handshake1", {
+    const res = await fetch("http://" + this.ip + "/app/handshake1", {
       method: "POST",
       headers: {
         Connection: "Keep-Alive",
@@ -285,49 +285,45 @@ class P100 {
         "Content-Type": "application/octet-stream"
       },
       body: local_seed
-    }).then(async (responseFetch2) => {
-      this.log.debug("Handshake 1 response via fetch: " + responseFetch2.status);
-      this.log.debug("Handshake 1 response via fetch: " + responseFetch2.statusText);
-      const data = Buffer.from(await responseFetch2.arrayBuffer());
+    }).then(async (responseFetch) => {
+      this.log.debug("Handshake 1 response via fetch: " + responseFetch.status);
+      this.log.debug("Handshake 1 response via fetch: " + responseFetch.statusText);
+      const data = Buffer.from(await responseFetch.arrayBuffer());
       this.log.debug("Handshake 1 response data via fetch: " + data.toString("hex"));
       this.log.debug("Handshake 1 remote seed via fetch: " + data.subarray(0, 16).toString("hex"));
       this.log.debug("Handshake 1 server hash via fetch: " + data.subarray(16).toString("hex"));
-      const local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, data.subarray(0, 16), ah])).digest();
-      this.log.debug("Handshake 1 local seed auth hash via fetch: " + local_seed_auth_hash.toString("hex"));
       return data;
     }).catch((error) => {
       this.log.error("Handshake 1 via fetch failed: " + error.message);
-      return error;
+      return null;
     });
-    const response = await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
-      if (!res || !res.subarray) {
-        this.log.debug("New Handshake 1 failed");
-        return;
-      }
-      this.log.debug("Handshake 1 response: " + res.toString("hex"));
-      const remote_seed = res.subarray(0, 16);
-      const server_hash = res.subarray(16);
-      this.log.debug("Extracted hashes");
-      let auth_hash = void 0;
-      this.log.debug("Calculated auth hash: " + ah.toString("hex"));
-      const local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah])).digest();
-      this.log.debug("Calculated local seed auth hash: " + local_seed_auth_hash.toString("hex"));
-      this.log.debug("Server hash: " + server_hash.toString("hex"));
-      if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
-        this.log.debug("New Handshake 1 successful");
-        auth_hash = ah;
-      } else {
-        this.log.debug("New Handshake 1 failed");
-        this.log.debug("Local seed auth hash doesnt match server hash");
-        auth_hash = ah;
-      }
-      const req = this._crypto.createHash("sha256").update(Buffer.concat([remote_seed, local_seed, auth_hash])).digest();
-      return this.raw_request("handshake2", req, "text").then((res2) => {
-        this.log.debug("New Handshake 2 successful: " + res2);
-        this.newTpLinkCipher = new import_newTpLinkCipher.default(local_seed, remote_seed, auth_hash, this.log);
-        this.log.debug("New Init cipher successful");
-        return;
-      });
+    if (!res || !res.subarray) {
+      this.log.debug("New Handshake 1 failed");
+      return;
+    }
+    this.log.debug("Handshake 1 response: " + res.toString("hex"));
+    const remote_seed = res.subarray(0, 16);
+    const server_hash = res.subarray(16);
+    this.log.debug("Extracted hashes");
+    let auth_hash = void 0;
+    this.log.debug("Calculated auth hash: " + ah.toString("hex"));
+    const local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah])).digest();
+    this.log.debug("Calculated local seed auth hash: " + local_seed_auth_hash.toString("hex"));
+    this.log.debug("Server hash: " + server_hash.toString("hex"));
+    if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
+      this.log.debug("New Handshake 1 successful");
+      auth_hash = ah;
+    } else {
+      this.log.debug("New Handshake 1 failed");
+      this.log.debug("Local seed auth hash doesnt match server hash");
+      auth_hash = ah;
+    }
+    const req = this._crypto.createHash("sha256").update(Buffer.concat([remote_seed, local_seed, auth_hash])).digest();
+    return this.raw_request("handshake2", req, "text").then((res2) => {
+      this.log.debug("New Handshake 2 successful: " + res2);
+      this.newTpLinkCipher = new import_newTpLinkCipher.default(local_seed, remote_seed, auth_hash, this.log);
+      this.log.debug("New Init cipher successful");
+      return;
     });
   }
   async turnOff() {
