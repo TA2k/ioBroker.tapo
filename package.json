@@ -24,6 +24,7 @@
     "@iobroker/adapter-core": "^3.2.3",
     "@iobroker/testing": "^5.0.0",
     "axios": "^0.29.0",
+    "got": "npm:@esm2cjs/got@^13.0.0",
     "json-bigint": "^1.0.0",
     "json2iob": "^2.6.12",
     "node-fetch": "^2.7.0",

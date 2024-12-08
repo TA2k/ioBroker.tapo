@@ -16,6 +16,8 @@ import L520E from "./lib/utils/l520e";
 import L530 from "./lib/utils/l530";
 import P100 from "./lib/utils/p100";
 import P110 from "./lib/utils/p110";
+// Using ESM import syntax
+import got from "got";
 class Tapo extends utils.Adapter {
   private devices: { [key: string]: any };
   private deviceObjects: { [key: string]: any };

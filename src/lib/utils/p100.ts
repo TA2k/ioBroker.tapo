@@ -10,6 +10,7 @@ import { TpLinkAccessory } from "./tplinkAccessory.js";
 import axios from "axios";
 import crypto from "crypto";
 import utf8 from "utf8";
+import got from "got";
 
 export default class P100 implements TpLinkAccessory {
   private _crypto = crypto;
@@ -369,6 +370,31 @@ export default class P100 implements TpLinkAccessory {
       })
       .catch((error: Error) => {
         this.log.error("Handshake 1 via fetch failed: " + error.message);
+        return null;
+      });
+
+    const responseGot = await got
+      .post("http://" + this.ip + "/app/handshake1", {
+        headers: {
+          Connection: "Keep-Alive",
+          Accept: "*/*",
+          "Content-Type": "application/octet-stream",
+        },
+        body: local_seed,
+        responseType: "buffer",
+      })
+      .then((response: any) => {
+        this.log.debug("Handshake 1 response via got: " + response.statusCode);
+        this.log.debug("Handshake 1 response via got: " + response.statusMessage);
+
+        const data = Buffer.from(response.body);
+        this.log.debug("Handshake 1 response data via got: " + data.toString("hex"));
+        this.log.debug("Handshake 1 remote seed via got: " + data.subarray(0, 16).toString("hex"));
+        this.log.debug("Handshake 1 server hash via got: " + data.subarray(16).toString("hex"));
+        return data;
+      })
+      .catch((error: Error) => {
+        this.log.error("Handshake 1 via got failed: " + error.message);
         return null;
       });
 
