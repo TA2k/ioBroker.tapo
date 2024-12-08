@@ -306,6 +306,9 @@ class P100 {
           this.log.error(error);
           resolve(Buffer.from(""));
         });
+      }).on("error", (error) => {
+        this.log.error(error);
+        resolve(Buffer.from(""));
       });
       request.write(local_seed);
       request.end();

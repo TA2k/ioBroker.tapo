@@ -361,26 +361,31 @@ export default class P100 implements TpLinkAccessory {
       maxRedirects: 20,
     };
     const responsePromise = new Promise<Buffer>((resolve, reject) => {
-      const request = http.request(options, (res: any) => {
-        let chunks: any = [];
-        if (res.headers && res.headers["set-cookie"]) {
-          this.cookie = res.headers["set-cookie"][0].split(";")[0];
-        }
-        res.on("data", (chunk: any) => {
-          chunks.push(chunk);
-        });
+      const request = http
+        .request(options, (res: any) => {
+          let chunks: any = [];
+          if (res.headers && res.headers["set-cookie"]) {
+            this.cookie = res.headers["set-cookie"][0].split(";")[0];
+          }
+          res.on("data", (chunk: any) => {
+            chunks.push(chunk);
+          });
 
-        res.on("end", (chunk: any) => {
-          var body = Buffer.concat(chunks);
-          this.log.debug(body.toString());
-          resolve(body);
-        });
+          res.on("end", (chunk: any) => {
+            var body = Buffer.concat(chunks);
+            this.log.debug(body.toString());
+            resolve(body);
+          });
 
-        res.on("error", (error: any) => {
+          res.on("error", (error: any) => {
+            this.log.error(error);
+            resolve(Buffer.from(""));
+          });
+        })
+        .on("error", (error: any) => {
           this.log.error(error);
           resolve(Buffer.from(""));
         });
-      });
       request.write(local_seed);
       request.end();
     });
