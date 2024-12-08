@@ -318,6 +318,8 @@ class P100 {
     this.log.debug("Handshake 1 response: " + response.toString("hex"));
     const remote_seed = response.subarray(0, 16);
     const server_hash = response.subarray(16);
+    this.log.debug("remote seed: " + remote_seed.toString("hex"));
+    this.log.debug("server hash: " + server_hash.toString("hex"));
     this.log.debug("Extracted hashes");
     let auth_hash = void 0;
     this.log.debug("Calculated auth hash: " + ah.toString("hex"));

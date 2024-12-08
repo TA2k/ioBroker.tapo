@@ -394,6 +394,8 @@ export default class P100 implements TpLinkAccessory {
     this.log.debug("Handshake 1 response: " + response.toString("hex"));
     const remote_seed: Buffer = response.subarray(0, 16);
     const server_hash: Buffer = response.subarray(16);
+    this.log.debug("remote seed: " + remote_seed.toString("hex"));
+    this.log.debug("server hash: " + server_hash.toString("hex"));
     this.log.debug("Extracted hashes");
     let auth_hash: any = undefined;
     this.log.debug("Calculated auth hash: " + ah.toString("hex"));
