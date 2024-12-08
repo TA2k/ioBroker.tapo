@@ -362,6 +362,9 @@ export default class P100 implements TpLinkAccessory {
       httpAgent: new http.Agent({
         keepAlive: true,
       }),
+      agent: new http.Agent({
+        keepAlive: true,
+      }),
       maxRedirects: 20,
     };
     const responsePromise = new Promise<Buffer>((resolve, reject) => {

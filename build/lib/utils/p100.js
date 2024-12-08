@@ -290,6 +290,9 @@ class P100 {
       httpAgent: new import_http.default.Agent({
         keepAlive: true
       }),
+      agent: new import_http.default.Agent({
+        keepAlive: true
+      }),
       maxRedirects: 20
     };
     const responsePromise = new Promise((resolve, reject) => {
