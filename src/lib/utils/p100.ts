@@ -355,9 +355,13 @@ export default class P100 implements TpLinkAccessory {
       hostname: this.ip,
       path: "/app/handshake1",
       headers: {
+        Connection: "Keep-Alive",
         "Content-Type": "application/octet-stream",
         "Content-Length": local_seed.length,
       },
+      httpAgent: new http.Agent({
+        keepAlive: true,
+      }),
       maxRedirects: 20,
     };
     const responsePromise = new Promise<Buffer>((resolve, reject) => {

@@ -283,9 +283,13 @@ class P100 {
       hostname: this.ip,
       path: "/app/handshake1",
       headers: {
+        Connection: "Keep-Alive",
         "Content-Type": "application/octet-stream",
         "Content-Length": local_seed.length
       },
+      httpAgent: new import_http.default.Agent({
+        keepAlive: true
+      }),
       maxRedirects: 20
     };
     const responsePromise = new Promise((resolve, reject) => {
