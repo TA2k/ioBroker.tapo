@@ -349,7 +349,7 @@ export default class P100 implements TpLinkAccessory {
     const ah = this.calc_auth_hash(this.email, this.password);
     //send handshake1 via native fetch
 
-    let res = await fetch("http://" + this.ip + "/app/handshake1", {
+    let response = await fetch("http://" + this.ip + "/app/handshake1", {
       method: "POST",
       headers: {
         Connection: "Keep-Alive",
@@ -384,40 +384,39 @@ export default class P100 implements TpLinkAccessory {
       },
       maxRedirects: 20,
     };
-
-    const promise = new Promise((resolve, reject) => {
+    const responsePromise = new Promise<Buffer>((resolve, reject) => {
       const request = http.request(options, (res: any) => {
         let chunks: any = [];
-
+        if (res.headers && res.headers["set-cookie"]) {
+          this.cookie = res.headers["set-cookie"][0].split(";")[0];
+        }
         res.on("data", (chunk: any) => {
           chunks.push(chunk);
         });
 
         res.on("end", (chunk: any) => {
           var body = Buffer.concat(chunks);
-          res = body;
-          console.log(body.toString());
+          this.log.debug(body.toString());
+          resolve(body);
         });
 
         res.on("error", (error: any) => {
-          console.error(error);
+          this.log.error(error);
         });
       });
-
       request.write(local_seed);
-
       request.end();
     });
-    await promise;
+    response = await responsePromise;
     // const response = await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
     //axios not working for handshake1
-    if (!res || !res.subarray) {
+    if (!response || !response.subarray) {
       this.log.debug("New Handshake 1 failed");
       return;
     }
-    this.log.debug("Handshake 1 response: " + res.toString("hex"));
-    const remote_seed: Buffer = res.subarray(0, 16);
-    const server_hash: Buffer = res.subarray(16);
+    this.log.debug("Handshake 1 response: " + response.toString("hex"));
+    const remote_seed: Buffer = response.subarray(0, 16);
+    const server_hash: Buffer = response.subarray(16);
     this.log.debug("Extracted hashes");
     let auth_hash: any = undefined;
     this.log.debug("Calculated auth hash: " + ah.toString("hex"));

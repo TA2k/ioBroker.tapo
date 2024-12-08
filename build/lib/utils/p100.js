@@ -277,7 +277,7 @@ class P100 {
     this.log.debug("Trying new handshake");
     const local_seed = this._crypto.randomBytes(16);
     const ah = this.calc_auth_hash(this.email, this.password);
-    let res = await fetch("http://" + this.ip + "/app/handshake1", {
+    let response = await fetch("http://" + this.ip + "/app/handshake1", {
       method: "POST",
       headers: {
         Connection: "Keep-Alive",
@@ -308,32 +308,35 @@ class P100 {
       },
       maxRedirects: 20
     };
-    const promise = new Promise((resolve, reject) => {
-      const request = http.request(options, (res2) => {
+    const responsePromise = new Promise((resolve, reject) => {
+      const request = http.request(options, (res) => {
         let chunks = [];
-        res2.on("data", (chunk) => {
+        if (res.headers && res.headers["set-cookie"]) {
+          this.cookie = res.headers["set-cookie"][0].split(";")[0];
+        }
+        res.on("data", (chunk) => {
           chunks.push(chunk);
         });
-        res2.on("end", (chunk) => {
+        res.on("end", (chunk) => {
           var body = Buffer.concat(chunks);
-          res2 = body;
-          console.log(body.toString());
+          this.log.debug(body.toString());
+          resolve(body);
         });
-        res2.on("error", (error) => {
-          console.error(error);
+        res.on("error", (error) => {
+          this.log.error(error);
         });
       });
       request.write(local_seed);
       request.end();
     });
-    await promise;
-    if (!res || !res.subarray) {
+    response = await responsePromise;
+    if (!response || !response.subarray) {
       this.log.debug("New Handshake 1 failed");
       return;
     }
-    this.log.debug("Handshake 1 response: " + res.toString("hex"));
-    const remote_seed = res.subarray(0, 16);
-    const server_hash = res.subarray(16);
+    this.log.debug("Handshake 1 response: " + response.toString("hex"));
+    const remote_seed = response.subarray(0, 16);
+    const server_hash = response.subarray(16);
     this.log.debug("Extracted hashes");
     let auth_hash = void 0;
     this.log.debug("Calculated auth hash: " + ah.toString("hex"));
@@ -349,8 +352,8 @@ class P100 {
       auth_hash = ah;
     }
     const req = this._crypto.createHash("sha256").update(Buffer.concat([remote_seed, local_seed, auth_hash])).digest();
-    return this.raw_request("handshake2", req, "text").then((res2) => {
-      this.log.debug("New Handshake 2 successful: " + res2);
+    return this.raw_request("handshake2", req, "text").then((res) => {
+      this.log.debug("New Handshake 2 successful: " + res);
       this.newTpLinkCipher = new import_newTpLinkCipher.default(local_seed, remote_seed, auth_hash, this.log);
       this.log.debug("New Init cipher successful");
       return;
