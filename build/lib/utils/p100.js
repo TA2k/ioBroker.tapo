@@ -33,6 +33,7 @@ var import_newTpLinkCipher = __toESM(require("./newTpLinkCipher.js"));
 var import_axios2 = __toESM(require("axios"));
 var import_crypto = __toESM(require("crypto"));
 var import_utf8 = __toESM(require("utf8"));
+var import_http = __toESM(require("http"));
 class P100 {
   constructor(log, ipAddress, email, password, timeout) {
     this.log = log;
@@ -277,27 +278,6 @@ class P100 {
     this.log.debug("Trying new handshake");
     const local_seed = this._crypto.randomBytes(16);
     const ah = this.calc_auth_hash(this.email, this.password);
-    let response = await fetch("http://" + this.ip + "/app/handshake1", {
-      method: "POST",
-      headers: {
-        Connection: "Keep-Alive",
-        Accept: "*/*",
-        "Content-Type": "application/octet-stream"
-      },
-      body: local_seed
-    }).then(async (responseFetch) => {
-      this.log.debug("Handshake 1 response via fetch: " + responseFetch.status);
-      this.log.debug("Handshake 1 response via fetch: " + responseFetch.statusText);
-      const data = Buffer.from(await responseFetch.arrayBuffer());
-      this.log.debug("Handshake 1 response data via fetch: " + data.toString("hex"));
-      this.log.debug("Handshake 1 remote seed via fetch: " + data.subarray(0, 16).toString("hex"));
-      this.log.debug("Handshake 1 server hash via fetch: " + data.subarray(16).toString("hex"));
-      return data;
-    }).catch((error) => {
-      this.log.error("Handshake 1 via fetch failed: " + error.message);
-      return null;
-    });
-    const http = require("http");
     const options = {
       method: "POST",
       hostname: this.ip,
@@ -309,7 +289,7 @@ class P100 {
       maxRedirects: 20
     };
     const responsePromise = new Promise((resolve, reject) => {
-      const request = http.request(options, (res) => {
+      const request = import_http.default.request(options, (res) => {
         let chunks = [];
         if (res.headers && res.headers["set-cookie"]) {
           this.cookie = res.headers["set-cookie"][0].split(";")[0];
@@ -324,12 +304,13 @@ class P100 {
         });
         res.on("error", (error) => {
           this.log.error(error);
+          resolve(Buffer.from(""));
         });
       });
       request.write(local_seed);
       request.end();
     });
-    response = await responsePromise;
+    let response = await responsePromise;
     if (!response || !response.subarray) {
       this.log.debug("New Handshake 1 failed");
       return;

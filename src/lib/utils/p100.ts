@@ -10,7 +10,8 @@ import { TpLinkAccessory } from "./tplinkAccessory.js";
 import axios from "axios";
 import crypto from "crypto";
 import utf8 from "utf8";
-import got from "got";
+
+import http from "http";
 
 export default class P100 implements TpLinkAccessory {
   private _crypto = crypto;
@@ -347,33 +348,8 @@ export default class P100 implements TpLinkAccessory {
     const local_seed = this._crypto.randomBytes(16);
 
     const ah = this.calc_auth_hash(this.email, this.password);
-    //send handshake1 via native fetch
+    //send handshake1 via native http
 
-    let response = await fetch("http://" + this.ip + "/app/handshake1", {
-      method: "POST",
-      headers: {
-        Connection: "Keep-Alive",
-        Accept: "*/*",
-        "Content-Type": "application/octet-stream",
-      },
-      body: local_seed,
-    })
-      .then(async (responseFetch: any) => {
-        this.log.debug("Handshake 1 response via fetch: " + responseFetch.status);
-        this.log.debug("Handshake 1 response via fetch: " + responseFetch.statusText);
-
-        const data = Buffer.from(await responseFetch.arrayBuffer());
-        this.log.debug("Handshake 1 response data via fetch: " + data.toString("hex"));
-        this.log.debug("Handshake 1 remote seed via fetch: " + data.subarray(0, 16).toString("hex"));
-        this.log.debug("Handshake 1 server hash via fetch: " + data.subarray(16).toString("hex"));
-        return data;
-      })
-      .catch((error: Error) => {
-        this.log.error("Handshake 1 via fetch failed: " + error.message);
-        return null;
-      });
-
-    const http = require("http");
     const options = {
       method: "POST",
       hostname: this.ip,
@@ -402,12 +378,13 @@ export default class P100 implements TpLinkAccessory {
 
         res.on("error", (error: any) => {
           this.log.error(error);
+          resolve(Buffer.from(""));
         });
       });
       request.write(local_seed);
       request.end();
     });
-    response = await responsePromise;
+    let response = await responsePromise;
     // const response = await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
     //axios not working for handshake1
     if (!response || !response.subarray) {
