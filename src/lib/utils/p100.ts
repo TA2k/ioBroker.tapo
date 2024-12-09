@@ -421,9 +421,34 @@ export default class P100 implements TpLinkAccessory {
       this.log.debug("New Handshake 1 successful");
       auth_hash = ah;
     } else {
-      this.log.debug("New Handshake 1 failed");
-      this.log.debug("Local seed auth hash doesnt match server hash");
-      auth_hash = ah;
+      //test empty auth hash
+      const empty_local_seed_auth_hash = this._crypto
+        .createHash("sha256")
+        .update(Buffer.concat([local_seed, remote_seed, this.calc_auth_hash("", "")]))
+        .digest();
+      this.log.debug("Calculated empty auth hash: " + this.calc_auth_hash("", "").toString("hex"));
+      this.log.debug("Calculated empty local seed auth hash: " + empty_local_seed_auth_hash.toString("hex"));
+      if (empty_local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
+        this.log.debug("New Handshake 1 successful with empty auth hash");
+        auth_hash = this.calc_auth_hash("", "");
+      } else {
+        //test tester auth hash
+        let ah = this.calc_auth_hash("test@tp-link.net", "test");
+        const test_local_seed_auth_hash = this._crypto
+          .createHash("sha256")
+          .update(Buffer.concat([local_seed, remote_seed, ah]))
+          .digest();
+        this.log.debug("Calculated empty auth hash: " + ah.toString("hex"));
+        this.log.debug("Calculated empty local seed auth hash: " + test_local_seed_auth_hash.toString("hex"));
+        if (test_local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
+          this.log.debug("New Handshake 1 successful with empty auth hash");
+          auth_hash = ah;
+        } else {
+          this.log.debug("New Handshake 1 failed");
+          this.log.debug("Local seed auth hash doesnt match server hash");
+          auth_hash = "";
+        }
+      }
     }
     const req = this._crypto
       .createHash("sha256")

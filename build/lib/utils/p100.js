@@ -340,9 +340,26 @@ class P100 {
       this.log.debug("New Handshake 1 successful");
       auth_hash = ah;
     } else {
-      this.log.debug("New Handshake 1 failed");
-      this.log.debug("Local seed auth hash doesnt match server hash");
-      auth_hash = ah;
+      const empty_local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, this.calc_auth_hash("", "")])).digest();
+      this.log.debug("Calculated empty auth hash: " + this.calc_auth_hash("", "").toString("hex"));
+      this.log.debug("Calculated empty local seed auth hash: " + empty_local_seed_auth_hash.toString("hex"));
+      if (empty_local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
+        this.log.debug("New Handshake 1 successful with empty auth hash");
+        auth_hash = this.calc_auth_hash("", "");
+      } else {
+        let ah2 = this.calc_auth_hash("test@tp-link.net", "test");
+        const test_local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah2])).digest();
+        this.log.debug("Calculated empty auth hash: " + ah2.toString("hex"));
+        this.log.debug("Calculated empty local seed auth hash: " + test_local_seed_auth_hash.toString("hex"));
+        if (test_local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
+          this.log.debug("New Handshake 1 successful with empty auth hash");
+          auth_hash = ah2;
+        } else {
+          this.log.debug("New Handshake 1 failed");
+          this.log.debug("Local seed auth hash doesnt match server hash");
+          auth_hash = "";
+        }
+      }
     }
     const req = this._crypto.createHash("sha256").update(Buffer.concat([remote_seed, local_seed, auth_hash])).digest();
     return this.raw_request("handshake2", req, "text").then((res) => {
