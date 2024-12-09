@@ -1,11 +1,11 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.2",
+    "version": "0.4.3",
     "news": {
-      "0.4.2": {
+      "0.4.3": {
         "en": "fix handshake for device with HW v1.20",
-        "de": "handshake für Gerät mit HW v1.20",
+        "de": "Fix für handshake für Gerät mit HW v1.20",
         "ru": "исправить рукопожатие для устройства с HW v1.20",
         "pt": "corrigir aperto de mão para dispositivo com HW v1.20",
         "nl": "fix handshake voor apparaat met HW v1.20",
@@ -15,84 +15,6 @@
         "pl": "naprawić uścisk dłoni dla urządzenia z HW v1.20",
         "uk": "закріпити запіканка для пристрою з HW v1.20",
         "zh-cn": "以 HW v1. 20 为设备固定握手方式"
-      },
-      "0.4.2-beta.8": {
-        "en": "improve handshake for old devices",
-        "de": "handshake für alte geräte verbessern",
-        "ru": "улучшить рукопожатие для старых устройств",
-        "pt": "melhorar o aperto de mão para dispositivos antigos",
-        "nl": "verbetering van de handdruk voor oude apparaten",
-        "fr": "améliorer la poignée de main pour les anciens appareils",
-        "it": "migliorare la stretta di mano per i vecchi dispositivi",
-        "es": "mejorar el apretón de manos para dispositivos antiguos",
-        "pl": "poprawić uścisk dłoni dla starych urządzeń",
-        "uk": "поліпшити хек для старих пристроїв",
-        "zh-cn": "改进旧设备的握手方式"
-      },
-      "0.4.2-beta.7": {
-        "en": "improve handshake for old devices",
-        "de": "handshake für alte geräte verbessern",
-        "ru": "улучшить рукопожатие для старых устройств",
-        "pt": "melhorar o aperto de mão para dispositivos antigos",
-        "nl": "verbetering van de handdruk voor oude apparaten",
-        "fr": "améliorer la poignée de main pour les anciens appareils",
-        "it": "migliorare la stretta di mano per i vecchi dispositivi",
-        "es": "mejorar el apretón de manos para dispositivos antiguos",
-        "pl": "poprawić uścisk dłoni dla starych urządzeń",
-        "uk": "поліпшити хек для старих пристроїв",
-        "zh-cn": "改进旧设备的握手方式"
-      },
-      "0.4.2-beta.6": {
-        "en": "improve handshake for old devices",
-        "de": "handshake für alte geräte verbessern",
-        "ru": "улучшить рукопожатие для старых устройств",
-        "pt": "melhorar o aperto de mão para dispositivos antigos",
-        "nl": "verbetering van de handdruk voor oude apparaten",
-        "fr": "améliorer la poignée de main pour les anciens appareils",
-        "it": "migliorare la stretta di mano per i vecchi dispositivi",
-        "es": "mejorar el apretón de manos para dispositivos antiguos",
-        "pl": "poprawić uścisk dłoni dla starych urządzeń",
-        "uk": "поліпшити хек для старих пристроїв",
-        "zh-cn": "改进旧设备的握手方式"
-      },
-      "0.4.2-beta.5": {
-        "en": "improve handshake for old devices",
-        "de": "handshake für alte geräte verbessern",
-        "ru": "улучшить рукопожатие для старых устройств",
-        "pt": "melhorar o aperto de mão para dispositivos antigos",
-        "nl": "verbetering van de handdruk voor oude apparaten",
-        "fr": "améliorer la poignée de main pour les anciens appareils",
-        "it": "migliorare la stretta di mano per i vecchi dispositivi",
-        "es": "mejorar el apretón de manos para dispositivos antiguos",
-        "pl": "poprawić uścisk dłoni dla starych urządzeń",
-        "uk": "поліпшити хек для старих пристроїв",
-        "zh-cn": "改进旧设备的握手方式"
-      },
-      "0.4.2-beta.4": {
-        "en": "improve handshake for old devices",
-        "de": "handshake für alte geräte verbessern",
-        "ru": "улучшить рукопожатие для старых устройств",
-        "pt": "melhorar o aperto de mão para dispositivos antigos",
-        "nl": "verbetering van de handdruk voor oude apparaten",
-        "fr": "améliorer la poignée de main pour les anciens appareils",
-        "it": "migliorare la stretta di mano per i vecchi dispositivi",
-        "es": "mejorar el apretón de manos para dispositivos antiguos",
-        "pl": "poprawić uścisk dłoni dla starych urządzeń",
-        "uk": "поліпшити хек для старих пристроїв",
-        "zh-cn": "改进旧设备的握手方式"
-      },
-      "0.4.2-beta.3": {
-        "en": "improve handshake for old devices",
-        "de": "handshake für alte geräte verbessern",
-        "ru": "улучшить рукопожатие для старых устройств",
-        "pt": "melhorar o aperto de mão para dispositivos antigos",
-        "nl": "verbetering van de handdruk voor oude apparaten",
-        "fr": "améliorer la poignée de main pour les anciens appareils",
-        "it": "migliorare la stretta di mano per i vecchi dispositivi",
-        "es": "mejorar el apretón de manos para dispositivos antiguos",
-        "pl": "poprawić uścisk dłoni dla starych urządzeń",
-        "uk": "поліпшити хек для старих пристроїв",
-        "zh-cn": "改进旧设备的握手方式"
       }
     },
     "titleLang": {
@@ -119,13 +41,8 @@
       "pl": "Adapter do TP-Link Tapo",
       "zh-cn": "TP-Link Tapo 适配器"
     },
-    "authors": [
-      "TA2k <tombox2020@gmail.com>"
-    ],
-    "keywords": [
-      "tp-link",
-      "tapo"
-    ],
+    "authors": ["TA2k <tombox2020@gmail.com>"],
+    "keywords": ["tp-link", "tapo"],
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "main": "build/main.js",
@@ -159,12 +76,8 @@
       }
     ]
   },
-  "encryptedNative": [
-    "password"
-  ],
-  "protectedNative": [
-    "password"
-  ],
+  "encryptedNative": ["password"],
+  "protectedNative": ["password"],
   "native": {
     "username": "",
     "password": "",

@@ -426,6 +426,9 @@ export default class P100 implements TpLinkAccessory {
     if (validateAuthHash(this.email, this.password)) {
       this.log.debug("New Handshake 1 successful");
       auth_hash = ah;
+    } else if (validateAuthHash(this.email.toLowerCase(), this.password)) {
+      this.log.debug("New Handshake 1 successful with lowercase mail");
+      auth_hash = ah;
     } else if (validateAuthHash("", "")) {
       this.log.debug("New Handshake 1 successful with empty auth hash");
       auth_hash = this.calc_auth_hash("", "");
@@ -433,8 +436,10 @@ export default class P100 implements TpLinkAccessory {
       this.log.debug("New Handshake 1 successful with test auth hash");
       auth_hash = this.calc_auth_hash("test@tp-link.net", "test");
     } else {
-      this.log.debug("New Handshake 1 failed");
-      this.log.debug("Local seed auth hash doesn't match server hash");
+      this.log.error("New Handshake 1 failed");
+      this.log.error(
+        "Local seed auth hash doesn't match server hash. Please check if the mail and password are correct. And E-Mail is in same Upper/Lowercase as in the Tapo App",
+      );
       auth_hash = ah;
     }
     const req = this._crypto
