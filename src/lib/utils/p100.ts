@@ -446,7 +446,7 @@ export default class P100 implements TpLinkAccessory {
         } else {
           this.log.debug("New Handshake 1 failed");
           this.log.debug("Local seed auth hash doesnt match server hash");
-          auth_hash = "";
+          auth_hash = ah;
         }
       }
     }

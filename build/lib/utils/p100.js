@@ -357,7 +357,7 @@ class P100 {
         } else {
           this.log.debug("New Handshake 1 failed");
           this.log.debug("Local seed auth hash doesnt match server hash");
-          auth_hash = "";
+          auth_hash = ah2;
         }
       }
     }
