@@ -350,7 +350,7 @@ export default class P100 implements TpLinkAccessory {
     const ah = this.calc_auth_hash(this.email, this.password);
     //send handshake1 via native http
 
-    const options = {
+    const options: http.RequestOptions = {
       method: "POST",
       hostname: this.ip,
       path: "/app/handshake1",
@@ -359,15 +359,11 @@ export default class P100 implements TpLinkAccessory {
         "Content-Type": "application/octet-stream",
         "Content-Length": local_seed.length,
       },
-      httpAgent: new http.Agent({
-        keepAlive: true,
-      }),
       agent: new http.Agent({
         keepAlive: true,
       }),
-      maxRedirects: 20,
     };
-    const responsePromise = new Promise<Buffer>((resolve, reject) => {
+    const response = await new Promise<Buffer>((resolve, reject) => {
       const request = http
         .request(options, (res: any) => {
           let chunks: any = [];
@@ -396,7 +392,6 @@ export default class P100 implements TpLinkAccessory {
       request.write(local_seed);
       request.end();
     });
-    let response = await responsePromise;
     // const response = await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
     //axios not working for handshake1
     if (!response || !response.subarray) {
@@ -411,44 +406,36 @@ export default class P100 implements TpLinkAccessory {
     this.log.debug("Extracted hashes");
     let auth_hash: any = undefined;
     this.log.debug("Calculated auth hash: " + ah.toString("hex"));
-    const local_seed_auth_hash = this._crypto
-      .createHash("sha256")
-      .update(Buffer.concat([local_seed, remote_seed, ah]))
-      .digest();
+    const calculateAuthHash = (email: string, password: string) => {
+      return this._crypto
+        .createHash("sha256")
+        .update(Buffer.concat([local_seed, remote_seed, this.calc_auth_hash(email, password)]))
+        .digest();
+    };
+
+    const local_seed_auth_hash = calculateAuthHash(this.email, this.password);
     this.log.debug("Calculated local seed auth hash: " + local_seed_auth_hash.toString("hex"));
     this.log.debug("Server hash: " + server_hash.toString("hex"));
-    if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
+
+    const validateAuthHash = (email: string, password: string): boolean => {
+      const calculatedHash = calculateAuthHash(email, password);
+      this.log.debug(`Calculated auth hash for ${email}: ${calculatedHash.toString("hex")}`);
+      return calculatedHash.toString("hex") === server_hash.toString("hex");
+    };
+
+    if (validateAuthHash(this.email, this.password)) {
       this.log.debug("New Handshake 1 successful");
       auth_hash = ah;
+    } else if (validateAuthHash("", "")) {
+      this.log.debug("New Handshake 1 successful with empty auth hash");
+      auth_hash = this.calc_auth_hash("", "");
+    } else if (validateAuthHash("test@tp-link.net", "test")) {
+      this.log.debug("New Handshake 1 successful with test auth hash");
+      auth_hash = this.calc_auth_hash("test@tp-link.net", "test");
     } else {
-      //test empty auth hash
-      const empty_local_seed_auth_hash = this._crypto
-        .createHash("sha256")
-        .update(Buffer.concat([local_seed, remote_seed, this.calc_auth_hash("", "")]))
-        .digest();
-      this.log.debug("Calculated empty auth hash: " + this.calc_auth_hash("", "").toString("hex"));
-      this.log.debug("Calculated empty local seed auth hash: " + empty_local_seed_auth_hash.toString("hex"));
-      if (empty_local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
-        this.log.debug("New Handshake 1 successful with empty auth hash");
-        auth_hash = this.calc_auth_hash("", "");
-      } else {
-        //test tester auth hash
-        let ah = this.calc_auth_hash("test@tp-link.net", "test");
-        const test_local_seed_auth_hash = this._crypto
-          .createHash("sha256")
-          .update(Buffer.concat([local_seed, remote_seed, ah]))
-          .digest();
-        this.log.debug("Calculated empty auth hash: " + ah.toString("hex"));
-        this.log.debug("Calculated empty local seed auth hash: " + test_local_seed_auth_hash.toString("hex"));
-        if (test_local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
-          this.log.debug("New Handshake 1 successful with empty auth hash");
-          auth_hash = ah;
-        } else {
-          this.log.debug("New Handshake 1 failed");
-          this.log.debug("Local seed auth hash doesnt match server hash");
-          auth_hash = ah;
-        }
-      }
+      this.log.debug("New Handshake 1 failed");
+      this.log.debug("Local seed auth hash doesn't match server hash");
+      auth_hash = ah;
     }
     const req = this._crypto
       .createHash("sha256")

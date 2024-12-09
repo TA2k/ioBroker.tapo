@@ -287,15 +287,11 @@ class P100 {
         "Content-Type": "application/octet-stream",
         "Content-Length": local_seed.length
       },
-      httpAgent: new import_http.default.Agent({
-        keepAlive: true
-      }),
       agent: new import_http.default.Agent({
         keepAlive: true
-      }),
-      maxRedirects: 20
+      })
     };
-    const responsePromise = new Promise((resolve, reject) => {
+    const response = await new Promise((resolve, reject) => {
       const request = import_http.default.request(options, (res) => {
         let chunks = [];
         if (res.headers && res.headers["set-cookie"]) {
@@ -320,7 +316,6 @@ class P100 {
       request.write(local_seed);
       request.end();
     });
-    let response = await responsePromise;
     if (!response || !response.subarray) {
       this.log.debug("New Handshake 1 failed");
       return;
@@ -333,33 +328,30 @@ class P100 {
     this.log.debug("Extracted hashes");
     let auth_hash = void 0;
     this.log.debug("Calculated auth hash: " + ah.toString("hex"));
-    const local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah])).digest();
+    const calculateAuthHash = (email, password) => {
+      return this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, this.calc_auth_hash(email, password)])).digest();
+    };
+    const local_seed_auth_hash = calculateAuthHash(this.email, this.password);
     this.log.debug("Calculated local seed auth hash: " + local_seed_auth_hash.toString("hex"));
     this.log.debug("Server hash: " + server_hash.toString("hex"));
-    if (local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
+    const validateAuthHash = (email, password) => {
+      const calculatedHash = calculateAuthHash(email, password);
+      this.log.debug(`Calculated auth hash for ${email}: ${calculatedHash.toString("hex")}`);
+      return calculatedHash.toString("hex") === server_hash.toString("hex");
+    };
+    if (validateAuthHash(this.email, this.password)) {
       this.log.debug("New Handshake 1 successful");
       auth_hash = ah;
+    } else if (validateAuthHash("", "")) {
+      this.log.debug("New Handshake 1 successful with empty auth hash");
+      auth_hash = this.calc_auth_hash("", "");
+    } else if (validateAuthHash("test@tp-link.net", "test")) {
+      this.log.debug("New Handshake 1 successful with test auth hash");
+      auth_hash = this.calc_auth_hash("test@tp-link.net", "test");
     } else {
-      const empty_local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, this.calc_auth_hash("", "")])).digest();
-      this.log.debug("Calculated empty auth hash: " + this.calc_auth_hash("", "").toString("hex"));
-      this.log.debug("Calculated empty local seed auth hash: " + empty_local_seed_auth_hash.toString("hex"));
-      if (empty_local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
-        this.log.debug("New Handshake 1 successful with empty auth hash");
-        auth_hash = this.calc_auth_hash("", "");
-      } else {
-        let ah2 = this.calc_auth_hash("test@tp-link.net", "test");
-        const test_local_seed_auth_hash = this._crypto.createHash("sha256").update(Buffer.concat([local_seed, remote_seed, ah2])).digest();
-        this.log.debug("Calculated empty auth hash: " + ah2.toString("hex"));
-        this.log.debug("Calculated empty local seed auth hash: " + test_local_seed_auth_hash.toString("hex"));
-        if (test_local_seed_auth_hash.toString("hex") === server_hash.toString("hex")) {
-          this.log.debug("New Handshake 1 successful with empty auth hash");
-          auth_hash = ah2;
-        } else {
-          this.log.debug("New Handshake 1 failed");
-          this.log.debug("Local seed auth hash doesnt match server hash");
-          auth_hash = ah2;
-        }
-      }
+      this.log.debug("New Handshake 1 failed");
+      this.log.debug("Local seed auth hash doesn't match server hash");
+      auth_hash = ah;
     }
     const req = this._crypto.createHash("sha256").update(Buffer.concat([remote_seed, local_seed, auth_hash])).digest();
     return this.raw_request("handshake2", req, "text").then((res) => {
