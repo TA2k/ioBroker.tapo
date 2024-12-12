@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.3",
+    "version": "0.4.4",
     "news": {
+      "0.4.4": {
+        "en": "improve handshake if e-mail is not entered in lowercase",
+        "de": "Handshake verbessern, wenn E-Mail nicht in Kleinbuchstaben eingegeben wird",
+        "ru": "улучшить рукопожатие, если электронная почта не вводится в нижнюю очередь",
+        "pt": "melhorar o aperto de mão se o e-mail não for inserido em minúsculas",
+        "nl": "de handdruk verbeteren als e-mail niet in kleine letters wordt ingevoerd",
+        "fr": "améliorer la poignée de main si l'e-mail n'est pas entré en minuscule",
+        "it": "migliorare la stretta di mano se la posta elettronica non è inserita in minuscolo",
+        "es": "mejorar el apretón de manos si el e-mail no se introduce en el maletín",
+        "pl": "poprawić uścisk dłoni, jeśli e- mail nie jest wprowadzany w małych przypadkach",
+        "uk": "покращуйте руки, якщо e-mail не вводиться в нижній край",
+        "zh-cn": "如果电子邮件没有在小写中输入, 则改善握手方式"
+      },
       "0.4.3": {
         "en": "fix handshake for device with HW v1.20",
         "de": "Fix für handshake für Gerät mit HW v1.20",

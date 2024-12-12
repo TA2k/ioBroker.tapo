@@ -342,6 +342,9 @@ class P100 {
     if (validateAuthHash(this.email, this.password)) {
       this.log.debug("New Handshake 1 successful");
       auth_hash = ah;
+    } else if (validateAuthHash(this.email.toLowerCase(), this.password)) {
+      this.log.debug("New Handshake 1 successful with lowercase mail");
+      auth_hash = ah;
     } else if (validateAuthHash("", "")) {
       this.log.debug("New Handshake 1 successful with empty auth hash");
       auth_hash = this.calc_auth_hash("", "");
@@ -349,8 +352,10 @@ class P100 {
       this.log.debug("New Handshake 1 successful with test auth hash");
       auth_hash = this.calc_auth_hash("test@tp-link.net", "test");
     } else {
-      this.log.debug("New Handshake 1 failed");
-      this.log.debug("Local seed auth hash doesn't match server hash");
+      this.log.error("New Handshake 1 failed");
+      this.log.error(
+        "Local seed auth hash doesn't match server hash. Please check if the mail and password are correct. And E-Mail is in same Upper/Lowercase as in the Tapo App"
+      );
       auth_hash = ah;
     }
     const req = this._crypto.createHash("sha256").update(Buffer.concat([remote_seed, local_seed, auth_hash])).digest();
