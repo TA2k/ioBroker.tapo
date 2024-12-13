@@ -234,8 +234,7 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
           loginRetryCount,
           responseLoginData
         );
-        this.log.error("Invalid device confirm. Firmware Fix by TP-Link expected in Dezember 2024. Only motion detection is supported.");
-        this.log.error("Or follow https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/blob/main/add_camera_with_new_firmware.md");
+        this.log.error("Invalid device confirm. Please activate 3rd Patry support in the TP App under TP Labor -> 3rd Party Control");
         return;
       }
     } else {
