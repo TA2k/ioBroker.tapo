@@ -270,6 +270,7 @@ export type TAPOCameraRefreshStokResponse = {
     start_seq?: number;
     user_group?: string;
     stok?: string;
+    responses?: Array<any>;
     data?: {
       code?: number;
       nonce?: string;

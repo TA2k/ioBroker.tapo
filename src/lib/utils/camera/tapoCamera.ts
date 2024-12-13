@@ -347,6 +347,11 @@ export class TAPOCamera extends OnvifCamera {
 
       this.log.error(`Temporary Suspension: Try again in ${responseData.result.data.sec_left} seconds`);
     }
+    if (responseData && responseData.result && responseData.result.responses && responseData.result.responses[0].error_code !== 0) {
+      this.log.debug(
+        `API request failed with specific error code ${responseData.result.responses[0].error_code}: ${responseData.result.responses[0].error_message}`,
+      );
+    }
 
     if (responseData?.data?.code === -40404 && responseData?.data?.sec_left && responseData.data.sec_left > 0) {
       this.log.debug("refreshStok: temporary suspension", responseData);
@@ -777,7 +782,7 @@ export class TAPOCamera extends OnvifCamera {
     return json.error_code !== 0;
   }
 
-  async moveMotor(x: number, y: number) {
+  async moveMotor(x: string, y: string) {
     const json = await this.apiRequest({
       method: "multipleRequest",
       params: {
