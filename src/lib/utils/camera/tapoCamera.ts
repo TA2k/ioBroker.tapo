@@ -784,10 +784,8 @@ export class TAPOCamera extends OnvifCamera {
 
   async moveMotor(x: string, y: string) {
     const json = await this.apiRequest({
-      method: "multipleRequest",
-      params: {
-        requests: [{ method: "do", motor: { move: { x_coord: x, y_coord: y } } }],
-      },
+      method: "do",
+      motor: { move: { x_coord: x, y_coord: y } },
     });
 
     return json.error_code !== 0;

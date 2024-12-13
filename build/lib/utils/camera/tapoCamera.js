@@ -568,10 +568,8 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
   }
   async moveMotor(x, y) {
     const json = await this.apiRequest({
-      method: "multipleRequest",
-      params: {
-        requests: [{ method: "do", motor: { move: { x_coord: x, y_coord: y } } }]
-      }
+      method: "do",
+      motor: { move: { x_coord: x, y_coord: y } }
     });
     return json.error_code !== 0;
   }
