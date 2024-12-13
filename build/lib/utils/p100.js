@@ -374,6 +374,30 @@ class P100 {
     const payload = '{"method": "set_device_info","params": {"device_on": true},"terminalUUID": "' + this.terminalUUID + '","requestTimeMils": ' + Math.round(Date.now() * 1e3) + "};";
     return this.sendRequest(payload);
   }
+  async getChildDevices() {
+    const payload = {
+      method: "getChildDeviceList",
+      params: { childControl: { start_index: 0 } }
+    };
+    return this.sendRequest(JSON.stringify(payload));
+  }
+  async setPowerStateChild(deviceId, state) {
+    const payload = {
+      method: "controlChild",
+      params: {
+        childControl: {
+          device_id: deviceId,
+          request_data: {
+            method: "set_device_info",
+            params: { device_on: state },
+            requestTimeMils: Math.round(Date.now() * 1e3),
+            terminalUUID: this.terminalUUID
+          }
+        }
+      }
+    };
+    return this.sendRequest(JSON.stringify(payload));
+  }
   async setPowerState(state) {
     if (state) {
       return this.turnOn();

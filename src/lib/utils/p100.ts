@@ -492,7 +492,32 @@ export default class P100 implements TpLinkAccessory {
 
     return this.sendRequest(payload);
   }
+  async getChildDevices(): Promise<boolean> {
+    const payload = {
+      method: "getChildDeviceList",
+      params: { childControl: { start_index: 0 } },
+    };
 
+    return this.sendRequest(JSON.stringify(payload));
+  }
+  async setPowerStateChild(deviceId: string, state: boolean): Promise<boolean> {
+    const payload = {
+      method: "controlChild",
+      params: {
+        childControl: {
+          device_id: deviceId,
+          request_data: {
+            method: "set_device_info",
+            params: { device_on: state },
+            requestTimeMils: Math.round(Date.now() * 1000),
+            terminalUUID: this.terminalUUID,
+          },
+        },
+      },
+    };
+
+    return this.sendRequest(JSON.stringify(payload));
+  }
   async setPowerState(state: boolean): Promise<boolean> {
     if (state) {
       return this.turnOn();

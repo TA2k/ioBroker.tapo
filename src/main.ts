@@ -320,15 +320,10 @@ class Tapo extends utils.Adapter {
             native: {},
           });
 
-          const remoteArray = [
+          let remoteArray = [
             { command: "refresh", name: "True = Refresh" },
             { command: "setPowerState", name: "True = On, False = Off" },
-            { command: "setAlertConfig", name: "True = On, False = Off" },
-            { command: "setLensMaskConfig", name: "True = On, False = Off" },
-            { command: "setForceWhitelampState", name: "True = On, False = Off" },
-            { command: "moveMotor", name: "move Camera to X (-360,360), Y(-45,45)", type: "string", def: "0, 0", role: "text" },
-            { command: "moveMotorStep", name: "Angle (0-360)", type: "string", def: "180", role: "text" },
-            { command: "moveToPreset", name: "Preset Id", type: "string", def: "1", role: "text" },
+            { command: "setPowerStateChild", name: "childId,true" },
 
             {
               command: "setBrightness",
@@ -342,7 +337,7 @@ class Tapo extends utils.Adapter {
               name: "Set Color Temp for Light devices",
               type: "number",
               role: "level.color.temperature",
-              def: 3000,
+              def: 3e3,
             },
             {
               command: "setColor",
@@ -351,6 +346,17 @@ class Tapo extends utils.Adapter {
               type: "string",
             },
           ];
+          if (device.deviceType.includes("CAMERA")) {
+            remoteArray = [
+              { command: "refresh", name: "True = Refresh" },
+              { command: "setAlertConfig", name: "True = On, False = Off" },
+              { command: "setLensMaskConfig", name: "True = On, False = Off" },
+              { command: "setForceWhitelampState", name: "True = On, False = Off" },
+              { command: "moveMotor", name: "move Camera to X (-360,360), Y(-45,45)", type: "string", def: "0, 0", role: "text" },
+              { command: "moveMotorStep", name: "Angle (0-360)", type: "string", def: "180", role: "text" },
+              { command: "moveToPreset", name: "PresetId", type: "string", def: "1", role: "text" },
+            ];
+          }
           remoteArray.forEach((remote) => {
             this.extendObject(id + ".remote." + remote.command, {
               type: "state",
@@ -612,6 +618,11 @@ class Tapo extends utils.Adapter {
               this.log.debug(JSON.stringify(energyUsage));
               this.json2iob.parse(id, energyUsage);
             }
+            const childList = await this.deviceObjects[id].getChildDevices();
+            this.log.debug("Childlist: " + JSON.stringify(childList));
+            if (childList) {
+              this.json2iob.parse(id + ".childlist", childList);
+            }
           })
           .catch((error: any) => {
             this.log.error(JSON.stringify(error));
@@ -750,7 +761,7 @@ class Tapo extends utils.Adapter {
         try {
           if (this.deviceObjects[deviceId] && this.deviceObjects[deviceId][command]) {
             let result;
-            if (command === "setColor" || command === "moveMotor") {
+            if (command === "setColor" || command === "moveMotor" || command === "setPowerStateChild") {
               const valueSplit = state.val.replace(" ", "").split(",");
               result = await this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]);
             } else {
