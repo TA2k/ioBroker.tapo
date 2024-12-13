@@ -743,7 +743,7 @@ export default class P100 implements TpLinkAccessory {
     } else {
       return this.handleKlapRequest(payload)
         .then((result) => {
-          return result ? true : false;
+          return result;
         })
         .catch((error) => {
           if (error.message && error.message.indexOf("9999") > 0 && this._reconnect_counter <= 3) {

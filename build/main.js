@@ -590,7 +590,7 @@ class Tapo extends utils.Adapter {
         }
         const childList = await this.deviceObjects[id].getChildDevices();
         this.log.debug("Childlist: " + JSON.stringify(childList));
-        if (childList) {
+        if (childList && childList.error_code === 0) {
           this.json2iob.parse(id + ".childlist", childList);
         }
       }).catch((error) => {
