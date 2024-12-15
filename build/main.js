@@ -708,18 +708,17 @@ class Tapo extends utils.Adapter {
           return;
         }
         try {
-          if (this.deviceObjects[deviceId] && this.deviceObjects[deviceId][command]) {
+          const cameraCommands = {
+            setAlertConfig: "alarm",
+            setLensMaskConfig: "eyes",
+            setLedStatus: "led",
+            setMsgPushConfig: "notifications",
+            setDetectionConfig: "motionDetection"
+          };
+          if (this.deviceObjects[deviceId] && (this.deviceObjects[deviceId][command] || cameraCommands[command])) {
             let result;
-            if (command === "setLensMaskConfig") {
-              result = await this.deviceObjects[deviceId].setStatus("eyes", state.val);
-            } else if (command === "setAlertConfig") {
-              result = await this.deviceObjects[deviceId].setStatus("alarm", state.val);
-            } else if (command === "setLedStatus") {
-              result = await this.deviceObjects[deviceId].setStatus("led", state.val);
-            } else if (command === "setDetectionConfig") {
-              result = await this.deviceObjects[deviceId].setStatus("motionDetection", state.val);
-            } else if (command === "setMsgPushConfig") {
-              result = await this.deviceObjects[deviceId].setStatus("notifications", state.val);
+            if (cameraCommands[command]) {
+              result = await this.deviceObjects[deviceId].setStatus(cameraCommands[command], state.val);
             } else if (command === "setColor" || command === "moveMotor" || command === "setPowerStateChild") {
               const valueSplit = state.val.replace(" ", "").split(",");
               result = await this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]);
