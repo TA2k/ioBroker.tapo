@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.4",
+    "version": "0.4.5",
     "news": {
+      "0.4.5": {
+        "en": "fix camera remotes",
+        "de": "kamera-fernbedienungen reparieren",
+        "ru": "фиксация пультов камеры",
+        "pt": "corrigir remotos da câmera",
+        "nl": "fix camera afstandsbedieningen",
+        "fr": "fixer les télécommandes de la caméra",
+        "it": "fissare i remoti della fotocamera",
+        "es": "fijar remotos de cámara",
+        "pl": "naprawić piloty kamer",
+        "uk": "фіксувати віддалені камери",
+        "zh-cn": "固定相机遥控器"
+      },
       "0.4.4": {
         "en": "improve handshake if e-mail is not entered in lowercase",
         "de": "Handshake verbessern, wenn E-Mail nicht in Kleinbuchstaben eingegeben wird",
@@ -54,8 +67,13 @@
       "pl": "Adapter do TP-Link Tapo",
       "zh-cn": "TP-Link Tapo 适配器"
     },
-    "authors": ["TA2k <tombox2020@gmail.com>"],
-    "keywords": ["tp-link", "tapo"],
+    "authors": [
+      "TA2k <tombox2020@gmail.com>"
+    ],
+    "keywords": [
+      "tp-link",
+      "tapo"
+    ],
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "main": "build/main.js",
@@ -89,8 +107,12 @@
       }
     ]
   },
-  "encryptedNative": ["password"],
-  "protectedNative": ["password"],
+  "encryptedNative": [
+    "password"
+  ],
+  "protectedNative": [
+    "password"
+  ],
   "native": {
     "username": "",
     "password": "",

@@ -739,7 +739,14 @@ class Tapo extends utils.Adapter {
           this.log.error(error);
         }
       } else {
-        const resultDict = { device_on: "setPowerState" };
+        const resultDict = {
+          device_on: "setPowerState",
+          eyes: "setLensMaskConfig",
+          alarm: "setAlertConfig",
+          led: "setLedStatus",
+          notifications: "setMsgPushConfig",
+          motionDetection: "setDetectionConfig"
+        };
         const idArray = id.split(".");
         const stateName = idArray[idArray.length - 1];
         const deviceId = id.split(".")[2];
