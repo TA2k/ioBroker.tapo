@@ -39,6 +39,7 @@ class Tapo extends utils.Adapter {
     this.reLoginTimeout = null;
     this.refreshTokenTimeout = null;
     this.session = {};
+    this.firstStart = true;
     this.on("ready", this.onReady.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
     this.on("unload", this.onUnload.bind(this));
@@ -145,6 +146,7 @@ class Tapo extends utils.Adapter {
     await this.sleep(1e4);
     this.log.info("Start first Update");
     this.updateDevices();
+    this.firstStart = false;
     this.updateInterval = setInterval(async () => {
       this.updateDevices();
     }, this.config.interval * 1e3);
@@ -618,8 +620,14 @@ class Tapo extends utils.Adapter {
           this.log.debug(JSON.stringify(status));
           this.json2iob.parse(deviceId, status);
           if (this.deviceObjects[deviceId].stok === void 0) {
-            this.log.error("No stok found for: " + deviceId + " Ingore device until next restart");
-            delete this.deviceObjects[deviceId];
+            if (this.firstStart) {
+              this.log.error("No stok found for: " + deviceId + " Ignore and remove the device until next restart");
+              delete this.deviceObjects[deviceId];
+            } else {
+              this.log.info(
+                "No stok found for: " + deviceId + " this means the device is offline or connection lost. No update or commands possible"
+              );
+            }
           }
           continue;
         }
@@ -733,7 +741,11 @@ class Tapo extends utils.Adapter {
               this.updateDevices();
             }, 2 * 1e3);
           } else {
-            this.log.error(`Device ${deviceId} has no command ${command}`);
+            if (this.deviceObjects[deviceId]) {
+              this.log.error(`Device ${deviceId} has no command ${command}`);
+            } else {
+              this.log.error(`Device ${deviceId} not found`);
+            }
           }
         } catch (error) {
           this.log.error(error);
