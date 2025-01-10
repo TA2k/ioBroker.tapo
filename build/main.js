@@ -519,8 +519,8 @@ class Tapo extends utils.Adapter {
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("C") || device.deviceName.startsWith("TC")) {
-      if (device.deviceName.startsWith("C42")) {
-        this.log.warn("Battery device found a high update rate can prevent standby and leads to high battery drain");
+      if (device.deviceName.startsWith("C4")) {
+        this.log.warn("Battery device found please check your device to prevent battery drain");
         this.log.warn("Minium update interval is 30 minutes");
       }
       if (!this.config.streamusername || !this.config.streampassword) {
