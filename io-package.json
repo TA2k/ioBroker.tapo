@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.5",
+    "version": "0.4.6",
     "news": {
+      "0.4.6": {
+        "en": "add checks for battery devices",
+        "de": "überprüfungen für batteriegeräte hinzufügen",
+        "ru": "добавить чеки для устройств батареи",
+        "pt": "adicionar verificações para dispositivos de bateria",
+        "nl": "controles voor batterijapparatuur toevoegen",
+        "fr": "ajouter des contrôles pour les dispositifs de batterie",
+        "it": "aggiungere i controlli per i dispositivi a batteria",
+        "es": "añadir cheques para dispositivos de batería",
+        "pl": "dodać kontrole urządzeń akumulatorowych",
+        "uk": "додавання перевірок для пристроїв акумулятора",
+        "zh-cn": "添加电池设备检查"
+      },
       "0.4.5": {
         "en": "fix camera remotes",
         "de": "kamera-fernbedienungen reparieren",
