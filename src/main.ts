@@ -16,8 +16,6 @@ import L520E from "./lib/utils/l520e";
 import L530 from "./lib/utils/l530";
 import P100 from "./lib/utils/p100";
 import P110 from "./lib/utils/p110";
-// Using ESM import syntax
-import got from "got";
 class Tapo extends utils.Adapter {
   private devices: { [key: string]: any };
   private deviceObjects: { [key: string]: any };
@@ -31,6 +29,7 @@ class Tapo extends utils.Adapter {
   refreshTimeout: any;
   refreshTokenInterval: any;
   private firstStart: boolean = true;
+  private lastBatteryDeviceUpdateTimestamp: number = 0;
 
   termId: any;
   public constructor(options: Partial<utils.AdapterOptions> = {}) {
@@ -540,6 +539,10 @@ class Tapo extends utils.Adapter {
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("C") || device.deviceName.startsWith("TC")) {
+      if (device.deviceName.startsWith("C42")) {
+        this.log.warn("Battery device found a high update rate can prevent standby and leads to high battery drain");
+        this.log.warn("Minium update interval is 30 minutes");
+      }
       if (!this.config.streamusername || !this.config.streampassword) {
         this.log.warn(`No stream username or password. No motion detection available`);
       }
@@ -645,6 +648,14 @@ class Tapo extends utils.Adapter {
   async updateDevices(): Promise<void> {
     try {
       for (const deviceId in this.deviceObjects) {
+        //check for C4 device and last timestampe update
+        if (
+          this.deviceObjects[deviceId]?.deviceName?.startsWith("C4") &&
+          this.lastBatteryDeviceUpdateTimestamp + 30 * 60 * 1000 > Date.now()
+        ) {
+          this.log.debug("Skip update for battery device last update was less than 30 minutes ago : " + deviceId);
+          continue;
+        }
         if (this.deviceObjects[deviceId].getStatus) {
           this.log.debug("Receive camera status");
           const status = await this.deviceObjects[deviceId].getStatus().catch((error: any) => {
