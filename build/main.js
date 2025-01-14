@@ -520,9 +520,9 @@ class Tapo extends utils.Adapter {
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
     } else if (device.deviceName.startsWith("C") || device.deviceName.startsWith("TC")) {
-      if (device.deviceName.startsWith("C4")) {
-        this.log.warn("Battery device found please check your device to prevent battery drain");
-        this.log.warn("Minium update interval is 30 minutes");
+      if (device.deviceName.startsWith("C4") && !this.config.enableBatteryDevices) {
+        this.log.warn("Battery device found but ignored. Please enable in settings and check regularly the battery status");
+        return;
       }
       if (!this.config.streamusername || !this.config.streampassword) {
         this.log.warn(`No stream username or password. No motion detection available`);
@@ -615,13 +615,8 @@ class Tapo extends utils.Adapter {
     });
   }
   async updateDevices() {
-    var _a, _b;
     try {
       for (const deviceId in this.deviceObjects) {
-        if (((_b = (_a = this.deviceObjects[deviceId]) == null ? void 0 : _a.deviceName) == null ? void 0 : _b.startsWith("C4")) && this.lastBatteryDeviceUpdateTimestamp + 30 * 60 * 1e3 > Date.now()) {
-          this.log.debug("Skip update for battery device last update was less than 30 minutes ago : " + deviceId);
-          continue;
-        }
         if (this.deviceObjects[deviceId].getStatus) {
           this.log.debug("Receive camera status");
           const status = await this.deviceObjects[deviceId].getStatus().catch((error) => {

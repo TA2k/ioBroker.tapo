@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.6",
+    "version": "0.4.7",
     "news": {
+      "0.4.7": {
+        "en": "disable battery devices\nimproved wrong formatted mail adresses",
+        "de": "akku-geräte deaktivieren\nverbesserte falsch formatierte mail-adressen",
+        "ru": "отключения аккумуляторных устройств\nулучшенные неправильные отформатированные почтовые адреса",
+        "pt": "desativar dispositivos de bateria\nendereços de correio formatado errado melhorado",
+        "nl": "batterijapparatuur uitschakelen\nverbeterde verkeerde geformatteerde e-mailadressen",
+        "fr": "désactiver les dispositifs de batterie\nmeilleures adresses de courrier mal formatées",
+        "it": "disabilitare i dispositivi della batteria\nmigliorato sbagliato formattato indirizzi di posta",
+        "es": "dispositivos de batería deshabilitables\nmejorado mal formateado direcciones de correo",
+        "pl": "wyłączyć urządzenia akumulacyjne\npoprawiła nieprawidłowe formatowane adresy poczty",
+        "uk": "акумуляторні пристрої\nпокращені неправильні форматовані адреси пошти",
+        "zh-cn": "禁用电池设备\n改进格式错误的邮件外衣"
+      },
       "0.4.6": {
         "en": "add checks for battery devices",
         "de": "überprüfungen für batteriegeräte hinzufügen",
@@ -132,7 +145,8 @@
     "mfa": "",
     "streamusername": "",
     "streampassword": "",
-    "interval": 10
+    "interval": 10,
+    "enableBatteryDevices": false
   },
   "objects": [],
   "instanceObjects": [

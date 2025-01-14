@@ -37,6 +37,11 @@ tapo.0.id.remote auf true/false setzen steuert den jeweiligen Befehl. Der Befehl
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
+### 0.4.7 (2025-01-14)
+
+- disable battery devices
+- improved wrong formatted mail adresses
+
 ### 0.4.6 (2025-01-10)
 
 - add checks for battery devices

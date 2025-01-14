@@ -2,21 +2,6 @@
   "i18n": false,
   "type": "panel",
   "items": {
-    "_infoText": {
-      "type": "staticText",
-      "label": {
-        "en": "No tested with battery camera devices. Please ensure that the adapter is not draining the battery. Update interval for battery devices is 30min",
-        "de": "Nicht mit Batterie Kameras getestet. Stellen Sie sicher, dass der Adapter den Akku nicht entlädt. Das Aktualisierungsintervall für Batteriegeräte beträgt 30 Minuten",
-        "ru": "Не тестировалось с устройствами на батарейках. Убедитесь, что адаптер не разряжает батарею. Интервал обновления для устройств на батарейках составляет 30 минут",
-        "pt": "Não testado com dispositivos de câmera de bateria. Certifique-se de que o adaptador não está drenando a bateria. O intervalo de atualização para dispositivos de bateria é de 30 minutos",
-        "nl": "Niet getest met batterijcamera-apparaten. Zorg ervoor dat de adapter de batterij niet leegtrekt. Update-interval voor batterijapparaten is 30 minuten",
-        "fr": "Non testé avec des appareils photo à batterie. Assurez-vous que l'adaptateur ne vide pas la batterie. L'intervalle de mise à jour pour les appareils à batterie est de 30 minutes",
-        "it": "Non testato con dispositivi fotocamera a batteria. Assicurati che l'adattatore non stia scaricando la batteria. L'intervallo di aggiornamento per i dispositivi a batteria è di 30 minuti",
-        "es": "No probado con dispositivos de cámara de batería. Asegúrese de que el adaptador no esté drenando la batería. El intervalo de actualización para dispositivos de batería es de 30 minutos",
-        "pl": "Nie testowano z urządzeniami kamer na baterie. Upewnij się, że adapter nie rozładowuje baterii. Interwał aktualizacji dla urządzeń na baterie wynosi 30 minut",
-        "zh-cn": "未与电池相机设备一起测试。请确保适配器不会耗尽电池。电池设备的更新间隔为30分钟"
-      }
-    },
     "username": {
       "type": "text",
       "label": {
@@ -52,6 +37,27 @@
         "pl": "Hasło do aplikacji",
         "zh-cn": "应用密码"
       }
+    },
+    "enableBatteryDevices": {
+      "type": "checkbox",
+      "label": {
+        "en": "Enable Battery Devices",
+        "de": "Batteriegeräte aktivieren",
+        "ru": "Включить батарейные устройства",
+        "pt": "Ativar dispositivos de bateria",
+        "nl": "Batterijapparaten inschakelen",
+        "fr": "Activer les appareils à batterie",
+        "it": "Abilita dispositivi a batteria",
+        "es": "Habilitar dispositivos de batería",
+        "pl": "Włącz urządzenia zasilane baterią",
+        "zh-cn": "启用电池设备"
+      },
+      "newLine": true,
+      "sm": 12,
+      "lg": 3,
+      "xs": 12,
+      "md": 3,
+      "xl": 3
     },
 
     "interval": {
