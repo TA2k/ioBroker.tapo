@@ -98,6 +98,7 @@ class Tapo extends utils.Adapter {
       this.log.error("Please set username and password in the instance settings");
       return;
     }
+    this.config.username = this.config.username.toLowerCase();
     this.updateInterval = null;
     this.reLoginTimeout = null;
     this.refreshTokenTimeout = null;
