@@ -384,6 +384,7 @@ export class TAPOCamera extends OnvifCamera {
 
       const response = await this.fetch(`https://${this.config.ipAddress}`, {
         method: "post",
+        headers: this.getHeaders(),
         body: JSON.stringify({
           method: "login",
           params: {

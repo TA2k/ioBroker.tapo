@@ -277,6 +277,7 @@ const _TAPOCamera = class extends import_onvifCamera.OnvifCamera {
       this.log.debug("isSecureConnection: Checking secure connection...");
       const response = await this.fetch(`https://${this.config.ipAddress}`, {
         method: "post",
+        headers: this.getHeaders(),
         body: JSON.stringify({
           method: "login",
           params: {
