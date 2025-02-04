@@ -93,13 +93,8 @@
       "pl": "Adapter do TP-Link Tapo",
       "zh-cn": "TP-Link Tapo 适配器"
     },
-    "authors": [
-      "TA2k <tombox2020@gmail.com>"
-    ],
-    "keywords": [
-      "tp-link",
-      "tapo"
-    ],
+    "authors": ["TA2k <tombox2020@gmail.com>"],
+    "keywords": ["tp-link", "tapo"],
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "main": "build/main.js",
@@ -117,11 +112,7 @@
     "adminUI": {
       "config": "json"
     },
-    "plugins": {
-      "sentry": {
-        "dsn": "https://2b10e03f7b784f3b921bdd7836ff517e@sentry.iobroker.net/209"
-      }
-    },
+
     "dependencies": [
       {
         "js-controller": ">=3.2.0"
@@ -133,12 +124,8 @@
       }
     ]
   },
-  "encryptedNative": [
-    "password"
-  ],
-  "protectedNative": [
-    "password"
-  ],
+  "encryptedNative": ["password"],
+  "protectedNative": ["password"],
   "native": {
     "username": "",
     "password": "",
