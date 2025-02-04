@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.4.7",
+    "version": "0.4.8",
     "news": {
+      "0.4.8": {
+        "en": "disable sentry to prevent crashes",
+        "de": "deaktivieren der sendung, um abstürzen zu verhindern",
+        "ru": "отключить отсылку для предотвращения аварий",
+        "pt": "desativar o sentinela para evitar falhas",
+        "nl": "sentry uitschakelen om crashes te voorkomen",
+        "fr": "désactiver la sentinelle pour prévenir les accidents",
+        "it": "disabilitare la sentinella per prevenire gli incidenti",
+        "es": "deshabilitar el centinela para evitar accidentes",
+        "pl": "wyłączyć wartownik, aby zapobiec awarii",
+        "uk": "відключити відправника для запобігання аварійних ситуацій",
+        "zh-cn": "禁用哨兵来防止碰撞"
+      },
       "0.4.7": {
         "en": "disable battery devices\nimproved wrong formatted mail adresses",
         "de": "akku-geräte deaktivieren\nverbesserte falsch formatierte mail-adressen",
@@ -93,8 +106,13 @@
       "pl": "Adapter do TP-Link Tapo",
       "zh-cn": "TP-Link Tapo 适配器"
     },
-    "authors": ["TA2k <tombox2020@gmail.com>"],
-    "keywords": ["tp-link", "tapo"],
+    "authors": [
+      "TA2k <tombox2020@gmail.com>"
+    ],
+    "keywords": [
+      "tp-link",
+      "tapo"
+    ],
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "main": "build/main.js",
@@ -112,7 +130,6 @@
     "adminUI": {
       "config": "json"
     },
-
     "dependencies": [
       {
         "js-controller": ">=3.2.0"
@@ -124,8 +141,12 @@
       }
     ]
   },
-  "encryptedNative": ["password"],
-  "protectedNative": ["password"],
+  "encryptedNative": [
+    "password"
+  ],
+  "protectedNative": [
+    "password"
+  ],
   "native": {
     "username": "",
     "password": "",
