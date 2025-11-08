@@ -121,6 +121,7 @@
     "extIcon": "https://raw.githubusercontent.com/TA2k/ioBroker.tapo/master/admin/tapo.png",
     "readme": "https://github.com/TA2k/ioBroker.tapo/blob/master/README.md",
     "loglevel": "info",
+    "tier": 2,
     "mode": "daemon",
     "type": "iot-systems",
     "compact": true,
