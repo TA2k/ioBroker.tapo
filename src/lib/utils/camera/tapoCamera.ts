@@ -1,5 +1,5 @@
-// import https, { Agent } from "https";
-import crypto from "crypto";
+// import https, { Agent } from "node:https";
+import crypto from "node:crypto";
 import { OnvifCamera } from "./onvifCamera";
 import type {
   TAPOBasicInfo,

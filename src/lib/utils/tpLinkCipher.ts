@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 export default class TpLinkCipher {
   public iv: any;

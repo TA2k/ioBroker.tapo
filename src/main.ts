@@ -6,8 +6,8 @@
 // you need to create an adapter
 import * as utils from "@iobroker/adapter-core";
 import axios, { AxiosInstance } from "axios";
-import crypto from "crypto";
-import https from "https";
+import crypto from "node:crypto";
+import https from "node:https";
 import { v4 as uuidv4 } from "uuid";
 import Json2iob from "json2iob";
 import { TAPOCamera } from "./lib/utils/camera/tapoCamera";
