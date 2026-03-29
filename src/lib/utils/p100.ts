@@ -8,10 +8,10 @@ import { AxiosResponse } from "axios";
 import NewTpLinkCipher from "./newTpLinkCipher.js";
 import { TpLinkAccessory } from "./tplinkAccessory.js";
 import axios from "axios";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import utf8 from "utf8";
 
-import http from "http";
+import http from "node:http";
 
 export default class P100 implements TpLinkAccessory {
   private _crypto = crypto;

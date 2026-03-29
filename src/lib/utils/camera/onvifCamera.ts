@@ -2,7 +2,7 @@ import { DeviceInformation, VideoSource, NotificationMessage, Cam as ICam } from
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { Cam } from "onvif";
-import { EventEmitter } from "stream";
+import { EventEmitter } from "node:stream";
 type CameraConfig = {
   name: string;
   ipAddress: string;

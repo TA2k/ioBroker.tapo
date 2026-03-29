@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 export default class NewTpLinkCipher {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
