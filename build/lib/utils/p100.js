@@ -667,8 +667,11 @@ class P100 {
             })
                 .catch(async (error) => {
                 const status = error.response?.status;
-                if ((status === 401 || status === 403) && this._reconnect_counter <= 3) {
-                    this.log.debug('TPAP session expired (' + status + '), reconnecting...');
+                const code = error.code;
+                const needsReconnect = status === 401 || status === 403 ||
+                    code === 'ECONNABORTED' || code === 'ETIMEDOUT' || code === 'ECONNREFUSED' || code === 'ECONNRESET';
+                if (needsReconnect && this._reconnect_counter <= 3) {
+                    this.log.debug('TPAP request failed (' + (status || code) + '), reconnecting...');
                     this._reconnect_counter++;
                     try {
                         await this.handshake_tpap();
@@ -676,12 +679,12 @@ class P100 {
                         if (!response || response.error_code !== undefined && response.error_code !== 0) {
                             return this.handleError(response?.error_code || 'unknown', 'tpap_getDeviceInfo_retry');
                         }
+                        this._reconnect_counter = 0;
                         this.setSysInfo(response.result);
                         return this.getSysInfo();
                     }
                     catch (retryError) {
                         this.log.error('TPAP reconnect failed: ' + retryError.message);
-                        this._reconnect_counter = 0;
                         return retryError;
                     }
                 }
@@ -963,15 +966,21 @@ class P100 {
                 : () => this.newReconnect();
         try {
             const response = await handler();
+            this._reconnect_counter = 0;
             return response?.result ?? response;
         }
         catch (error) {
+            const code = error.code;
             const shouldReconnect = error.message?.includes('9999') ||
                 error.response?.status === 401 ||
-                error.message?.includes('TPAP cipher not ready');
+                error.response?.status === 403 ||
+                error.message?.includes('TPAP cipher not ready') ||
+                code === 'ECONNABORTED' || code === 'ETIMEDOUT' || code === 'ECONNREFUSED' || code === 'ECONNRESET';
             if (shouldReconnect && this._reconnect_counter <= 3) {
+                this._reconnect_counter++;
                 await doReconnect();
                 const response = await handler();
+                this._reconnect_counter = 0;
                 return response?.result ?? response;
             }
             this._reconnect_counter = 0;
