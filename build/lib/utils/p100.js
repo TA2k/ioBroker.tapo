@@ -19,6 +19,7 @@ class P100 {
     _axios = axios_1.default;
     _utf8 = utf8_1.default;
     is_klap = true;
+    klap_version = 0; // 0 = unknown, 1 = v1 (md5), 2 = v2 (sha256)
     encodedPassword;
     encodedEmail;
     privateKey;
@@ -110,7 +111,7 @@ class P100 {
         return digest;
     }
     calc_auth_hash(username, password) {
-        this.log.debug('calc_auth_hash: username="' + username + '" length=' + username.length + ' password_length=' + password.length);
+        this.log.debug('calc_auth_hash v2: username="' + username + '" length=' + username.length + ' password_length=' + password.length);
         const usernameDigest = this._crypto
             .createHash('sha1')
             .update(Buffer.from(username.normalize('NFKC')))
@@ -119,13 +120,25 @@ class P100 {
             .createHash('sha1')
             .update(Buffer.from(password.normalize('NFKC')))
             .digest();
-        this.log.debug('calc_auth_hash: usernameDigest=' + usernameDigest.toString('hex') + ' passwordDigest=' + passwordDigest.toString('hex'));
-        const digest = this._crypto
+        return this._crypto
             .createHash('sha256')
             .update(Buffer.concat([usernameDigest, passwordDigest]))
             .digest();
-        this.log.debug('calc_auth_hash: result=' + digest.toString('hex'));
-        return digest;
+    }
+    calc_auth_hash_v1(username, password) {
+        this.log.debug('calc_auth_hash v1: username="' + username + '" length=' + username.length + ' password_length=' + password.length);
+        const usernameMd5 = this._crypto
+            .createHash('md5')
+            .update(Buffer.from(username.normalize('NFKC')))
+            .digest();
+        const passwordMd5 = this._crypto
+            .createHash('md5')
+            .update(Buffer.from(password.normalize('NFKC')))
+            .digest();
+        return this._crypto
+            .createHash('md5')
+            .update(Buffer.concat([usernameMd5, passwordMd5]))
+            .digest();
     }
     createKeyPair() {
         // Including publicKey and  privateKey from
@@ -314,7 +327,6 @@ class P100 {
     async handshake_new() {
         this.log.debug('Trying new handshake');
         const local_seed = this._crypto.randomBytes(16);
-        const ah = this.calc_auth_hash(this.email, this.password);
         //send handshake1 via native http
         const options = {
             method: 'POST',
@@ -359,8 +371,8 @@ class P100 {
         // const response = await this.raw_request("handshake1", local_seed, "arraybuffer").then((res) => {
         //axios not working for handshake1
         if (!response || !response.subarray) {
-            this.log.debug('New Handshake 1 failed');
-            return;
+            this.log.debug('New Handshake 1 failed: empty response from ' + this.ip);
+            throw new Error('New Handshake 1 failed: empty response from ' + this.ip);
         }
         this.log.debug('Handshake 1 response: ' + response.toString('hex'));
         const remote_seed = response.subarray(0, 16);
@@ -369,36 +381,49 @@ class P100 {
         this.log.debug('server hash: ' + server_hash.toString('hex'));
         this.log.debug('Extracted hashes');
         let auth_hash = undefined;
-        this.log.debug('Calculated auth hash: ' + ah.toString('hex'));
-        const calculateAuthHash = (email, password) => {
-            return this._crypto
-                .createHash('sha256')
-                .update(Buffer.concat([local_seed, remote_seed, this.calc_auth_hash(email, password)]))
-                .digest();
+        // v2: sha256(local_seed + remote_seed + auth_hash), v1: sha256(local_seed + auth_hash)
+        const calcSeedHash = (ah, version) => {
+            const payload = version === 1
+                ? Buffer.concat([local_seed, ah])
+                : Buffer.concat([local_seed, remote_seed, ah]);
+            return this._crypto.createHash('sha256').update(payload).digest();
         };
         const matchesServer = (hash) => hash.toString('hex') === server_hash.toString('hex');
+        // Try v2 first (newer devices), then v1 (older devices)
         const candidates = [
-            [this.email, this.password],
-            ['', ''],
-            ['test@tp-link.net', 'test'],
+            [this.email, this.password, 'user', 2],
+            [this.email, this.password, 'user', 1],
+            ['', '', 'empty', 2],
+            ['', '', 'empty', 1],
+            ['test@tp-link.net', 'test', 'test', 2],
+            ['test@tp-link.net', 'test', 'test', 1],
         ];
-        for (const [email, password] of candidates) {
-            const hash = calculateAuthHash(email, password);
+        let matchedVersion = 0;
+        for (const [email, password, label, version] of candidates) {
+            const ah = version === 1 ? this.calc_auth_hash_v1(email, password) : this.calc_auth_hash(email, password);
+            const hash = calcSeedHash(ah, version);
             const match = matchesServer(hash);
-            this.log.error('Auth candidate ' + this.ip + ': email="' + email + '" hash=' + hash.toString('hex') + ' match=' + match);
+            this.log.debug('Auth candidate ' + this.ip + ': v' + version + ' ' + label + ' hash=' + hash.toString('hex').substring(0, 16) + '... match=' + match);
             if (match) {
-                this.log.debug('New Handshake 1 successful with: ' + (email || '(empty)'));
-                auth_hash = this.calc_auth_hash(email, password);
+                this.log.info('KLAP v' + version + ' handshake successful for ' + this.ip + ' with ' + label);
+                auth_hash = ah;
+                matchedVersion = version;
                 break;
             }
         }
         if (!auth_hash) {
-            this.log.error('Handshake 1 failed ' + this.ip + ' server_hash=' + server_hash.toString('hex') + ' response_length=' + response.length);
-            return;
+            const msg = 'Handshake 1 failed ' + this.ip + ' server_hash=' + server_hash.toString('hex') + ' response_length=' + response.length;
+            this.log.error(msg);
+            throw new Error(msg);
         }
+        this.klap_version = matchedVersion;
+        // v2: sha256(remote_seed + local_seed + auth_hash), v1: sha256(remote_seed + auth_hash)
+        const handshake2Payload = matchedVersion === 1
+            ? Buffer.concat([remote_seed, auth_hash])
+            : Buffer.concat([remote_seed, local_seed, auth_hash]);
         const req = this._crypto
             .createHash('sha256')
-            .update(Buffer.concat([remote_seed, local_seed, auth_hash]))
+            .update(handshake2Payload)
             .digest();
         return this.raw_request('handshake2', req, 'text').then((res) => {
             this.log.debug('New Handshake 2 successful: ' + res);
