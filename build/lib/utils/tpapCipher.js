@@ -414,7 +414,7 @@ class TpapCipher {
         // Username for register: md5("admin")
         const authUsername = crypto_1.default.createHash('md5').update('admin').digest('hex');
         const userRandom = crypto_1.default.randomBytes(32);
-        // Step 1: pake_register — offer all suites and encryptions
+        // Step 1: pake_register — start conservative, device negotiates
         this.log.debug(`TPAP register to ${this.ip} with username hash ${authUsername}`);
         const registerPayload = {
             method: 'login',
@@ -422,8 +422,8 @@ class TpapCipher {
                 sub_method: 'pake_register',
                 username: authUsername,
                 user_random: userRandom.toString('base64'),
-                cipher_suites: ALL_CIPHER_SUITES,
-                encryption: ALL_ENCRYPTIONS,
+                cipher_suites: [1],
+                encryption: ['aes_128_ccm'],
                 passcode_type: 'default_userpw',
                 stok: null,
             },
