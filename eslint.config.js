@@ -60,6 +60,7 @@ module.exports = [
       ],
 
       semi: ['error', 'always'],
+      'no-useless-assignment': 'off',
     },
   },
   {
