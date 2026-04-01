@@ -3,6 +3,7 @@ import TpLinkCipher from './tpLinkCipher.js';
 
 import { AxiosResponse } from 'axios';
 import NewTpLinkCipher from './newTpLinkCipher.js';
+import TpapCipher from './tpapCipher.js';
 import { TpLinkAccessory } from './tplinkAccessory.js';
 import axios from 'axios';
 import crypto from 'crypto';
@@ -15,6 +16,7 @@ export default class P100 implements TpLinkAccessory {
   protected _axios = axios;
   private _utf8 = utf8;
   public is_klap = true;
+  public is_tpap = false;
   public klap_version = 0; // 0 = unknown, 1 = v1 (md5), 2 = v2 (sha256)
 
   private encodedPassword!: string;
@@ -32,6 +34,7 @@ export default class P100 implements TpLinkAccessory {
 
   protected tpLinkCipher!: TpLinkCipher;
   protected newTpLinkCipher!: NewTpLinkCipher;
+  protected tpapCipher!: TpapCipher;
 
   protected ERROR_CODES = {
     '0': 'Success',
@@ -388,7 +391,17 @@ export default class P100 implements TpLinkAccessory {
 
           res.on('end', (chunk: any) => {
             const body = Buffer.concat(chunks);
-            this.log.debug(body.toString());
+            this.log.debug('handshake1 status=' + res.statusCode + ' body_length=' + body.length);
+            if (res.statusCode === 403) {
+              this.log.error('handshake1 ' + this.ip + ': HTTP 403 - device locked, too many failed login attempts. Restart device to unlock.');
+              resolve(Buffer.from(''));
+              return;
+            }
+            if (res.statusCode !== 200) {
+              this.log.error('handshake1 ' + this.ip + ': HTTP ' + res.statusCode);
+              resolve(Buffer.from(''));
+              return;
+            }
             resolve(body);
           });
 
@@ -480,6 +493,15 @@ export default class P100 implements TpLinkAccessory {
       return;
     });
     //   });
+  }
+
+  //TPAP/SPAKE2+ handshake for newer firmware devices
+  async handshake_tpap(): Promise<void> {
+    this.log.debug('Trying TPAP/SPAKE2+ handshake for ' + this.ip);
+    this.tpapCipher = new TpapCipher(this.log, this.ip, this.email, this.password);
+    await this.tpapCipher.handshake();
+    this.is_tpap = true;
+    this.is_klap = false;
   }
 
   async turnOff(): Promise<boolean> {
@@ -672,6 +694,21 @@ export default class P100 implements TpLinkAccessory {
           }
           return error;
         });
+    } else if (this.tpapCipher && this.tpapCipher.isReady) {
+      //@ts-ignore
+      return this.handleTpapRequest(payload)
+        .then((response: any) => {
+          if (!response || response.error_code !== undefined && response.error_code !== 0) {
+            return this.handleError(response?.error_code || 'unknown', 'tpap_getDeviceInfo');
+          }
+          this.setSysInfo(response.result);
+          this.log.debug('Device Info: ', response.result);
+          return this.getSysInfo();
+        })
+        .catch((error: Error) => {
+          this.log.error('TPAP getDeviceInfo Error: ' + (error ? error.message : ''));
+          return error;
+        });
     } else {
       return new Promise<PlugSysinfo>((resolve, reject) => {
         reject();
@@ -752,7 +789,23 @@ export default class P100 implements TpLinkAccessory {
   }
 
   protected async sendRequest(payload: string): Promise<boolean> {
-    if (this.tpLinkCipher) {
+    if (this.tpapCipher && this.tpapCipher.isReady) {
+      return this.handleTpapRequest(payload)
+        .then((result: any) => {
+          return result ? true : false;
+        })
+        .catch((error: any) => {
+          if (error.message && error.message.indexOf('9999') > 0 && this._reconnect_counter <= 3) {
+            return this.tpapReconnect().then(() => {
+              return this.handleTpapRequest(payload).then((result: any) => {
+                return result ? true : false;
+              });
+            });
+          }
+          this._reconnect_counter = 0;
+          return false;
+        });
+    } else if (this.tpLinkCipher) {
       return this.handleRequest(payload)
         .then((result) => {
           return result ? true : false;
@@ -879,6 +932,28 @@ export default class P100 implements TpLinkAccessory {
     });
   }
 
+  protected async handleTpapRequest(payload: string): Promise<any> {
+    if (!this.tpapCipher || !this.tpapCipher.isReady) {
+      throw new Error('TPAP cipher not ready');
+    }
+    const encrypted = this.tpapCipher.encrypt(payload);
+    const url = this.tpapCipher.sessionUrl;
+
+    const config = {
+      timeout: this._timeout * 1000,
+      responseType: 'arraybuffer' as const,
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        Connection: 'Keep-Alive',
+      },
+    };
+
+    const res = await this._axios.post(url, encrypted.data, config);
+    const responseData = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data);
+    const decrypted = this.tpapCipher.decrypt(responseData);
+    return JSON.parse(decrypted);
+  }
+
   protected async reconnect(): Promise<void> {
     this._reconnect_counter++;
     return this.handshake().then(() => {
@@ -895,6 +970,11 @@ export default class P100 implements TpLinkAccessory {
     });
   }
 
+  protected async tpapReconnect(): Promise<void> {
+    this._reconnect_counter++;
+    return this.handshake_tpap();
+  }
+
   // Generic command method - returns full response
   async sendCommand(method: string, params?: Record<string, any>): Promise<any> {
     const payload = JSON.stringify({
@@ -903,12 +983,16 @@ export default class P100 implements TpLinkAccessory {
       terminalUUID: this.terminalUUID,
       requestTimeMils: Math.round(Date.now() * 1000),
     });
-    const handler = this.tpLinkCipher
-      ? () => this.handleRequest(payload)
-      : () => this.handleKlapRequest(payload);
-    const doReconnect = this.tpLinkCipher
-      ? () => this.reconnect()
-      : () => this.newReconnect();
+    const handler = this.tpapCipher && this.tpapCipher.isReady
+      ? () => this.handleTpapRequest(payload)
+      : this.tpLinkCipher
+        ? () => this.handleRequest(payload)
+        : () => this.handleKlapRequest(payload);
+    const doReconnect = this.tpapCipher && this.tpapCipher.isReady
+      ? () => this.tpapReconnect()
+      : this.tpLinkCipher
+        ? () => this.reconnect()
+        : () => this.newReconnect();
     try {
       const response = await handler();
       return response?.result ?? response;
@@ -1039,7 +1123,15 @@ export default class P100 implements TpLinkAccessory {
 
   private reAuthenticate(): void {
     this.log.debug('Reauthenticating');
-    if (this.is_klap) {
+    if (this.is_tpap) {
+      this.handshake_tpap()
+        .then(() => {
+          this.log.info('TPAP Authenticated successfully');
+        })
+        .catch(() => {
+          this.log.error('TPAP Handshake failed');
+        });
+    } else if (this.is_klap) {
       this.handshake_new()
         .then(() => {
           this.log.info('KLAP Authenticated successfully');

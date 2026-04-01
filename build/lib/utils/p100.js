@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const tpLinkCipher_js_1 = __importDefault(require("./tpLinkCipher.js"));
 const newTpLinkCipher_js_1 = __importDefault(require("./newTpLinkCipher.js"));
+const tpapCipher_js_1 = __importDefault(require("./tpapCipher.js"));
 const axios_1 = __importDefault(require("axios"));
 const crypto_1 = __importDefault(require("crypto"));
 const utf8_1 = __importDefault(require("utf8"));
@@ -19,6 +20,7 @@ class P100 {
     _axios = axios_1.default;
     _utf8 = utf8_1.default;
     is_klap = true;
+    is_tpap = false;
     klap_version = 0; // 0 = unknown, 1 = v1 (md5), 2 = v2 (sha256)
     encodedPassword;
     encodedEmail;
@@ -34,6 +36,7 @@ class P100 {
     _timeout;
     tpLinkCipher;
     newTpLinkCipher;
+    tpapCipher;
     ERROR_CODES = {
         '0': 'Success',
         '-1010': 'Invalid Public Key Length',
@@ -353,7 +356,17 @@ class P100 {
                 });
                 res.on('end', (chunk) => {
                     const body = Buffer.concat(chunks);
-                    this.log.debug(body.toString());
+                    this.log.debug('handshake1 status=' + res.statusCode + ' body_length=' + body.length);
+                    if (res.statusCode === 403) {
+                        this.log.error('handshake1 ' + this.ip + ': HTTP 403 - device locked, too many failed login attempts. Restart device to unlock.');
+                        resolve(Buffer.from(''));
+                        return;
+                    }
+                    if (res.statusCode !== 200) {
+                        this.log.error('handshake1 ' + this.ip + ': HTTP ' + res.statusCode);
+                        resolve(Buffer.from(''));
+                        return;
+                    }
                     resolve(body);
                 });
                 res.on('error', (error) => {
@@ -432,6 +445,14 @@ class P100 {
             return;
         });
         //   });
+    }
+    //TPAP/SPAKE2+ handshake for newer firmware devices
+    async handshake_tpap() {
+        this.log.debug('Trying TPAP/SPAKE2+ handshake for ' + this.ip);
+        this.tpapCipher = new tpapCipher_js_1.default(this.log, this.ip, this.email, this.password);
+        await this.tpapCipher.handshake();
+        this.is_tpap = true;
+        this.is_klap = false;
     }
     async turnOff() {
         const payload = '{' +
@@ -608,6 +629,22 @@ class P100 {
                 return error;
             });
         }
+        else if (this.tpapCipher && this.tpapCipher.isReady) {
+            //@ts-ignore
+            return this.handleTpapRequest(payload)
+                .then((response) => {
+                if (!response || response.error_code !== undefined && response.error_code !== 0) {
+                    return this.handleError(response?.error_code || 'unknown', 'tpap_getDeviceInfo');
+                }
+                this.setSysInfo(response.result);
+                this.log.debug('Device Info: ', response.result);
+                return this.getSysInfo();
+            })
+                .catch((error) => {
+                this.log.error('TPAP getDeviceInfo Error: ' + (error ? error.message : ''));
+                return error;
+            });
+        }
         else {
             return new Promise((resolve, reject) => {
                 reject();
@@ -680,7 +717,24 @@ class P100 {
         return false;
     }
     async sendRequest(payload) {
-        if (this.tpLinkCipher) {
+        if (this.tpapCipher && this.tpapCipher.isReady) {
+            return this.handleTpapRequest(payload)
+                .then((result) => {
+                return result ? true : false;
+            })
+                .catch((error) => {
+                if (error.message && error.message.indexOf('9999') > 0 && this._reconnect_counter <= 3) {
+                    return this.tpapReconnect().then(() => {
+                        return this.handleTpapRequest(payload).then((result) => {
+                            return result ? true : false;
+                        });
+                    });
+                }
+                this._reconnect_counter = 0;
+                return false;
+            });
+        }
+        else if (this.tpLinkCipher) {
             return this.handleRequest(payload)
                 .then((result) => {
                 return result ? true : false;
@@ -800,6 +854,25 @@ class P100 {
             reject();
         });
     }
+    async handleTpapRequest(payload) {
+        if (!this.tpapCipher || !this.tpapCipher.isReady) {
+            throw new Error('TPAP cipher not ready');
+        }
+        const encrypted = this.tpapCipher.encrypt(payload);
+        const url = this.tpapCipher.sessionUrl;
+        const config = {
+            timeout: this._timeout * 1000,
+            responseType: 'arraybuffer',
+            headers: {
+                'Content-Type': 'application/octet-stream',
+                Connection: 'Keep-Alive',
+            },
+        };
+        const res = await this._axios.post(url, encrypted.data, config);
+        const responseData = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data);
+        const decrypted = this.tpapCipher.decrypt(responseData);
+        return JSON.parse(decrypted);
+    }
     async reconnect() {
         this._reconnect_counter++;
         return this.handshake().then(() => {
@@ -814,6 +887,10 @@ class P100 {
             return;
         });
     }
+    async tpapReconnect() {
+        this._reconnect_counter++;
+        return this.handshake_tpap();
+    }
     // Generic command method - returns full response
     async sendCommand(method, params) {
         const payload = JSON.stringify({
@@ -822,12 +899,16 @@ class P100 {
             terminalUUID: this.terminalUUID,
             requestTimeMils: Math.round(Date.now() * 1000),
         });
-        const handler = this.tpLinkCipher
-            ? () => this.handleRequest(payload)
-            : () => this.handleKlapRequest(payload);
-        const doReconnect = this.tpLinkCipher
-            ? () => this.reconnect()
-            : () => this.newReconnect();
+        const handler = this.tpapCipher && this.tpapCipher.isReady
+            ? () => this.handleTpapRequest(payload)
+            : this.tpLinkCipher
+                ? () => this.handleRequest(payload)
+                : () => this.handleKlapRequest(payload);
+        const doReconnect = this.tpapCipher && this.tpapCipher.isReady
+            ? () => this.tpapReconnect()
+            : this.tpLinkCipher
+                ? () => this.reconnect()
+                : () => this.newReconnect();
         try {
             const response = await handler();
             return response?.result ?? response;
@@ -930,7 +1011,16 @@ class P100 {
     }
     reAuthenticate() {
         this.log.debug('Reauthenticating');
-        if (this.is_klap) {
+        if (this.is_tpap) {
+            this.handshake_tpap()
+                .then(() => {
+                this.log.info('TPAP Authenticated successfully');
+            })
+                .catch(() => {
+                this.log.error('TPAP Handshake failed');
+            });
+        }
+        else if (this.is_klap) {
             this.handshake_new()
                 .then(() => {
                 this.log.info('KLAP Authenticated successfully');

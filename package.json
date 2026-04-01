@@ -19,6 +19,7 @@
   "dependencies": {
     "@iobroker/adapter-core": "^3.3.2",
     "axios": "^1.14.0",
+    "elliptic": "^6.6.1",
     "json2iob": "^2.6.22",
     "onvif": "^0.8.1",
     "undici": "^7.24.6",
@@ -32,6 +33,7 @@
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
     "@iobroker/testing": "^5.2.2",
+    "@types/elliptic": "^6.4.18",
     "@types/node": "^25.5.0",
     "@types/utf8": "^3.0.3",
     "@typescript-eslint/parser": "^8.58.0",
@@ -57,7 +59,6 @@
     "io-package.json",
     "LICENSE"
   ],
-
   "scripts": {
     "prebuild": "rimraf build",
     "build": "build-adapter ts",
