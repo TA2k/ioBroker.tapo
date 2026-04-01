@@ -798,6 +798,7 @@ class P100 {
                 const response = await handler();
                 return response?.result ?? response;
             }
+            this._reconnect_counter = 0;
             throw error;
         }
     }
@@ -809,7 +810,7 @@ class P100 {
         return this.sendCommand('get_led_info');
     }
     async setAutoOff(enabled) {
-        return this.sendCommand('set_auto_off_config', { enable: enabled, delay_min: 120 });
+        return this.sendCommand('set_auto_off_config', { enable: enabled });
     }
     async setAutoOffDelay(minutes) {
         return this.sendCommand('set_auto_off_config', { enable: true, delay_min: minutes });
@@ -818,7 +819,7 @@ class P100 {
         return this.sendCommand('set_child_protection', { enable: enabled });
     }
     async setPowerProtection(enabled) {
-        return this.sendCommand('set_protection_power', { enabled, protection_power: 2300 });
+        return this.sendCommand('set_protection_power', { enabled });
     }
     async setPowerProtectionThreshold(watts) {
         return this.sendCommand('set_protection_power', { enabled: true, protection_power: watts });

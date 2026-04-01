@@ -864,16 +864,29 @@ class Tapo extends utils.Adapter {
                 if (id.split('.')[3] !== 'remote') {
                     return;
                 }
-                if (command === 'Refresh') {
-                    this.deviceObjects[deviceId]
-                        .getDeviceInfo(true)
-                        .then((sysInfo) => {
-                        this.log.debug(JSON.stringify(sysInfo));
-                        this.json2iob.parse(deviceId, sysInfo);
-                    })
-                        .catch((error) => {
-                        this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
-                    });
+                if (command === 'refresh') {
+                    if (this.deviceObjects[deviceId].getStatus) {
+                        this.deviceObjects[deviceId]
+                            .getStatus()
+                            .then((status) => {
+                            this.log.debug(JSON.stringify(status));
+                            this.json2iob.parse(deviceId, status);
+                        })
+                            .catch((error) => {
+                            this.log.error(`Get camera status failed for ${deviceId} - ${error}`);
+                        });
+                    }
+                    else {
+                        this.deviceObjects[deviceId]
+                            .getDeviceInfo(true)
+                            .then((sysInfo) => {
+                            this.log.debug(JSON.stringify(sysInfo));
+                            this.json2iob.parse(deviceId, sysInfo);
+                        })
+                            .catch((error) => {
+                            this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
+                        });
+                    }
                     return;
                 }
                 try {

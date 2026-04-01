@@ -871,6 +871,7 @@ export default class P100 implements TpLinkAccessory {
         const response = await handler();
         return response?.result ?? response;
       }
+      this._reconnect_counter = 0;
       throw error;
     }
   }
@@ -886,7 +887,7 @@ export default class P100 implements TpLinkAccessory {
   }
 
   async setAutoOff(enabled: boolean): Promise<any> {
-    return this.sendCommand('set_auto_off_config', { enable: enabled, delay_min: 120 });
+    return this.sendCommand('set_auto_off_config', { enable: enabled });
   }
 
   async setAutoOffDelay(minutes: number): Promise<any> {
@@ -898,7 +899,7 @@ export default class P100 implements TpLinkAccessory {
   }
 
   async setPowerProtection(enabled: boolean): Promise<any> {
-    return this.sendCommand('set_protection_power', { enabled, protection_power: 2300 });
+    return this.sendCommand('set_protection_power', { enabled });
   }
 
   async setPowerProtectionThreshold(watts: number): Promise<any> {
