@@ -452,25 +452,30 @@ class P100 {
     async handshake_tpap() {
         this.log.debug('Trying TPAP/SPAKE2+ handshake for ' + this.ip);
         this.tpapCipher = new tpapCipher_js_1.default(this.log, this.ip, this.email, this.password, this.deviceMac);
-        // Discover to get pake list
+        // Discover to get pake list, MAC, user_hash_type
         let pakeList = [2];
+        let userHashType = 0;
         try {
             const discoverRes = await this._axios.post('http://' + this.ip + '/', {
                 method: 'login',
                 params: { sub_method: 'discover' },
             }, { timeout: 5000 });
-            if (discoverRes.data?.result?.tpap?.pake) {
-                pakeList = discoverRes.data.result.tpap.pake;
-                if (discoverRes.data.result.tpap.mac) {
-                    this.deviceMac = discoverRes.data.result.tpap.mac;
+            const tpap = discoverRes.data?.result?.tpap;
+            if (tpap?.pake) {
+                pakeList = tpap.pake;
+                if (tpap.mac) {
+                    this.deviceMac = tpap.mac;
                 }
-                this.log.debug('TPAP discover: pake=' + JSON.stringify(pakeList) + ' mac=' + this.deviceMac);
+                if (tpap.user_hash_type != null) {
+                    userHashType = tpap.user_hash_type;
+                }
+                this.log.debug('TPAP discover: pake=' + JSON.stringify(pakeList) + ' mac=' + this.deviceMac + ' user_hash_type=' + userHashType);
             }
         }
         catch (e) {
             this.log.debug('TPAP discover failed, using defaults: ' + e.message);
         }
-        await this.tpapCipher.handshake(pakeList);
+        await this.tpapCipher.handshake(pakeList, userHashType);
         this.is_tpap = true;
         this.is_klap = false;
     }

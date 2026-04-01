@@ -300,9 +300,14 @@ function sha256Crypt(password, prefix, rounds) {
     return `$5$${roundsStr}${salt}$${encoded}`;
 }
 /** Resolve extra_crypt credentials */
-function resolveCredential(log, password, email, mac, extraCrypt) {
-    if (!extraCrypt)
+function resolveCredential(log, password, username, mac, extraCrypt, isSmartCam) {
+    if (!extraCrypt) {
+        // No extra_crypt: generic TPAP uses "username/passcode", smartcam uses passcode only
+        if (!isSmartCam && username) {
+            return username + '/' + password;
+        }
         return password;
+    }
     const cryptType = (extraCrypt.type || '').toLowerCase();
     const params = extraCrypt.params || {};
     if (cryptType === 'password_shadow') {
@@ -381,6 +386,17 @@ function resolveCredential(log, password, email, mac, extraCrypt) {
     log.error(`TPAP unsupported extra_crypt type: ${cryptType}`);
     return password;
 }
+// --- Default passcode from device MAC (pake:[0]) ---
+function macPassFromDeviceMac(mac) {
+    const macHex = mac.replace(/[:\-]/g, '');
+    const macBytes = Buffer.from(macHex, 'hex');
+    if (macBytes.length < 6) {
+        throw new Error('Device MAC too short for default passcode derivation');
+    }
+    const seed = Buffer.from('GqY5o136oa4i6VprTlMW2DpVXxmfW8');
+    const ikm = Buffer.concat([seed, macBytes.subarray(3, 6), macBytes.subarray(0, 3)]);
+    return Buffer.from(crypto_1.default.hkdfSync('sha256', ikm, Buffer.from('tp-kdf-salt-default-passcode'), Buffer.from('tp-kdf-info-default-passcode'), 32)).toString('hex').toUpperCase();
+}
 // --- Main class ---
 class TpapCipher {
     log;
@@ -407,8 +423,90 @@ class TpapCipher {
     get isReady() {
         return !!this.key && !!this.baseNonce && !!this.stok;
     }
+    /** Determine auth username hash based on device type and user_hash_type */
+    getAuthUsername(pakeList, userHashType) {
+        // Plugs (non-smartcam) with pake:[2] always use "admin"
+        // SmartCam devices would use the configured email
+        // For now, use "admin" for pake:[0,2,5] (plugs), configured email for others
+        const isDefaultOrPlug = !pakeList.length || pakeList.includes(0) || pakeList.includes(2) || pakeList.includes(5);
+        const rawUsername = isDefaultOrPlug ? 'admin' : (this.email || 'admin');
+        if (userHashType === 1) {
+            return crypto_1.default.createHash('sha256').update(rawUsername).digest('hex').toUpperCase();
+        }
+        return crypto_1.default.createHash('md5').update(rawUsername).digest('hex');
+    }
+    /** Get passcode_type based on pake list */
+    getPasscodeType(pakeList) {
+        if (pakeList.includes(0))
+            return 'default_userpw';
+        if (pakeList.includes(2) || pakeList.includes(5))
+            return 'userpw';
+        if (pakeList.includes(1))
+            return 'userpw';
+        if (pakeList.includes(3))
+            return 'shared_token';
+        return 'default_userpw';
+    }
+    /** Get candidate secrets to try, based on pake version */
+    getCandidateSecrets(pakeList) {
+        // pake:[0] or empty → MAC-derived default passcode
+        if (!pakeList.length || pakeList.includes(0)) {
+            if (this.mac) {
+                try {
+                    return [macPassFromDeviceMac(this.mac)];
+                }
+                catch (e) {
+                    this.log.debug('TPAP MAC default passcode failed: ' + e.message);
+                }
+            }
+            // Fallback to raw password if no MAC
+            return [this.password];
+        }
+        // Non-smartcam plugs (pake:[2] without smartcam): raw password
+        const isSmartCam = pakeList.includes(3) || (pakeList.includes(2) && !pakeList.includes(0));
+        // For plugs we know the password works directly
+        // SmartCam devices need hashed candidates
+        if (pakeList.includes(2)) {
+            // Try md5(password) and sha256_upper(password) as candidates
+            const md5pw = crypto_1.default.createHash('md5').update(this.password).digest('hex');
+            const sha256pw = crypto_1.default.createHash('sha256').update(this.password).digest('hex').toUpperCase();
+            // Also try raw password first (for plugs)
+            const candidates = [this.password, md5pw, sha256pw];
+            // Deduplicate
+            return [...new Set(candidates)];
+        }
+        if (pakeList.includes(1)) {
+            return [this.password]; // setup code / raw password
+        }
+        if (pakeList.includes(3)) {
+            return [crypto_1.default.createHash('md5').update(this.password).digest('hex')];
+        }
+        return [this.password];
+    }
     /** Full SPAKE2+ handshake: register → share → derive keys */
-    async handshake(pakeList) {
+    async handshake(pakeList, userHashType) {
+        const pake = pakeList || [];
+        const candidates = this.getCandidateSecrets(pake);
+        const isSmartCam = pake.includes(3) || (pake.includes(2) && !!this.email);
+        let lastError = null;
+        for (const candidateSecret of candidates) {
+            try {
+                await this.tryHandshake(pake, userHashType || 0, candidateSecret, isSmartCam);
+                return; // Success
+            }
+            catch (e) {
+                lastError = e;
+                // Connection errors: don't retry with different candidate
+                if (e.message && (e.message.includes('EHOSTUNREACH') || e.message.includes('ECONNREFUSED') || e.message.includes('ETIMEDOUT'))) {
+                    throw e;
+                }
+                this.log.debug(`TPAP candidate failed: ${e.message}`);
+            }
+        }
+        throw lastError || new Error('TPAP handshake failed: no candidates');
+    }
+    /** Single handshake attempt with a specific candidate secret */
+    async tryHandshake(pakeList, userHashType, candidateSecret, isSmartCam) {
         const axios = (await import('axios')).default;
         const baseUrl = `http://${this.ip}`;
         const headers = {
@@ -416,20 +514,11 @@ class TpapCipher {
             Accept: 'application/json',
             Connection: 'Keep-Alive',
         };
-        // Username for register: md5("admin")
-        const authUsername = crypto_1.default.createHash('md5').update('admin').digest('hex');
+        const authUsername = this.getAuthUsername(pakeList, userHashType);
         const userRandom = crypto_1.default.randomBytes(32);
-        // Determine passcode_type from pake list
-        const pake = pakeList || [];
-        let passcodeType = 'default_userpw';
-        if (pake.includes(2) || pake.includes(5)) {
-            passcodeType = 'userpw';
-        }
-        else if (pake.includes(3)) {
-            passcodeType = 'shared_token';
-        }
-        // Step 1: pake_register — start conservative, device negotiates
-        this.log.debug(`TPAP register to ${this.ip} with username hash ${authUsername}, passcode_type=${passcodeType}`);
+        const passcodeType = this.getPasscodeType(pakeList);
+        // Step 1: pake_register
+        this.log.debug(`TPAP register to ${this.ip} with username=${authUsername}, passcode_type=${passcodeType}`);
         const registerPayload = {
             method: 'login',
             params: {
@@ -462,10 +551,17 @@ class TpapCipher {
             throw new Error(`TPAP unsupported encryption: ${negotiatedEncryption}`);
         }
         this.cipherAlgorithm = cipherParams.algorithm;
-        // ChaCha20-Poly1305 uses fixed 16-byte tag
         this.tagLen = TAG_LEN;
-        // Resolve credentials
-        const credential = resolveCredential(this.log, this.password, this.email, this.mac, extraCrypt);
+        // Resolve credentials: for pake:[0] with MAC, use candidate as-is; otherwise resolve via extra_crypt
+        let credential;
+        if ((!pakeList.length || pakeList.includes(0)) && this.mac) {
+            credential = candidateSecret; // MAC-derived passcode, no further transformation
+        }
+        else {
+            // For smartcam, username passed to resolveCredential is "" (empty)
+            const credUsername = isSmartCam ? '' : (this.email || '');
+            credential = resolveCredential(this.log, candidateSecret, credUsername, this.mac, extraCrypt, isSmartCam);
+        }
         // PBKDF2: derive key material
         const hashLen = suite.digestLen;
         const idLen = hashLen + 8; // 40 for sha256, 72 for sha512
