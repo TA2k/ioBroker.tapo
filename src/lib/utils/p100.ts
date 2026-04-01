@@ -31,6 +31,7 @@ export default class P100 implements TpLinkAccessory {
   protected terminalUUID: string;
   private _plugSysInfo!: PlugSysinfo;
   private _reconnect_counter: number;
+  private _lastErrorMessage = '';
   protected _timeout!: number;
 
   protected tpLinkCipher!: TpLinkCipher;
@@ -394,7 +395,7 @@ export default class P100 implements TpLinkAccessory {
             const body = Buffer.concat(chunks);
             this.log.debug('handshake1 status=' + res.statusCode + ' body_length=' + body.length);
             if (res.statusCode === 403) {
-              this.log.error('handshake1 ' + this.ip + ': HTTP 403 - device locked, too many failed login attempts. Restart device to unlock.');
+              this.log.debug('handshake1 ' + this.ip + ': HTTP 403 - device does not support KLAP, will try TPAP');
               resolve(Buffer.from(''));
               return;
             }
@@ -803,7 +804,13 @@ export default class P100 implements TpLinkAccessory {
       this.log.info('Trying KLAP Auth');
       this.is_klap = true;
     } else {
-      this.log.error(line + ' Error Code: ' + errorCode + ', ' + errorMessage + ' ' + this.ip);
+      const msg = line + ' Error Code: ' + errorCode + ', ' + errorMessage + ' ' + this.ip;
+      if (msg === this._lastErrorMessage) {
+        this.log.debug(msg);
+      } else {
+        this._lastErrorMessage = msg;
+        this.log.error(msg);
+      }
     }
     return false;
   }
