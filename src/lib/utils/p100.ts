@@ -731,8 +731,27 @@ export default class P100 implements TpLinkAccessory {
           this.log.debug('Device Info: ', response.result);
           return this.getSysInfo();
         })
-        .catch((error: Error) => {
+        .catch(async (error: any) => {
+          const status = error.response?.status;
+          if ((status === 401 || status === 403) && this._reconnect_counter <= 3) {
+            this.log.debug('TPAP session expired (' + status + '), reconnecting...');
+            this._reconnect_counter++;
+            try {
+              await this.handshake_tpap();
+              const response = await this.handleTpapRequest(payload);
+              if (!response || response.error_code !== undefined && response.error_code !== 0) {
+                return this.handleError(response?.error_code || 'unknown', 'tpap_getDeviceInfo_retry');
+              }
+              this.setSysInfo(response.result);
+              return this.getSysInfo();
+            } catch (retryError: any) {
+              this.log.error('TPAP reconnect failed: ' + retryError.message);
+              this._reconnect_counter = 0;
+              return retryError;
+            }
+          }
           this.log.error('TPAP getDeviceInfo Error: ' + (error ? error.message : ''));
+          this._reconnect_counter = 0;
           return error;
         });
     } else {
