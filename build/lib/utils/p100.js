@@ -110,6 +110,7 @@ class P100 {
         return digest;
     }
     calc_auth_hash(username, password) {
+        this.log.debug('calc_auth_hash: username="' + username + '" length=' + username.length + ' password_length=' + password.length);
         const usernameDigest = this._crypto
             .createHash('sha1')
             .update(Buffer.from(username.normalize('NFKC')))
@@ -118,10 +119,12 @@ class P100 {
             .createHash('sha1')
             .update(Buffer.from(password.normalize('NFKC')))
             .digest();
+        this.log.debug('calc_auth_hash: usernameDigest=' + usernameDigest.toString('hex') + ' passwordDigest=' + passwordDigest.toString('hex'));
         const digest = this._crypto
             .createHash('sha256')
             .update(Buffer.concat([usernameDigest, passwordDigest]))
             .digest();
+        this.log.debug('calc_auth_hash: result=' + digest.toString('hex'));
         return digest;
     }
     createKeyPair() {
@@ -290,11 +293,11 @@ class P100 {
             }
         })
             .catch((error) => {
-            this.log.error('276 Error: ' + error.message);
+            this.log.error('276 Error: ' + error.message + ' ' + this.ip);
             if (error.message.indexOf('403') > -1) {
                 this.reAuthenticate();
             }
-            return error;
+            return false;
         });
     }
     decode_handshake_key(key) {
@@ -373,35 +376,25 @@ class P100 {
                 .update(Buffer.concat([local_seed, remote_seed, this.calc_auth_hash(email, password)]))
                 .digest();
         };
-        const local_seed_auth_hash = calculateAuthHash(this.email, this.password);
-        this.log.debug('Calculated local seed auth hash: ' + local_seed_auth_hash.toString('hex'));
-        this.log.debug('Server hash: ' + server_hash.toString('hex'));
-        const validateAuthHash = (email, password) => {
-            const calculatedHash = calculateAuthHash(email, password);
-            this.log.debug(`Calculated auth hash for ${email}: ${calculatedHash.toString('hex')}`);
-            return calculatedHash.toString('hex') === server_hash.toString('hex');
-        };
-        if (validateAuthHash(this.email, this.password)) {
-            this.log.debug('New Handshake 1 successful');
-            auth_hash = ah;
+        const matchesServer = (hash) => hash.toString('hex') === server_hash.toString('hex');
+        const candidates = [
+            [this.email, this.password],
+            ['', ''],
+            ['test@tp-link.net', 'test'],
+        ];
+        for (const [email, password] of candidates) {
+            const hash = calculateAuthHash(email, password);
+            const match = matchesServer(hash);
+            this.log.error('Auth candidate ' + this.ip + ': email="' + email + '" hash=' + hash.toString('hex') + ' match=' + match);
+            if (match) {
+                this.log.debug('New Handshake 1 successful with: ' + (email || '(empty)'));
+                auth_hash = this.calc_auth_hash(email, password);
+                break;
+            }
         }
-        else if (validateAuthHash(this.email.toLowerCase(), this.password)) {
-            this.log.debug('New Handshake 1 successful with lowercase mail');
-            this.email = this.email.toLowerCase();
-            auth_hash = this.calc_auth_hash(this.email, this.password);
-        }
-        else if (validateAuthHash('', '')) {
-            this.log.debug('New Handshake 1 successful with empty auth hash');
-            auth_hash = this.calc_auth_hash('', '');
-        }
-        else if (validateAuthHash('test@tp-link.net', 'test')) {
-            this.log.debug('New Handshake 1 successful with test auth hash');
-            auth_hash = this.calc_auth_hash('test@tp-link.net', 'test');
-        }
-        else {
-            this.log.error('New Handshake 1 failed');
-            this.log.error("Local seed auth hash doesn't match server hash. Please check if the mail and password are correct. And E-Mail is in same Upper/Lowercase as in the Tapo App");
-            auth_hash = ah;
+        if (!auth_hash) {
+            this.log.error('Handshake 1 failed ' + this.ip + ' server_hash=' + server_hash.toString('hex') + ' response_length=' + response.length);
+            return;
         }
         const req = this._crypto
             .createHash('sha256')
