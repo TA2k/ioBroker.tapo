@@ -664,24 +664,35 @@ class Tapo extends utils.Adapter {
             this.log.debug(JSON.stringify(deviceInfo));
             this.json2iob.parse(id, deviceInfo);
             this.log.debug(`Init event emitter for ${id}`);
-            const eventEmitter = await deviceObject.getEventEmitter();
-            await this.setObjectNotExistsAsync(id + '.motionEvent', {
-                type: 'state',
-                common: {
-                    name: 'Motion detected',
-                    type: 'boolean',
-                    role: 'boolean',
-                    def: false,
-                    write: false,
-                    read: true,
-                },
-                native: {},
-            });
-            this.log.debug('Init event listener for "motion"');
-            eventEmitter.addListener('motion', async (motionDetected) => {
-                await this.setStateAsync(id + '.motionEvent', motionDetected, true);
-                this.log.debug(`[${device.deviceName}] "Motion detected" ${motionDetected}`);
-            });
+            try {
+                const eventEmitter = await deviceObject.getEventEmitter();
+                await this.setObjectNotExistsAsync(id + '.motionEvent', {
+                    type: 'state',
+                    common: {
+                        name: 'Motion detected',
+                        type: 'boolean',
+                        role: 'boolean',
+                        def: false,
+                        write: false,
+                        read: true,
+                    },
+                    native: {},
+                });
+                this.log.debug('Init event listener for "motion"');
+                eventEmitter.addListener('motion', async (motionDetected) => {
+                    await this.setStateAsync(id + '.motionEvent', motionDetected, true);
+                    this.log.debug(`[${device.deviceName}] "Motion detected" ${motionDetected}`);
+                });
+            }
+            catch (e) {
+                const msg = e.message || String(e);
+                if (msg.includes('ECONNREFUSED')) {
+                    this.log.info(`ONVIF port 2020 not reachable for ${device.ip}. Enable ONVIF in the Tapo app under camera settings to use motion events.`);
+                }
+                else {
+                    this.log.debug(`ONVIF event emitter failed for ${device.ip}: ${msg}`);
+                }
+            }
             return;
         }
         else {
@@ -703,7 +714,7 @@ class Tapo extends utils.Adapter {
                     }
                     catch (tpapError) {
                         this.log.debug('TPAP also failed: ' + (tpapError.message || tpapError));
-                        this.log.error('KLAP and TPAP Handshake failed. Try old handshake');
+                        this.log.info('KLAP and TPAP Handshake failed for ' + device.ip + '. Try old handshake');
                         deviceObject.is_klap = false;
                         deviceObject.is_tpap = false;
                         await deviceObject.reAuthenticate().catch(() => {

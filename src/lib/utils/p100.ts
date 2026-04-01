@@ -408,12 +408,12 @@ export default class P100 implements TpLinkAccessory {
           });
 
           res.on('error', (error: any) => {
-            this.log.error(error);
+            this.log.debug('handshake1 response error: ' + error);
             resolve(Buffer.from(''));
           });
         })
         .on('error', (error: any) => {
-          this.log.error(error);
+          this.log.debug('handshake1 connection error: ' + error);
           resolve(Buffer.from(''));
         });
       request.write(local_seed);
@@ -471,7 +471,7 @@ export default class P100 implements TpLinkAccessory {
 
     if (!auth_hash) {
       const msg = 'Handshake 1 failed ' + this.ip + ' server_hash=' + server_hash.toString('hex') + ' response_length=' + response.length;
-      this.log.error(msg);
+      this.log.debug(msg);
       throw new Error(msg);
     }
 
@@ -1154,34 +1154,38 @@ export default class P100 implements TpLinkAccessory {
   }
 
   private reAuthenticate(): void {
-    this.log.debug('Reauthenticating');
+    this.log.debug('Reauthenticating ' + this.ip);
     if (this.is_tpap) {
       this.handshake_tpap()
         .then(() => {
-          this.log.info('TPAP Authenticated successfully');
+          this.log.info('TPAP Authenticated successfully ' + this.ip);
         })
         .catch(() => {
-          this.log.error('TPAP Handshake failed');
+          this.log.debug('TPAP Handshake failed ' + this.ip);
         });
     } else if (this.is_klap) {
       this.handshake_new()
         .then(() => {
-          this.log.info('KLAP Authenticated successfully');
+          this.log.info('KLAP Authenticated successfully ' + this.ip);
         })
         .catch(() => {
-          this.log.error('KLAP Handshake New failed');
+          this.log.debug('KLAP Handshake failed ' + this.ip);
           this.is_klap = false;
         });
     } else {
-      this.handshake().then(() => {
-        this.login()
-          .then(() => {
-            this.log.info('Authenticated successfully');
-          })
-          .catch(() => {
-            this.log.error('Login failed');
-          });
-      });
+      this.handshake()
+        .then(() => {
+          this.login()
+            .then(() => {
+              this.log.info('Authenticated successfully ' + this.ip);
+            })
+            .catch(() => {
+              this.log.debug('Login failed ' + this.ip);
+            });
+        })
+        .catch(() => {
+          this.log.debug('Old handshake failed ' + this.ip);
+        });
     }
   }
 }
