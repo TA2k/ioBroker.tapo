@@ -18,6 +18,7 @@ export default class P100 implements TpLinkAccessory {
   public is_klap = true;
   public is_tpap = false;
   public klap_version = 0; // 0 = unknown, 1 = v1 (md5), 2 = v2 (sha256)
+  public deviceMac = '';
 
   private encodedPassword!: string;
   private encodedEmail!: string;
@@ -498,7 +499,7 @@ export default class P100 implements TpLinkAccessory {
   //TPAP/SPAKE2+ handshake for newer firmware devices
   async handshake_tpap(): Promise<void> {
     this.log.debug('Trying TPAP/SPAKE2+ handshake for ' + this.ip);
-    this.tpapCipher = new TpapCipher(this.log, this.ip, this.email, this.password);
+    this.tpapCipher = new TpapCipher(this.log, this.ip, this.email, this.password, this.deviceMac);
     await this.tpapCipher.handshake();
     this.is_tpap = true;
     this.is_klap = false;

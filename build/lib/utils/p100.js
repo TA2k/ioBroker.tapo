@@ -22,6 +22,7 @@ class P100 {
     is_klap = true;
     is_tpap = false;
     klap_version = 0; // 0 = unknown, 1 = v1 (md5), 2 = v2 (sha256)
+    deviceMac = '';
     encodedPassword;
     encodedEmail;
     privateKey;
@@ -449,7 +450,7 @@ class P100 {
     //TPAP/SPAKE2+ handshake for newer firmware devices
     async handshake_tpap() {
         this.log.debug('Trying TPAP/SPAKE2+ handshake for ' + this.ip);
-        this.tpapCipher = new tpapCipher_js_1.default(this.log, this.ip, this.email, this.password);
+        this.tpapCipher = new tpapCipher_js_1.default(this.log, this.ip, this.email, this.password, this.deviceMac);
         await this.tpapCipher.handshake();
         this.is_tpap = true;
         this.is_klap = false;
