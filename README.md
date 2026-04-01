@@ -274,16 +274,14 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 
 ### 0.5.0 (2026-04-01)
 
-- fix camera connection for firmware 1.9.1+ (C310 etc.)
-- fix SSL ciphers, Host header, cnonce reuse, -40211 error handling
-- add 30+ camera remotes (detection toggles, motor, alarm, cruise, presets, image/audio, OSD, system)
-- add camera status polling for all new toggle states
-- add detection event polling (searchDetectionList, getLastAlarmInfo, getAlertEventType)
-- add detection.active state for triggering notifications
-- add non-camera device controls (LED, auto-off, button lock, power protection, light effects, gradual on/off, fan, hub alarm, thermostat, firmware update)
-- add generic sendCommand method for all device types
-- add emeter data polling (voltage, current) for P110/P115
-- fix refresh command not working (case mismatch bug)
+- Support fuer TPAP/SPAKE2+ Protokoll (P100 FW 1.4.3+ und neuere Geraete)
+- Support fuer KLAP v1 (md5) Handshake
+- Fix Kameraverbindung fuer Firmware 1.9.1+ (C310 etc.)
+- 30+ neue Kamera-Remotes (Erkennung, Motor, Alarm, Cruise, Presets, Bild/Audio, OSD)
+- Neue Datenpunkte fuer Kamera-Status und Erkennungs-Events
+- Neue Remotes fuer Plugs, Lampen, Fans, Hubs und Thermostate
+- Energiedaten (Spannung, Strom) fuer P110/P115
+- Weniger Log-Spam bei nicht erreichbaren Geraeten
 
 ### 0.4.8 (2025-02-04)
 

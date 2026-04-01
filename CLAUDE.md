@@ -16,23 +16,46 @@ Communicates with devices locally via three protocols depending on device/firmwa
 
 ### TPAP/SPAKE2+ Protocol Details
 
-- **Discovery**: POST / with `{"method":"login","params":{"sub_method":"discover"}}` → returns `pake:[2]`, `port:80`, `mac`, `tls:0`
-- **Handshake** (3-step SPAKE2+ on NIST P-256):
-  1. `pake_register`: POST / with `method:pake_register`, username=`md5("admin")` → server returns `dev_salt`, `iterations`, `server_identity`
-  2. `pake_share`: POST / with `method:pake_share`, client_A point → server returns server_B point, `confirm_server`, `extra_crypt`
-  3. `pake_confirm`: POST / with `method:pake_confirm`, client_confirm → server returns `stok` session token, `start_seq`
-- **Credentials**:
-  - Username: always `md5("admin")` for plugs (NOT md5(email))
-  - Password: derived via PBKDF2-SHA256(sha1(raw_password), dev_salt, iterations) → w0/w1
-  - `extra_crypt.passwd_id=2`: use `sha1(raw_password)` as credential before PBKDF2
+- **Discovery**: POST / with `{"method":"login","params":{"sub_method":"discover"}}` → returns `pake:[0|1|2|3|5]`, `port:80`, `mac`, `tls:0|1`, `user_hash_type:0|1`
+- **Handshake** (2-step SPAKE2+ on NIST P-256 or P-384):
+  1. `pake_register`: POST / with `method:pake_register`, username hash, cipher_suites, encryption, passcode_type → server returns `dev_salt`, `dev_share`, `dev_random`, `iterations`, `extra_crypt`, negotiated `cipher_suites`, `encryption`
+  2. `pake_share`: POST / with `method:pake_share`, `user_share` (L point), `user_confirm` (MAC) → server returns `dev_confirm`, `sessionId`/`stok`, `start_seq`
+- **Username**:
+  - `user_hash_type=0` (default): `md5(username)`
+  - `user_hash_type=1`: `sha256(username).toUpperCase()`
+  - Plugs (pake:[0,2,5]): username = "admin"
+  - SmartCam (pake:[1,3]): username = configured email or "admin"
+- **passcode_type** (from pake list):
+  - `pake:[0]` → `"default_userpw"` (MAC-derived default passcode)
+  - `pake:[1]` → `"userpw"` (setup code / raw password)
+  - `pake:[2,5]` → `"userpw"` (user password with extra_crypt)
+  - `pake:[3]` → `"shared_token"` (md5 of password)
+- **Candidate secrets** (tried in order until handshake succeeds):
+  - `pake:[0]`: HKDF-SHA256(seed+mac_bytes, salt="tp-kdf-salt-default-passcode", info="tp-kdf-info-default-passcode").hex().toUpperCase()
+  - `pake:[1]`: raw password
+  - `pake:[2]`: [raw_password, md5(password), sha256(password).toUpperCase()]
+  - `pake:[3]`: md5(password)
+- **extra_crypt** (from register response, transforms candidate before PBKDF2):
+  - `password_shadow` with `passwd_id`:
+    - 1: md5_crypt ($1$salt$...)
+    - 2: sha1(candidate)
+    - 3: sha1(md5(username) + "_" + MAC_WITH_COLONS)
+    - 5: sha256_crypt ($5$salt$...)
+  - `password_authkey`: XOR(candidate, tmpkey) mapped through dictionary
+  - `password_sha_with_salt`: sha256(name + decoded_salt + candidate) where name="admin"|"user"
+  - No extra_crypt, generic TPAP: "username/candidate" format
+  - No extra_crypt, smartcam: candidate as-is
 - **Crypto**:
-  - SPAKE2+ M/N points: standard P-256 generator points (see RFC 9382)
-  - Session keys: HKDF-SHA256 from shared secret → encrypt_key (16B) + decrypt_key (16B)
+  - Cipher suites 1-9: SHA-256/SHA-512 hash, HMAC/CMAC-AES confirmation, P-256/P-384 curves
+  - Encryptions: aes_128_ccm, aes_256_ccm, chacha20_poly1305
+  - SPAKE2+ M/N points: standard P-256/P-384 generator points (RFC 9382)
+  - Session keys: HKDF from shared secret with cipher-specific salt/info
   - Nonce: 12-byte base_nonce with last 4 bytes = big-endian sequence number
-  - Encryption: AES-128-CCM with tag_length=8, auth_tag_length=8
+  - Tag length: 16 bytes for all ciphers
+  - `encodeW(w0)`: minimal big-endian encoding, skip 0x00 prefix when byte length is even
 - **Requests**: POST /stok=TOKEN/ds with Content-Type: application/octet-stream
-  - Payload: 4-byte BE sequence + AES-CCM(JSON plaintext)
-  - Response: 4-byte BE sequence + AES-CCM(JSON response)
+  - Payload: 4-byte BE sequence + ciphertext + 16-byte tag
+  - Response: 4-byte BE sequence + ciphertext + 16-byte tag
 
 ### Protocol Detection
 
@@ -84,6 +107,8 @@ Communicates with devices locally via three protocols depending on device/firmwa
 - ALWAYS build before push and before deploy
 
 ## Testing
+
+- TPAP test script: `test_tpap.js` (SPAKE2+ handshake + get_device_info via TpapCipher class)
 - Python test script: `test_handshake.py` (KLAP v1/v2 handshake test)
 - python-kasa venv at `.references/python-kasa-master/.venv/`
 - Test with: `uv run python3 -c "..."` from python-kasa-master directory
