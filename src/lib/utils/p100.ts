@@ -826,6 +826,17 @@ export default class P100 implements TpLinkAccessory {
       return this.raw_request('request', data.encryptedPayload, 'arraybuffer', { seq: data.seq.toString() })
         .then((res) => {
           if (!res || !Buffer.isBuffer(res)) {
+            // axios error objects may contain encrypted response data
+            const responseData = res?.response?.data;
+            if (responseData && Buffer.isBuffer(responseData)) {
+              try {
+                const decrypted = JSON.parse(this.newTpLinkCipher.decrypt(responseData));
+                this.log.debug('KLAP HTTP error but decrypted device response: ' + JSON.stringify(decrypted));
+                return this.handleError(decrypted.error_code || res.status || res.message, '671d');
+              } catch (e: any) {
+                this.log.debug('KLAP could not decrypt error response: ' + e.message);
+              }
+            }
             this.log.debug('KLAP request returned non-buffer response: ' + typeof res);
             return false;
           }
