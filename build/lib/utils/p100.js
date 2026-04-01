@@ -387,7 +387,8 @@ class P100 {
         }
         else if (validateAuthHash(this.email.toLowerCase(), this.password)) {
             this.log.debug('New Handshake 1 successful with lowercase mail');
-            auth_hash = ah;
+            this.email = this.email.toLowerCase();
+            auth_hash = this.calc_auth_hash(this.email, this.password);
         }
         else if (validateAuthHash('', '')) {
             this.log.debug('New Handshake 1 successful with empty auth hash');

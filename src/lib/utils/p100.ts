@@ -87,7 +87,7 @@ export default class P100 implements TpLinkAccessory {
   constructor(
     public readonly log: any,
     public readonly ipAddress: string,
-    public readonly email: string,
+    public email: string,
     public readonly password: string,
     public readonly timeout: number,
   ) {
@@ -424,7 +424,8 @@ export default class P100 implements TpLinkAccessory {
       auth_hash = ah;
     } else if (validateAuthHash(this.email.toLowerCase(), this.password)) {
       this.log.debug('New Handshake 1 successful with lowercase mail');
-      auth_hash = ah;
+      this.email = this.email.toLowerCase();
+      auth_hash = this.calc_auth_hash(this.email, this.password);
     } else if (validateAuthHash('', '')) {
       this.log.debug('New Handshake 1 successful with empty auth hash');
       auth_hash = this.calc_auth_hash('', '');
