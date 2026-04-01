@@ -322,127 +322,111 @@ class Tapo extends utils.Adapter {
             native: {},
           });
 
-          let remoteArray: Array<{ command: string; name: string; type?: string; role?: string; def?: any }> = [
+          type RemoteEntry = { command: string; name: string; type?: string; role?: string; def?: any };
+
+          const baseRemotes: RemoteEntry[] = [
             { command: 'refresh', name: 'True = Refresh' },
             { command: 'setPowerState', name: 'True = On, False = Off' },
-            { command: 'setPowerStateChild', name: 'childId,true' },
-
-            {
-              command: 'setBrightness',
-              name: 'Set Brightness for Light devices',
-              type: 'number',
-              role: 'level.brightness',
-              def: 5,
-            },
-            {
-              command: 'setColorTemp',
-              name: 'Set Color Temp for Light devices',
-              type: 'number',
-              role: 'level.color.temperature',
-              def: 3e3,
-            },
-            {
-              command: 'setColor',
-              name: 'Set Color for Light devices (hue, saturation)',
-              def: '30, 100',
-              type: 'string',
-            },
-            // LED indicator
             { command: 'setLedEnabled', name: 'LED Indicator On/Off' },
-            // Auto-off timer
+            { command: 'setAutoUpdate', name: 'Firmware Auto-Update On/Off' },
+          ];
+          const plugExtras: RemoteEntry[] = [
             { command: 'setAutoOff', name: 'Auto-Off On/Off' },
             { command: 'setAutoOffDelay', name: 'Auto-Off Delay (minutes)', type: 'number', def: 120, role: 'level' },
-            // Button lock
             { command: 'setChildProtection', name: 'Button Lock On/Off' },
-            // Power protection (P110/P115)
+          ];
+          const energyExtras: RemoteEntry[] = [
+            ...plugExtras,
             { command: 'setPowerProtection', name: 'Overload Protection On/Off' },
-            {
-              command: 'setPowerProtectionThreshold',
-              name: 'Overload Threshold (Watts)',
-              type: 'number',
-              def: 2300,
-              role: 'level',
-            },
-            // Light effects
+            { command: 'setPowerProtectionThreshold', name: 'Overload Threshold (Watts)', type: 'number', def: 2300, role: 'level' },
+          ];
+          const lightExtras: RemoteEntry[] = [
+            { command: 'setBrightness', name: 'Brightness (0-100)', type: 'number', role: 'level.brightness', def: 5 },
+            { command: 'setColorTemp', name: 'Color Temp (2500-6500K)', type: 'number', role: 'level.color.temperature', def: 3e3 },
+            { command: 'setColor', name: 'Color (hue, saturation)', def: '30, 100', type: 'string' },
             { command: 'setLightEffect', name: 'Light Effect (id/off)', type: 'string', def: 'off', role: 'text' },
             { command: 'setGradualOnOff', name: 'Gradual On/Off' },
-            // Fan
+          ];
+          const fanExtras: RemoteEntry[] = [
             { command: 'setFanSpeedLevel', name: 'Fan Speed (0-4)', type: 'number', def: 0, role: 'level' },
             { command: 'setFanSleepMode', name: 'Fan Sleep Mode On/Off' },
-            // Hub alarm
+          ];
+          const hubExtras: RemoteEntry[] = [
+            { command: 'setPowerStateChild', name: 'childId,true' },
             { command: 'playAlarm', name: 'True = Play Alarm' },
             { command: 'stopAlarm', name: 'True = Stop Alarm' },
-            {
-              command: 'setAlarmVolume',
-              name: 'Alarm Volume (mute/low/normal/high)',
-              type: 'string',
-              def: 'normal',
-              role: 'text',
-            },
+            { command: 'setAlarmVolume', name: 'Alarm Volume (mute/low/normal/high)', type: 'string', def: 'normal', role: 'text' },
             { command: 'setAlarmDuration', name: 'Alarm Duration (seconds)', type: 'number', def: 10, role: 'level' },
-            // Thermostat
+          ];
+          const thermostatExtras: RemoteEntry[] = [
             { command: 'setTargetTemperature', name: 'Target Temperature', type: 'number', def: 20, role: 'level.temperature' },
             { command: 'setTemperatureOffset', name: 'Temperature Offset (-10..10)', type: 'number', def: 0, role: 'level' },
             { command: 'setFrostProtection', name: 'Frost Protection On/Off' },
-            // Firmware
-            { command: 'setAutoUpdate', name: 'Firmware Auto-Update On/Off' },
           ];
+          const cameraRemotes: RemoteEntry[] = [
+            { command: 'refresh', name: 'True = Refresh' },
+            { command: 'setAlertConfig', name: 'Alarm On/Off' },
+            { command: 'setLensMaskConfig', name: 'Privacy (Eyes) On/Off' },
+            { command: 'setForceWhitelampState', name: 'Force Whitelamp On/Off' },
+            { command: 'setLedStatus', name: 'LED On/Off' },
+            { command: 'setMsgPushConfig', name: 'Notifications On/Off' },
+            { command: 'setDetectionConfig', name: 'Motion Detection On/Off' },
+            { command: 'setAutoTrackTarget', name: 'Auto Track On/Off' },
+            { command: 'setPersonDetection', name: 'Person Detection On/Off' },
+            { command: 'setVehicleDetection', name: 'Vehicle Detection On/Off' },
+            { command: 'setPetDetection', name: 'Pet Detection On/Off' },
+            { command: 'setBabyCryDetection', name: 'Baby Cry Detection On/Off' },
+            { command: 'setBarkDetection', name: 'Bark Detection On/Off' },
+            { command: 'setMeowDetection', name: 'Meow Detection On/Off' },
+            { command: 'setGlassBreakDetection', name: 'Glass Break Detection On/Off' },
+            { command: 'setTamperDetection', name: 'Tamper Detection On/Off' },
+            { command: 'setImageFlipVertical', name: 'Image Flip On/Off' },
+            { command: 'setLensDistortionCorrection', name: 'Lens Distortion Correction On/Off' },
+            { command: 'setRecordAudio', name: 'Record Audio On/Off' },
+            { command: 'setAutoUpgrade', name: 'Auto Firmware Upgrade On/Off' },
+            { command: 'setHDR', name: 'HDR On/Off' },
+            { command: 'setCoverConfig', name: 'Privacy Zones On/Off' },
+            { command: 'setRecordPlan', name: 'SD Card Recording On/Off' },
+            { command: 'moveMotor', name: 'Move Camera X,Y (-360..360, -45..45)', type: 'string', def: '0, 0', role: 'text' },
+            { command: 'moveMotorStep', name: 'Angle (0-360)', type: 'string', def: '180', role: 'text' },
+            { command: 'moveToPreset', name: 'PresetId', type: 'string', def: '1', role: 'text' },
+            { command: 'calibrateMotor', name: 'True = Calibrate Motor' },
+            { command: 'savePreset', name: 'Save Preset (name)', type: 'string', def: '', role: 'text' },
+            { command: 'deletePreset', name: 'Delete Preset (id)', type: 'string', def: '', role: 'text' },
+            { command: 'setCruise', name: 'Patrol (x/y/off)', type: 'string', def: 'off', role: 'text' },
+            { command: 'startManualAlarm', name: 'True = Start Alarm' },
+            { command: 'stopManualAlarm', name: 'True = Stop Alarm' },
+            { command: 'setAlarmMode', name: 'Alarm Mode (both/light/sound/off)', type: 'string', def: 'off', role: 'text' },
+            { command: 'setDayNightMode', name: 'Day/Night Mode (auto/on/off)', type: 'string', def: 'auto', role: 'text' },
+            { command: 'setLightFrequencyMode', name: 'Light Frequency (auto/50/60)', type: 'string', def: 'auto', role: 'text' },
+            { command: 'setSpeakerVolume', name: 'Speaker Volume (0-100)', type: 'number', def: 50, role: 'level' },
+            { command: 'setMicrophoneVolume', name: 'Microphone Volume (0-100)', type: 'number', def: 50, role: 'level' },
+            { command: 'setMotionDetectionSensitivity', name: 'Motion Sensitivity (high/normal/low)', type: 'string', def: 'normal', role: 'text' },
+            { command: 'setPersonDetectionSensitivity', name: 'Person Sensitivity (high/normal/low)', type: 'string', def: 'normal', role: 'text' },
+            { command: 'setOsd', name: 'OSD Label Text', type: 'string', def: '', role: 'text' },
+            { command: 'reboot', name: 'True = Reboot Camera' },
+            { command: 'formatSdCard', name: 'True = Format SD Card' },
+          ];
+
+          // Select remotes based on device type
+          let remoteArray: RemoteEntry[];
+          const dn = device.deviceName || '';
           if (device.deviceType.includes('CAMERA')) {
-            remoteArray = [
-              { command: 'refresh', name: 'True = Refresh' },
-              // Existing toggles
-              { command: 'setAlertConfig', name: 'Alarm On/Off' },
-              { command: 'setLensMaskConfig', name: 'Privacy (Eyes) On/Off' },
-              { command: 'setForceWhitelampState', name: 'Force Whitelamp On/Off' },
-              { command: 'setLedStatus', name: 'LED On/Off' },
-              { command: 'setMsgPushConfig', name: 'Notifications On/Off' },
-              { command: 'setDetectionConfig', name: 'Motion Detection On/Off' },
-              // New boolean toggles
-              { command: 'setAutoTrackTarget', name: 'Auto Track On/Off' },
-              { command: 'setPersonDetection', name: 'Person Detection On/Off' },
-              { command: 'setVehicleDetection', name: 'Vehicle Detection On/Off' },
-              { command: 'setPetDetection', name: 'Pet Detection On/Off' },
-              { command: 'setBabyCryDetection', name: 'Baby Cry Detection On/Off' },
-              { command: 'setBarkDetection', name: 'Bark Detection On/Off' },
-              { command: 'setMeowDetection', name: 'Meow Detection On/Off' },
-              { command: 'setGlassBreakDetection', name: 'Glass Break Detection On/Off' },
-              { command: 'setTamperDetection', name: 'Tamper Detection On/Off' },
-              { command: 'setImageFlipVertical', name: 'Image Flip On/Off' },
-              { command: 'setLensDistortionCorrection', name: 'Lens Distortion Correction On/Off' },
-              { command: 'setRecordAudio', name: 'Record Audio On/Off' },
-              { command: 'setAutoUpgrade', name: 'Auto Firmware Upgrade On/Off' },
-              { command: 'setHDR', name: 'HDR On/Off' },
-              { command: 'setCoverConfig', name: 'Privacy Zones On/Off' },
-              { command: 'setRecordPlan', name: 'SD Card Recording On/Off' },
-              // Motor controls
-              { command: 'moveMotor', name: 'Move Camera X,Y (-360..360, -45..45)', type: 'string', def: '0, 0', role: 'text' },
-              { command: 'moveMotorStep', name: 'Angle (0-360)', type: 'string', def: '180', role: 'text' },
-              { command: 'moveToPreset', name: 'PresetId', type: 'string', def: '1', role: 'text' },
-              { command: 'calibrateMotor', name: 'True = Calibrate Motor' },
-              // Preset management
-              { command: 'savePreset', name: 'Save Preset (name)', type: 'string', def: '', role: 'text' },
-              { command: 'deletePreset', name: 'Delete Preset (id)', type: 'string', def: '', role: 'text' },
-              // Cruise/Patrol
-              { command: 'setCruise', name: 'Patrol (x/y/off)', type: 'string', def: 'off', role: 'text' },
-              // Alarm actions
-              { command: 'startManualAlarm', name: 'True = Start Alarm' },
-              { command: 'stopManualAlarm', name: 'True = Stop Alarm' },
-              { command: 'setAlarmMode', name: 'Alarm Mode (both/light/sound/off)', type: 'string', def: 'off', role: 'text' },
-              // Image/Video settings
-              { command: 'setDayNightMode', name: 'Day/Night Mode (auto/on/off)', type: 'string', def: 'auto', role: 'text' },
-              { command: 'setLightFrequencyMode', name: 'Light Frequency (auto/50/60)', type: 'string', def: 'auto', role: 'text' },
-              // Audio
-              { command: 'setSpeakerVolume', name: 'Speaker Volume (0-100)', type: 'number', def: 50, role: 'level' },
-              { command: 'setMicrophoneVolume', name: 'Microphone Volume (0-100)', type: 'number', def: 50, role: 'level' },
-              // Detection sensitivity
-              { command: 'setMotionDetectionSensitivity', name: 'Motion Sensitivity (high/normal/low)', type: 'string', def: 'normal', role: 'text' },
-              { command: 'setPersonDetectionSensitivity', name: 'Person Sensitivity (high/normal/low)', type: 'string', def: 'normal', role: 'text' },
-              // OSD
-              { command: 'setOsd', name: 'OSD Label Text', type: 'string', def: '', role: 'text' },
-              // System
-              { command: 'reboot', name: 'True = Reboot Camera' },
-              { command: 'formatSdCard', name: 'True = Format SD Card' },
-            ];
+            remoteArray = cameraRemotes;
+          } else if (dn.startsWith('P110') || dn.startsWith('P115')) {
+            remoteArray = [...baseRemotes, ...energyExtras];
+          } else if (dn.startsWith('P')) {
+            remoteArray = [...baseRemotes, ...plugExtras];
+          } else if (dn.startsWith('L') || dn.startsWith('KL')) {
+            remoteArray = [...baseRemotes, ...lightExtras];
+          } else if (dn.startsWith('F')) {
+            remoteArray = [...baseRemotes, ...fanExtras];
+          } else if (dn.startsWith('H')) {
+            remoteArray = [...baseRemotes, ...hubExtras];
+          } else if (dn.startsWith('KE')) {
+            remoteArray = [...baseRemotes, ...thermostatExtras];
+          } else {
+            remoteArray = [...baseRemotes, ...plugExtras];
           }
           remoteArray.forEach((remote) => {
             this.extendObject(id + '.remote.' + remote.command, {
