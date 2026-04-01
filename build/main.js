@@ -1,408 +1,434 @@
 "use strict";
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
+/*
+ * Created with @iobroker/create-adapter v2.1.1
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-var utils = __toESM(require("@iobroker/adapter-core"));
-var import_axios = __toESM(require("axios"));
-var import_crypto = __toESM(require("crypto"));
-var import_https = __toESM(require("https"));
-var import_uuid = require("uuid");
-var import_json2iob = __toESM(require("json2iob"));
-var import_tapoCamera = require("./lib/utils/camera/tapoCamera");
-var import_l510e = __toESM(require("./lib/utils/l510e"));
-var import_l520e = __toESM(require("./lib/utils/l520e"));
-var import_l530 = __toESM(require("./lib/utils/l530"));
-var import_p100 = __toESM(require("./lib/utils/p100"));
-var import_p110 = __toESM(require("./lib/utils/p110"));
+Object.defineProperty(exports, "__esModule", { value: true });
+// The adapter-core module gives you access to the core ioBroker functions
+// you need to create an adapter
+const utils = __importStar(require("@iobroker/adapter-core"));
+const axios_1 = __importDefault(require("axios"));
+const crypto_1 = __importDefault(require("crypto"));
+const https_1 = __importDefault(require("https"));
+const json2iob_1 = __importDefault(require("json2iob"));
+const tapoCamera_1 = require("./lib/utils/camera/tapoCamera");
+const l510e_1 = __importDefault(require("./lib/utils/l510e"));
+const l520e_1 = __importDefault(require("./lib/utils/l520e"));
+const l530_1 = __importDefault(require("./lib/utils/l530"));
+const p100_1 = __importDefault(require("./lib/utils/p100"));
+const p110_1 = __importDefault(require("./lib/utils/p110"));
 class Tapo extends utils.Adapter {
-  constructor(options = {}) {
-    super({
-      ...options,
-      name: "tapo"
-    });
-    this.updateInterval = null;
-    this.reLoginTimeout = null;
-    this.refreshTokenTimeout = null;
-    this.session = {};
-    this.firstStart = true;
-    this.lastBatteryDeviceUpdateTimestamp = 0;
-    this.on("ready", this.onReady.bind(this));
-    this.on("stateChange", this.onStateChange.bind(this));
-    this.on("unload", this.onUnload.bind(this));
-    this.devices = {};
-    this.deviceObjects = {};
-    this.json2iob = new import_json2iob.default(this);
-    this.requestClient = import_axios.default.create({
-      httpsAgent: new import_https.default.Agent({
-        rejectUnauthorized: false,
-        secureOptions: import_crypto.default.constants.SSL_OP_LEGACY_SERVER_CONNECT
-      })
-    });
-    this.secret = Buffer.from([
-      54,
-      101,
-      100,
-      55,
-      100,
-      57,
-      55,
-      102,
-      51,
-      101,
-      55,
-      51,
-      52,
-      54,
-      55,
-      102,
-      56,
-      97,
-      53,
-      98,
-      97,
-      98,
-      57,
-      48,
-      98,
-      53,
-      55,
-      55,
-      98,
-      97,
-      52,
-      99
-    ]);
-  }
-  async onReady() {
-    this.setState("info.connection", false, true);
-    if (this.config.interval < 0.5) {
-      this.log.info("Set interval to minimum 0.5");
-      this.config.interval = 0.5;
+    devices;
+    deviceObjects;
+    json2iob;
+    secret;
+    requestClient;
+    updateInterval = null;
+    reLoginTimeout = null;
+    refreshTokenTimeout = null;
+    session = {};
+    refreshTimeout;
+    refreshTokenInterval;
+    firstStart = true;
+    lastBatteryDeviceUpdateTimestamp = 0;
+    termId;
+    constructor(options = {}) {
+        super({
+            ...options,
+            name: 'tapo',
+        });
+        this.on('ready', this.onReady.bind(this));
+        this.on('stateChange', this.onStateChange.bind(this));
+        this.on('unload', this.onUnload.bind(this));
+        this.devices = {};
+        this.deviceObjects = {};
+        this.json2iob = new json2iob_1.default(this);
+        this.requestClient = axios_1.default.create({
+            httpsAgent: new https_1.default.Agent({
+                rejectUnauthorized: false,
+                secureOptions: crypto_1.default.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+            }),
+        });
+        this.secret = Buffer.from([
+            54, 101, 100, 55, 100, 57, 55, 102, 51, 101, 55, 51, 52, 54, 55, 102, 56, 97, 53, 98, 97, 98, 57, 48, 98, 53, 55, 55, 98, 97, 52, 99,
+        ]);
     }
-    if (!this.config.username || !this.config.password) {
-      this.log.error("Please set username and password in the instance settings");
-      return;
-    }
-    this.config.username = this.config.username.toLowerCase();
-    this.updateInterval = null;
-    this.reLoginTimeout = null;
-    this.refreshTokenTimeout = null;
-    this.session = {};
-    this.subscribeStates("*");
-    const termIdState = await this.getStateAsync("termId");
-    if (termIdState && termIdState.val) {
-      this.termId = termIdState.val;
-    } else {
-      await this.setObjectNotExistsAsync("termId", {
-        type: "state",
-        common: {
-          name: "Terminal ID",
-          write: false,
-          read: true,
-          type: "string",
-          role: "text"
-        },
-        native: {}
-      });
-      this.termId = (0, import_uuid.v4)();
-      await this.setStateAsync("termId", this.termId, true);
-    }
-    this.log.info("Login tp TAPO App");
-    await this.login();
-    if (this.session.token) {
-      await this.getDeviceList();
-    } else {
-      this.log.warn("Login failed using cached device list");
-      const deviceListState = await this.getStateAsync("deviceList");
-      if (deviceListState && deviceListState.val) {
-        this.log.info("Use cached device list");
-        this.devices = JSON.parse(deviceListState.val);
-        for (const id in this.devices) {
-          if (this.devices[id].ip) {
-            const initResult = await this.initDevice(id).then(() => {
-              this.log.info(`Initialized ${id}`);
-            }).catch((e) => {
-              this.log.error(e);
+    /**
+     * Is called when databases are connected and adapter received configuration.
+     */
+    async onReady() {
+        this.setState('info.connection', false, true);
+        if (this.config.interval < 0.5) {
+            this.log.info('Set interval to minimum 0.5');
+            this.config.interval = 0.5;
+        }
+        if (!this.config.username || !this.config.password) {
+            this.log.error('Please set username and password in the instance settings');
+            return;
+        }
+        this.config.username = this.config.username.toLowerCase();
+        this.updateInterval = null;
+        this.reLoginTimeout = null;
+        this.refreshTokenTimeout = null;
+        this.session = {};
+        this.subscribeStates('*');
+        const termIdState = await this.getStateAsync('termId');
+        if (termIdState && termIdState.val) {
+            this.termId = termIdState.val;
+        }
+        else {
+            await this.setObjectNotExistsAsync('termId', {
+                type: 'state',
+                common: {
+                    name: 'Terminal ID',
+                    write: false,
+                    read: true,
+                    type: 'string',
+                    role: 'text',
+                },
+                native: {},
             });
-            this.log.debug(`initResult ${id} ${JSON.stringify(initResult)}`);
-          }
+            this.termId = crypto_1.default.randomUUID();
+            await this.setStateAsync('termId', this.termId, true);
         }
-      }
+        this.log.info('Login tp TAPO App');
+        await this.login();
+        if (this.session.token) {
+            await this.getDeviceList();
+        }
+        else {
+            this.log.warn('Login failed using cached device list');
+            const deviceListState = await this.getStateAsync('deviceList');
+            if (deviceListState && deviceListState.val) {
+                this.log.info('Use cached device list');
+                this.devices = JSON.parse(deviceListState.val);
+                for (const id in this.devices) {
+                    if (this.devices[id].ip) {
+                        const initResult = await this.initDevice(id)
+                            .then(() => {
+                            this.log.info(`Initialized ${id}`);
+                        })
+                            .catch((e) => {
+                            this.log.error(e);
+                        });
+                        this.log.debug(`initResult ${id} ${JSON.stringify(initResult)}`);
+                    }
+                }
+            }
+        }
+        this.log.info('Wait for connections for non camera devices');
+        await this.sleep(10000);
+        this.log.info('Start first Update');
+        this.updateDevices();
+        this.firstStart = false;
+        this.updateInterval = setInterval(async () => {
+            this.updateDevices();
+        }, this.config.interval * 1000);
     }
-    this.log.info("Wait for connections for non camera devices");
-    await this.sleep(1e4);
-    this.log.info("Start first Update");
-    this.updateDevices();
-    this.firstStart = false;
-    this.updateInterval = setInterval(async () => {
-      this.updateDevices();
-    }, this.config.interval * 1e3);
-  }
-  async login() {
-    let body = JSON.stringify({
-      appVersion: "2.8.21",
-      refreshTokenNeeded: true,
-      platform: "iOS 14.8",
-      cloudPassword: this.config.password,
-      terminalUUID: this.termId,
-      cloudUserName: this.config.username,
-      terminalName: "ioBroker",
-      terminalMeta: "3",
-      appType: "TP-Link_Tapo_iOS"
-    });
-    let path = "api/v2/account/login";
-    const mfaIdState = await this.getStateAsync("mfaId");
-    if (mfaIdState && mfaIdState.val) {
-      if (!this.config.mfa) {
-        this.log.error("Please set mfa in the instance settings");
-        return;
-      }
-      body = JSON.stringify({
-        cloudUserName: this.config.username,
-        MFAProcessId: mfaIdState.val,
-        appType: "TP-Link_Tapo_iOS",
-        MFAType: 2,
-        code: this.config.mfa,
-        terminalBindEnabled: true
-      });
-      path = "api/v2/account/checkMFACodeAndLogin";
-      await this.setStateAsync("mfaId", "", true);
-    }
-    const md5 = import_crypto.default.createHash("md5").update(body).digest("base64");
-    this.log.debug(md5);
-    const content = md5 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/" + path;
-    const signature = import_crypto.default.createHmac("sha1", this.secret).update(content).digest("hex");
-    await this.requestClient({
-      method: "post",
-      url: "https://n-wap-gw.tplinkcloud.com/" + path + "?termID=" + this.termId + "&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8",
-      headers: {
-        "Content-Type": "application/json;UTF-8",
-        Accept: "*/*",
-        "User-Agent": "Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)",
-        "Accept-Language": "de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8",
-        "X-Authorization": "Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=" + signature
-      },
-      data: body
-    }).then(async (res) => {
-      var _a, _b;
-      this.log.debug(JSON.stringify(res.data));
-      if (res.data.error_code) {
-        this.log.error(JSON.stringify(res.data));
-        return;
-      }
-      if ((_a = res.data.result) == null ? void 0 : _a.MFAProcessId) {
-        this.log.info("Found MFA Process please enter MFA in the instance settings");
-        await this.setObjectNotExistsAsync("mfaId", {
-          type: "state",
-          common: {
-            name: "MFA Id",
-            write: false,
-            read: true,
-            type: "string",
-            role: "text"
-          },
-          native: {}
+    async login() {
+        let body = JSON.stringify({
+            appVersion: '2.8.21',
+            refreshTokenNeeded: true,
+            platform: 'iOS 14.8',
+            cloudPassword: this.config.password,
+            terminalUUID: this.termId,
+            cloudUserName: this.config.username,
+            terminalName: 'ioBroker',
+            terminalMeta: '3',
+            appType: 'TP-Link_Tapo_iOS',
         });
-        await this.setStateAsync("mfaId", (_b = res.data.result) == null ? void 0 : _b.MFAProcessId, true);
-        const body2 = JSON.stringify({
-          cloudPassword: this.config.password,
-          locale: "de_DE",
-          terminalUUID: this.termId,
-          cloudUserName: this.config.username,
-          appType: "TP-Link_Tapo_iOS"
-        });
-        const path2 = "api/v2/account/getEmailVC4TerminalMFA";
-        const md52 = import_crypto.default.createHash("md5").update(body2).digest("base64");
-        this.log.debug(md52);
-        const content2 = md52 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/" + path2;
-        const signature2 = import_crypto.default.createHmac("sha1", this.secret).update(content2).digest("hex");
+        let path = 'api/v2/account/login';
+        const mfaIdState = await this.getStateAsync('mfaId');
+        if (mfaIdState && mfaIdState.val) {
+            if (!this.config.mfa) {
+                this.log.error('Please set mfa in the instance settings');
+                return;
+            }
+            body = JSON.stringify({
+                cloudUserName: this.config.username,
+                MFAProcessId: mfaIdState.val,
+                appType: 'TP-Link_Tapo_iOS',
+                MFAType: 2,
+                code: this.config.mfa,
+                terminalBindEnabled: true,
+            });
+            path = 'api/v2/account/checkMFACodeAndLogin';
+            await this.setStateAsync('mfaId', '', true);
+        }
+        const md5 = crypto_1.default.createHash('md5').update(body).digest('base64');
+        this.log.debug(md5);
+        const content = md5 + '\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/' + path;
+        const signature = crypto_1.default.createHmac('sha1', this.secret).update(content).digest('hex');
         await this.requestClient({
-          method: "post",
-          url: "https://n-wap-gw.tplinkcloud.com/" + path2 + "?termID=" + this.termId + "&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8",
-          headers: {
-            "Content-Type": "application/json;UTF-8",
-            Accept: "*/*",
-            "User-Agent": "Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)",
-            "Accept-Language": "de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8",
-            "X-Authorization": "Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=" + signature2
-          },
-          data: body2
-        }).then(async (res2) => {
-          this.log.debug(JSON.stringify(res2.data));
-          if (res2.data.error_code) {
-            this.log.error(JSON.stringify(res2.data));
-            return;
-          }
-        }).catch((error) => {
-          this.log.error(error);
-          error.response && this.log.error(JSON.stringify(error.response.data));
-        });
-        return;
-      }
-      if (!res.data.result || !res.data.result.token) {
-        this.log.error("Login failed");
-        this.log.error(JSON.stringify(res.data));
-        return;
-      }
-      this.session = res.data.result;
-      if (this.session.token) {
-        this.log.info("Login succesfull");
-        this.setState("info.connection", true, true);
-      }
-      return;
-    }).catch((error) => {
-      this.log.error(error);
-      error.response && this.log.error(JSON.stringify(error.response.data));
-    });
-  }
-  async getDeviceList() {
-    const body = '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH"],"limit":30}';
-    const md5 = import_crypto.default.createHash("md5").update(body).digest("base64");
-    this.log.debug(md5);
-    const content = md5 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/getDeviceListByPage";
-    const signature = import_crypto.default.createHmac("sha1", this.secret).update(content).digest("hex");
-    await this.requestClient({
-      method: "post",
-      url: `https://n-euw1-wap-gw.tplinkcloud.com/api/v2/common/getDeviceListByPage?token=${this.session.token}&termID=${this.termId}&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8`,
-      headers: {
-        "Content-Type": "application/json;UTF-8",
-        "Content-MD5": md5,
-        Accept: "*/*",
-        "User-Agent": "Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)",
-        "Accept-Language": "de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8",
-        "X-Authorization": "Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=" + signature
-      },
-      data: body
-    }).then(async (res) => {
-      var _a, _b;
-      this.log.debug(JSON.stringify(res.data));
-      if (res.data.error_code) {
-        this.log.error(JSON.stringify(res.data));
-        return;
-      }
-      this.log.info(`Found ${(_a = res.data.result) == null ? void 0 : _a.totalNum} devices`);
-      for (const device of (_b = res.data.result) == null ? void 0 : _b.deviceList) {
-        const id = device.deviceId;
-        this.devices[id] = device;
-        let name = device.alias;
-        if (this.isBase64(device.alias)) {
-          name = Buffer.from(device.alias, "base64").toString("utf8");
-        }
-        this.log.debug(`Found device ${id} ${name}`);
-        await this.extendObject(id, {
-          type: "device",
-          common: {
-            name
-          },
-          native: {}
-        });
-        await this.setObjectNotExistsAsync(id + ".remote", {
-          type: "channel",
-          common: {
-            name: "Remote Controls"
-          },
-          native: {}
-        });
-        let remoteArray = [
-          { command: "refresh", name: "True = Refresh" },
-          { command: "setPowerState", name: "True = On, False = Off" },
-          { command: "setPowerStateChild", name: "childId,true" },
-          {
-            command: "setBrightness",
-            name: "Set Brightness for Light devices",
-            type: "number",
-            role: "level.brightness",
-            def: 5
-          },
-          {
-            command: "setColorTemp",
-            name: "Set Color Temp for Light devices",
-            type: "number",
-            role: "level.color.temperature",
-            def: 3e3
-          },
-          {
-            command: "setColor",
-            name: "Set Color for Light devices (hue, saturation)",
-            def: "30, 100",
-            type: "string"
-          }
-        ];
-        if (device.deviceType.includes("CAMERA")) {
-          remoteArray = [
-            { command: "refresh", name: "True = Refresh" },
-            { command: "setAlertConfig", name: "True = On, False = Off" },
-            { command: "setLensMaskConfig", name: "True = On, False = Off" },
-            { command: "setForceWhitelampState", name: "True = On, False = Off" },
-            { command: "setLedStatus", name: "True = On, False = Off" },
-            { command: "setMsgPushConfig", name: "True = On, False = Off" },
-            { command: "setDetectionConfig", name: "True = On, False = Off" },
-            { command: "moveMotor", name: "move Camera to X (-360,360), Y(-45,45)", type: "string", def: "0, 0", role: "text" },
-            { command: "moveMotorStep", name: "Angle (0-360)", type: "string", def: "180", role: "text" },
-            { command: "moveToPreset", name: "PresetId", type: "string", def: "1", role: "text" }
-          ];
-        }
-        remoteArray.forEach((remote) => {
-          this.extendObject(id + ".remote." + remote.command, {
-            type: "state",
-            common: {
-              name: remote.name || "",
-              type: remote.type || "boolean",
-              role: remote.role || "switch",
-              def: remote.def != null ? remote.def : false,
-              write: true,
-              read: true
+            method: 'post',
+            url: 'https://n-wap-gw.tplinkcloud.com/' +
+                path +
+                '?termID=' +
+                this.termId +
+                '&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8',
+            headers: {
+                'Content-Type': 'application/json;UTF-8',
+                Accept: '*/*',
+                'User-Agent': 'Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)',
+                'Accept-Language': 'de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8',
+                'X-Authorization': 'Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=' +
+                    signature,
             },
-            native: {}
-          });
-        });
-        this.json2iob.parse(id, device, { channelName: name });
-        await this.requestClient({
-          method: "get",
-          url: "https://euw1-app-server.iot.i.tplinknbu.com/v1/things/" + id + "/details",
-          headers: {
-            "x-locale": "de",
-            Authorization: "ut|" + this.session.token,
-            "app-cid": "app:TP-Link_Tapo_iOS:" + this.termId,
-            "x-ospf": "iOS 14.8",
-            "x-app-name": "TP-Link_Tapo_iOS",
-            Accept: "*/*",
-            "Accept-Language": "de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8",
-            "Content-Type": "application/json;UTF-8",
-            "User-Agent": "Tapo/2.9.7 (iPhone; iOS 14.8; Scale/3.00)",
-            "x-term-id": this.termId,
-            "x-app-version": "2.9.7",
-            "x-net-type": "wifi"
-          }
-        }).then(async (res2) => {
-          this.log.debug(JSON.stringify(res2.data));
-          if (res2.data.error_code) {
-            this.log.error(JSON.stringify(res2.data));
+            data: body,
+        })
+            .then(async (res) => {
+            this.log.debug(JSON.stringify(res.data));
+            if (res.data.error_code) {
+                this.log.error(JSON.stringify(res.data));
+                return;
+            }
+            if (res.data.result?.MFAProcessId) {
+                this.log.info('Found MFA Process please enter MFA in the instance settings');
+                await this.setObjectNotExistsAsync('mfaId', {
+                    type: 'state',
+                    common: {
+                        name: 'MFA Id',
+                        write: false,
+                        read: true,
+                        type: 'string',
+                        role: 'text',
+                    },
+                    native: {},
+                });
+                await this.setStateAsync('mfaId', res.data.result?.MFAProcessId, true);
+                const body = JSON.stringify({
+                    cloudPassword: this.config.password,
+                    locale: 'de_DE',
+                    terminalUUID: this.termId,
+                    cloudUserName: this.config.username,
+                    appType: 'TP-Link_Tapo_iOS',
+                });
+                const path = 'api/v2/account/getEmailVC4TerminalMFA';
+                const md5 = crypto_1.default.createHash('md5').update(body).digest('base64');
+                this.log.debug(md5);
+                const content = md5 + '\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/' + path;
+                const signature = crypto_1.default.createHmac('sha1', this.secret).update(content).digest('hex');
+                await this.requestClient({
+                    method: 'post',
+                    url: 'https://n-wap-gw.tplinkcloud.com/' +
+                        path +
+                        '?termID=' +
+                        this.termId +
+                        '&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8',
+                    headers: {
+                        'Content-Type': 'application/json;UTF-8',
+                        Accept: '*/*',
+                        'User-Agent': 'Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)',
+                        'Accept-Language': 'de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8',
+                        'X-Authorization': 'Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=' +
+                            signature,
+                    },
+                    data: body,
+                })
+                    .then(async (res) => {
+                    this.log.debug(JSON.stringify(res.data));
+                    if (res.data.error_code) {
+                        this.log.error(JSON.stringify(res.data));
+                        return;
+                    }
+                })
+                    .catch((error) => {
+                    this.log.error(error);
+                    error.response && this.log.error(JSON.stringify(error.response.data));
+                });
+                return;
+            }
+            if (!res.data.result || !res.data.result.token) {
+                this.log.error('Login failed');
+                this.log.error(JSON.stringify(res.data));
+                return;
+            }
+            this.session = res.data.result;
+            if (this.session.token) {
+                this.log.info('Login succesfull');
+                this.setState('info.connection', true, true);
+            }
             return;
-          } else {
-            this.devices[id] = { ...this.devices[id], ...res2.data };
-          }
-        }).catch((error) => {
-          this.log.warn(error);
-          error.response && this.log.error(JSON.stringify(error.response.data));
+        })
+            .catch((error) => {
+            this.log.error(error);
+            error.response && this.log.error(JSON.stringify(error.response.data));
         });
-        if (!this.devices[id].ip) {
-          const body2 = `{
+    }
+    async getDeviceList() {
+        const body = '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH"],"limit":30}';
+        const md5 = crypto_1.default.createHash('md5').update(body).digest('base64');
+        this.log.debug(md5);
+        const content = md5 + '\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/getDeviceListByPage';
+        const signature = crypto_1.default.createHmac('sha1', this.secret).update(content).digest('hex');
+        await this.requestClient({
+            method: 'post',
+            url: `https://n-euw1-wap-gw.tplinkcloud.com/api/v2/common/getDeviceListByPage?token=${this.session.token}&termID=${this.termId}&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8`,
+            headers: {
+                'Content-Type': 'application/json;UTF-8',
+                'Content-MD5': md5,
+                Accept: '*/*',
+                'User-Agent': 'Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)',
+                'Accept-Language': 'de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8',
+                'X-Authorization': 'Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=' +
+                    signature,
+            },
+            data: body,
+        })
+            .then(async (res) => {
+            this.log.debug(JSON.stringify(res.data));
+            if (res.data.error_code) {
+                this.log.error(JSON.stringify(res.data));
+                return;
+            }
+            this.log.info(`Found ${res.data.result?.totalNum} devices`);
+            for (const device of res.data.result?.deviceList || []) {
+                const id = device.deviceId;
+                this.devices[id] = device;
+                let name = device.alias;
+                if (this.isBase64(device.alias)) {
+                    name = Buffer.from(device.alias, 'base64').toString('utf8');
+                }
+                this.log.debug(`Found device ${id} ${name}`);
+                await this.extendObject(id, {
+                    type: 'device',
+                    common: {
+                        name: name,
+                    },
+                    native: {},
+                });
+                await this.setObjectNotExistsAsync(id + '.remote', {
+                    type: 'channel',
+                    common: {
+                        name: 'Remote Controls',
+                    },
+                    native: {},
+                });
+                let remoteArray = [
+                    { command: 'refresh', name: 'True = Refresh' },
+                    { command: 'setPowerState', name: 'True = On, False = Off' },
+                    { command: 'setPowerStateChild', name: 'childId,true' },
+                    {
+                        command: 'setBrightness',
+                        name: 'Set Brightness for Light devices',
+                        type: 'number',
+                        role: 'level.brightness',
+                        def: 5,
+                    },
+                    {
+                        command: 'setColorTemp',
+                        name: 'Set Color Temp for Light devices',
+                        type: 'number',
+                        role: 'level.color.temperature',
+                        def: 3e3,
+                    },
+                    {
+                        command: 'setColor',
+                        name: 'Set Color for Light devices (hue, saturation)',
+                        def: '30, 100',
+                        type: 'string',
+                    },
+                ];
+                if (device.deviceType.includes('CAMERA')) {
+                    remoteArray = [
+                        { command: 'refresh', name: 'True = Refresh' },
+                        { command: 'setAlertConfig', name: 'True = On, False = Off' },
+                        { command: 'setLensMaskConfig', name: 'True = On, False = Off' },
+                        { command: 'setForceWhitelampState', name: 'True = On, False = Off' },
+                        { command: 'setLedStatus', name: 'True = On, False = Off' },
+                        { command: 'setMsgPushConfig', name: 'True = On, False = Off' },
+                        { command: 'setDetectionConfig', name: 'True = On, False = Off' },
+                        { command: 'moveMotor', name: 'move Camera to X (-360,360), Y(-45,45)', type: 'string', def: '0, 0', role: 'text' },
+                        { command: 'moveMotorStep', name: 'Angle (0-360)', type: 'string', def: '180', role: 'text' },
+                        { command: 'moveToPreset', name: 'PresetId', type: 'string', def: '1', role: 'text' },
+                    ];
+                }
+                remoteArray.forEach((remote) => {
+                    this.extendObject(id + '.remote.' + remote.command, {
+                        type: 'state',
+                        common: {
+                            name: remote.name || '',
+                            type: (remote.type || 'boolean'),
+                            role: remote.role || 'switch',
+                            def: remote.def != null ? remote.def : false,
+                            write: true,
+                            read: true,
+                        },
+                        native: {},
+                    });
+                });
+                this.json2iob.parse(id, device, { channelName: name });
+                //try new API
+                await this.requestClient({
+                    method: 'get',
+                    url: 'https://euw1-app-server.iot.i.tplinknbu.com/v1/things/' + id + '/details',
+                    headers: {
+                        'x-locale': 'de',
+                        Authorization: 'ut|' + this.session.token,
+                        'app-cid': 'app:TP-Link_Tapo_iOS:' + this.termId,
+                        'x-ospf': 'iOS 14.8',
+                        'x-app-name': 'TP-Link_Tapo_iOS',
+                        Accept: '*/*',
+                        'Accept-Language': 'de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8',
+                        'Content-Type': 'application/json;UTF-8',
+                        'User-Agent': 'Tapo/2.9.7 (iPhone; iOS 14.8; Scale/3.00)',
+                        'x-term-id': this.termId,
+                        'x-app-version': '2.9.7',
+                        'x-net-type': 'wifi',
+                    },
+                })
+                    .then(async (res) => {
+                    this.log.debug(JSON.stringify(res.data));
+                    if (res.data.error_code) {
+                        this.log.error(JSON.stringify(res.data));
+                        return;
+                    }
+                    else {
+                        this.devices[id] = { ...this.devices[id], ...res.data };
+                    }
+                })
+                    .catch((error) => {
+                    this.log.warn(error);
+                    error.response && this.log.error(JSON.stringify(error.response.data));
+                });
+                //no ip via new API try old api
+                if (!this.devices[id].ip) {
+                    const body = `{
               "requestData": {
                 "method": "multipleRequest",
                 "params": {
@@ -418,366 +444,411 @@ class Tapo extends utils.Adapter {
               },
               "deviceId": "${id}"
             }`;
-          const md52 = import_crypto.default.createHash("md5").update(body2).digest("base64");
-          this.log.debug(md52);
-          const content2 = md52 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/passthrough";
-          const signature2 = import_crypto.default.createHmac("sha1", this.secret).update(content2).digest("hex");
-          await this.requestClient({
-            method: "post",
-            url: `https://n-euw1-wap-gw.tplinkcloud.com/api/v2/common/passthrough?token=${this.session.token}&termID=${this.termId}&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8`,
-            headers: {
-              "Content-Type": "application/json;UTF-8",
-              "Content-MD5": md52,
-              Accept: "*/*",
-              "User-Agent": "Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)",
-              "Accept-Language": "de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8",
-              "X-Authorization": "Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=" + signature2
-            },
-            data: body2
-          }).then(async (res2) => {
-            var _a2, _b2, _c, _d, _e, _f;
-            this.log.debug(JSON.stringify(res2.data));
-            let result = {};
-            if (res2.data.error_code) {
-              this.log.error(JSON.stringify(res2.data));
-            } else {
-              result = (_f = (_e = (_d = (_c = (_b2 = (_a2 = res2.data.result) == null ? void 0 : _a2.responseData) == null ? void 0 : _b2.result) == null ? void 0 : _c.responses[0]) == null ? void 0 : _d.result) == null ? void 0 : _e.network) == null ? void 0 : _f.wan;
-              result.ip = result.ipaddr;
-              this.log.info(`Device ${id} has IP ${result.ip}`);
-              delete result[".name"];
-              delete result[".type"];
-              this.devices[id] = { ...this.devices[id], ...result };
+                    const md5 = crypto_1.default.createHash('md5').update(body).digest('base64');
+                    this.log.debug(md5);
+                    const content = md5 + '\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/passthrough';
+                    const signature = crypto_1.default.createHmac('sha1', this.secret).update(content).digest('hex');
+                    await this.requestClient({
+                        method: 'post',
+                        url: `https://n-euw1-wap-gw.tplinkcloud.com/api/v2/common/passthrough?token=${this.session.token}&termID=${this.termId}&appVer=2.8.21&locale=de_DE&appName=TP-Link_Tapo_iOS&netType=wifi&model=iPhone10%2C5&termName=iPhone&termMeta=3&brand=TPLINK&ospf=iOS%2014.8`,
+                        headers: {
+                            'Content-Type': 'application/json;UTF-8',
+                            'Content-MD5': md5,
+                            Accept: '*/*',
+                            'User-Agent': 'Tapo/2.8.21 (iPhone; iOS 14.8; Scale/3.00)',
+                            'Accept-Language': 'de-DE;q=1, uk-DE;q=0.9, en-DE;q=0.8',
+                            'X-Authorization': 'Timestamp=9999999999, Nonce=fee66616-58dd-4bcb-be79-fe092d800a21, AccessKey=4d11b6b9d5ea4d19a829adbb9714b057, Signature=' +
+                                signature,
+                        },
+                        data: body,
+                    })
+                        .then(async (res) => {
+                        this.log.debug(JSON.stringify(res.data));
+                        let result = {};
+                        if (res.data.error_code) {
+                            this.log.error(JSON.stringify(res.data));
+                        }
+                        else {
+                            result = res.data.result?.responseData?.result?.responses[0]?.result?.network?.wan;
+                            result.ip = result.ipaddr;
+                            this.log.info(`Device ${id} has IP ${result.ip}`);
+                            delete result['.name'];
+                            delete result['.type'];
+                            // result = res.data.result?.responseData?.result;
+                            this.devices[id] = { ...this.devices[id], ...result };
+                        }
+                    })
+                        .catch((error) => {
+                        this.log.warn(error);
+                        error.response && this.log.error(JSON.stringify(error.response.data));
+                    });
+                }
+                if (!this.devices[id].ip) {
+                    const ipState = await this.getStateAsync(id + '.ip');
+                    if (ipState && ipState.val) {
+                        this.devices[id].ip = ipState.val;
+                    }
+                    else {
+                        await this.setObjectNotExistsAsync(id + '.ip', {
+                            type: 'state',
+                            common: {
+                                name: 'IP',
+                                write: true,
+                                read: true,
+                                type: 'string',
+                                role: 'text',
+                            },
+                            native: {},
+                        });
+                        this.log.warn(`No IP found for ${id} put the device online or set the ip state manually`);
+                    }
+                }
+                this.json2iob.parse(id, this.devices[id]);
+                if (this.devices[id].ip) {
+                    const initResult = await this.initDevice(id)
+                        .then(() => {
+                        this.log.info(`Initialized ${id}`);
+                    })
+                        .catch((e) => {
+                        this.log.error(e);
+                    });
+                    this.log.debug(`initResult  camera ${id} ${JSON.stringify(initResult)}`);
+                }
             }
-          }).catch((error) => {
+        })
+            .catch((error) => {
             this.log.warn(error);
             error.response && this.log.error(JSON.stringify(error.response.data));
-          });
-        }
-        if (!this.devices[id].ip) {
-          const ipState = await this.getStateAsync(id + ".ip");
-          if (ipState && ipState.val) {
-            this.devices[id].ip = ipState.val;
-          } else {
-            await this.setObjectNotExistsAsync(id + ".ip", {
-              type: "state",
-              common: {
-                name: "IP",
-                write: true,
+        });
+        await this.setObjectNotExistsAsync('deviceList', {
+            type: 'state',
+            common: {
+                name: 'Cached device list',
+                write: false,
                 read: true,
-                type: "string",
-                role: "text"
-              },
-              native: {}
-            });
-            this.log.warn(`No IP found for ${id} put the device online or set the ip state manually`);
-          }
-        }
-        this.json2iob.parse(id, this.devices[id]);
-        if (this.devices[id].ip) {
-          const initResult = await this.initDevice(id).then(() => {
-            this.log.info(`Initialized ${id}`);
-          }).catch((e) => {
-            this.log.error(e);
-          });
-          this.log.debug(`initResult  camera ${id} ${JSON.stringify(initResult)}`);
-        }
-      }
-    }).catch((error) => {
-      this.log.warn(error);
-      error.response && this.log.error(JSON.stringify(error.response.data));
-    });
-    await this.setObjectNotExistsAsync("deviceList", {
-      type: "state",
-      common: {
-        name: "Cached device list",
-        write: false,
-        read: true,
-        type: "string",
-        role: "json"
-      },
-      native: {}
-    });
-    await this.setStateAsync("deviceList", JSON.stringify(this.devices), true);
-  }
-  async initDevice(id) {
-    const device = this.devices[id];
-    if (!device.ip) {
-      this.log.warn(`No IP found for ${id}`);
-      return;
-    }
-    this.log.info(`Init device ${id} type ${device.deviceName} with ip ${device.ip}`);
-    let deviceObject;
-    if (device.deviceName === "P100") {
-      deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName.startsWith("P110") || device.deviceName.startsWith("P115")) {
-      deviceObject = new import_p110.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName === "L530" || device.deviceName.startsWith("L630")) {
-      deviceObject = new import_l530.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName === "L510E") {
-      deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName === "L520E") {
-      deviceObject = new import_l520e.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
-      deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    } else if (device.deviceName.startsWith("C") || device.deviceName.startsWith("TC")) {
-      if (device.deviceName.startsWith("C4") && !this.config.enableBatteryDevices) {
-        this.log.warn("Battery device found but ignored. Please enable in settings and check regularly the battery status");
-        return;
-      }
-      if (!this.config.streamusername || !this.config.streampassword) {
-        this.log.warn(`No stream username or password. No motion detection available`);
-      }
-      deviceObject = new import_tapoCamera.TAPOCamera(this.log, {
-        name: device.deviceName,
-        ipAddress: device.ip,
-        password: this.config.password,
-        streamUser: this.config.streamusername,
-        streamPassword: this.config.streampassword,
-        disableStreaming: true
-      });
-      this.deviceObjects[id] = deviceObject;
-      const deviceInfo = await deviceObject.getDeviceInfo(true);
-      this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
-      this.log.debug(JSON.stringify(deviceInfo));
-      this.json2iob.parse(id, deviceInfo);
-      this.log.debug(`Init event emitter for ${id}`);
-      const eventEmitter = await deviceObject.getEventEmitter();
-      await this.setObjectNotExistsAsync(id + ".motionEvent", {
-        type: "state",
-        common: {
-          name: "Motion detected",
-          type: "boolean",
-          role: "boolean",
-          def: false,
-          write: false,
-          read: true
-        },
-        native: {}
-      });
-      this.log.debug('Init event listener for "motion"');
-      eventEmitter.addListener("motion", async (motionDetected) => {
-        await this.setStateAsync(id + ".motionEvent", motionDetected, true);
-        this.log.debug(`[${device.deviceName}] "Motion detected" ${motionDetected}`);
-      });
-      return;
-    } else {
-      this.log.info(`Unknown device type ${device.deviceName} init as P100`);
-      deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2);
-    }
-    this.deviceObjects[id] = deviceObject;
-    await deviceObject.handshake().then(async () => {
-      if (deviceObject.is_klap) {
-        this.log.debug("Detected KLAP device");
-        await deviceObject.handshake_new().catch(async (error) => {
-          this.log.error(error);
-          this.log.error(error.stack);
-          this.log.error("KLAP Handshake failed. Try old handshake");
-          deviceObject.is_klap = false;
-          await deviceObject.reAuthenticate().catch(() => {
-            this.log.error("Login failed");
-            this.deviceObjects[id]._connected = false;
-          });
+                type: 'string',
+                role: 'json',
+            },
+            native: {},
         });
-      } else {
-        await deviceObject.login().catch(() => {
-          this.log.error("Login failed");
-          this.deviceObjects[id]._connected = false;
-        });
-      }
-      deviceObject.getDeviceInfo(true).then(async (sysInfo) => {
-        this.log.debug(JSON.stringify(sysInfo));
-        if (sysInfo.request) {
-          this.log.error("Malformed response sysinfo");
-          this.log.error(JSON.stringify(sysInfo));
-          return;
-        }
-        this.json2iob.parse(id, sysInfo);
-        this.deviceObjects[id]._connected = true;
-        if (this.deviceObjects[id].getEnergyUsage) {
-          this.log.debug("Receive energy usage");
-          const energyUsage = await this.deviceObjects[id].getEnergyUsage();
-          this.log.debug(JSON.stringify(energyUsage));
-          this.json2iob.parse(id, energyUsage);
-        }
-        const childList = await this.deviceObjects[id].getChildDevices();
-        this.log.debug("Childlist: " + JSON.stringify(childList));
-        if (childList && childList.error_code === 0) {
-          this.json2iob.parse(id + ".childlist", childList);
-        }
-      }).catch((error) => {
-        this.log.error(JSON.stringify(error));
-        this.log.error("52 - Get Device Info failed");
-        this.deviceObjects[id]._connected = false;
-      });
-    }).catch(() => {
-      this.log.error("Handshake failed");
-      this.deviceObjects[id]._connected = false;
-    });
-  }
-  async updateDevices() {
-    try {
-      for (const deviceId in this.deviceObjects) {
-        if (this.deviceObjects[deviceId].getStatus) {
-          this.log.debug("Receive camera status");
-          const status = await this.deviceObjects[deviceId].getStatus().catch((error) => {
-            this.log.info("Get camera Status failed");
-            this.log.debug(JSON.stringify(error));
-          });
-          this.log.debug(JSON.stringify(status));
-          this.json2iob.parse(deviceId, status);
-          if (this.deviceObjects[deviceId].stok === void 0) {
-            if (this.firstStart) {
-              this.log.error("No stok found for: " + deviceId + " Ignore and remove the device until next restart");
-              delete this.deviceObjects[deviceId];
-            } else {
-              this.log.info(
-                "No stok found for: " + deviceId + " this means the device is offline or connection lost. No update or commands possible"
-              );
-            }
-          }
-          continue;
-        }
-        if (!this.deviceObjects[deviceId]._connected) {
-          continue;
-        }
-        this.deviceObjects[deviceId].getDeviceInfo(true).then(async (sysInfo) => {
-          this.log.debug(JSON.stringify(sysInfo));
-          if (!sysInfo || sysInfo.name === "Error" || sysInfo.request) {
-            this.log.debug("Malformed response sysinfo");
+        await this.setStateAsync('deviceList', JSON.stringify(this.devices), true);
+    }
+    async initDevice(id) {
+        const device = this.devices[id];
+        if (!device.ip) {
+            this.log.warn(`No IP found for ${id}`);
             return;
-          }
-          await this.json2iob.parse(deviceId, sysInfo);
-          if (this.deviceObjects[deviceId].getEnergyUsage) {
-            this.log.debug("Receive energy usage");
-            const energyUsage = await this.deviceObjects[deviceId].getEnergyUsage();
-            this.log.debug(JSON.stringify(energyUsage));
-            if (energyUsage.request) {
-              this.log.error("Malformed response getEnergyUsage");
-              this.log.error(JSON.stringify(energyUsage));
-              return;
-            }
-            await this.json2iob.parse(deviceId, energyUsage);
-            const power_usage = this.deviceObjects[deviceId].getPowerConsumption();
-            if (power_usage.request) {
-              this.log.error("Malformed response getPowerConsumption");
-              this.log.error(JSON.stringify(power_usage));
-              return;
-            }
-            await this.json2iob.parse(deviceId, power_usage);
-          }
-        }).catch((error) => {
-          this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
-        });
-      }
-      this.log.debug("Update done");
-    } catch (error) {
-      this.log.warn(error);
-    }
-  }
-  isBase64(str) {
-    if (str === "" || str.trim() === "") {
-      return false;
-    }
-    try {
-      const strWithoutPadding = str.replace(/=*$/, "");
-      return btoa(atob(strWithoutPadding)) === strWithoutPadding || btoa(atob(str)) === str;
-    } catch (err) {
-      return false;
-    }
-  }
-  async sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-  async refreshToken() {
-    this.log.debug("Refresh token");
-  }
-  onUnload(callback) {
-    try {
-      this.setState("info.connection", false, true);
-      this.refreshTimeout && clearTimeout(this.refreshTimeout);
-      this.reLoginTimeout && clearTimeout(this.reLoginTimeout);
-      this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
-      this.updateInterval && clearInterval(this.updateInterval);
-      this.refreshTokenInterval && clearInterval(this.refreshTokenInterval);
-      callback();
-    } catch (e) {
-      callback();
-    }
-  }
-  async onStateChange(id, state) {
-    if (state) {
-      if (!state.ack) {
-        const deviceId = id.split(".")[2];
-        const command = id.split(".")[4];
-        if (id.split(".")[3] !== "remote") {
-          return;
         }
-        if (command === "Refresh") {
-          this.deviceObjects[deviceId].getDeviceInfo(true).then((sysInfo) => {
-            this.log.debug(JSON.stringify(sysInfo));
-            this.json2iob.parse(deviceId, sysInfo);
-          }).catch((error) => {
-            this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
-          });
-          return;
+        this.log.info(`Init device ${id} type ${device.deviceName} with ip ${device.ip}`);
+        let deviceObject;
+        if (device.deviceName === 'P100') {
+            deviceObject = new p100_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+        }
+        else if (device.deviceName.startsWith('P110') || device.deviceName.startsWith('P115')) {
+            deviceObject = new p110_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+        }
+        else if (device.deviceName === 'L530' || device.deviceName.startsWith('L630')) {
+            deviceObject = new l530_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+        }
+        else if (device.deviceName === 'L510E') {
+            deviceObject = new l510e_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+        }
+        else if (device.deviceName === 'L520E') {
+            deviceObject = new l520e_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+        }
+        else if (device.deviceName.startsWith('L') || device.deviceName.startsWith('KL')) {
+            deviceObject = new l510e_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+        }
+        else if (device.deviceName.startsWith('C') || device.deviceName.startsWith('TC')) {
+            if (device.deviceName.startsWith('C4') && !this.config.enableBatteryDevices) {
+                this.log.warn('Battery device found but ignored. Please enable in settings and check regularly the battery status');
+                return;
+            }
+            if (!this.config.streamusername || !this.config.streampassword) {
+                this.log.warn(`No stream username or password. No motion detection available`);
+            }
+            deviceObject = new tapoCamera_1.TAPOCamera(this.log, {
+                name: device.deviceName,
+                ipAddress: device.ip,
+                password: this.config.password,
+                streamUser: this.config.streamusername || '',
+                streamPassword: this.config.streampassword || '',
+                disableStreaming: true,
+            });
+            //new Camera(this.log, device.ip, this.config.username, this.config.password, 2);
+            this.deviceObjects[id] = deviceObject;
+            const deviceInfo = await deviceObject.getDeviceInfo(true);
+            this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
+            this.log.debug(JSON.stringify(deviceInfo));
+            this.json2iob.parse(id, deviceInfo);
+            this.log.debug(`Init event emitter for ${id}`);
+            const eventEmitter = await deviceObject.getEventEmitter();
+            await this.setObjectNotExistsAsync(id + '.motionEvent', {
+                type: 'state',
+                common: {
+                    name: 'Motion detected',
+                    type: 'boolean',
+                    role: 'boolean',
+                    def: false,
+                    write: false,
+                    read: true,
+                },
+                native: {},
+            });
+            this.log.debug('Init event listener for "motion"');
+            eventEmitter.addListener('motion', async (motionDetected) => {
+                await this.setStateAsync(id + '.motionEvent', motionDetected, true);
+                this.log.debug(`[${device.deviceName}] "Motion detected" ${motionDetected}`);
+            });
+            return;
+        }
+        else {
+            this.log.info(`Unknown device type ${device.deviceName} init as P100`);
+            deviceObject = new p100_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+        }
+        this.deviceObjects[id] = deviceObject;
+        await deviceObject
+            .handshake()
+            .then(async () => {
+            if (deviceObject.is_klap) {
+                this.log.debug('Detected KLAP device');
+                await deviceObject.handshake_new().catch(async (error) => {
+                    this.log.error(error);
+                    this.log.error(error.stack);
+                    this.log.error('KLAP Handshake failed. Try old handshake');
+                    deviceObject.is_klap = false;
+                    await deviceObject.reAuthenticate().catch(() => {
+                        this.log.error('Login failed');
+                        this.deviceObjects[id]._connected = false;
+                    });
+                });
+            }
+            else {
+                await deviceObject.login().catch(() => {
+                    this.log.error('Login failed');
+                    this.deviceObjects[id]._connected = false;
+                });
+            }
+            deviceObject
+                .getDeviceInfo(true)
+                .then(async (sysInfo) => {
+                this.log.debug(JSON.stringify(sysInfo));
+                if (sysInfo.request) {
+                    this.log.error('Malformed response sysinfo');
+                    this.log.error(JSON.stringify(sysInfo));
+                    return;
+                }
+                this.json2iob.parse(id, sysInfo);
+                this.deviceObjects[id]._connected = true;
+                if (this.deviceObjects[id].getEnergyUsage) {
+                    this.log.debug('Receive energy usage');
+                    const energyUsage = await this.deviceObjects[id].getEnergyUsage();
+                    this.log.debug(JSON.stringify(energyUsage));
+                    this.json2iob.parse(id, energyUsage);
+                }
+                const childList = await this.deviceObjects[id].getChildDevices();
+                this.log.debug('Childlist: ' + JSON.stringify(childList));
+                if (childList && childList.error_code === 0) {
+                    this.json2iob.parse(id + '.childlist', childList);
+                }
+            })
+                .catch((error) => {
+                this.log.error(JSON.stringify(error));
+                this.log.error('52 - Get Device Info failed');
+                this.deviceObjects[id]._connected = false;
+            });
+        })
+            .catch(() => {
+            this.log.error('Handshake failed');
+            this.deviceObjects[id]._connected = false;
+        });
+    }
+    async updateDevices() {
+        try {
+            for (const deviceId in this.deviceObjects) {
+                if (this.deviceObjects[deviceId].getStatus) {
+                    this.log.debug('Receive camera status');
+                    const status = await this.deviceObjects[deviceId].getStatus().catch((error) => {
+                        this.log.info('Get camera Status failed');
+                        this.log.debug(JSON.stringify(error));
+                    });
+                    this.log.debug(JSON.stringify(status));
+                    this.json2iob.parse(deviceId, status);
+                    if (this.deviceObjects[deviceId].stok === undefined) {
+                        if (this.firstStart) {
+                            this.log.error('No stok found for: ' + deviceId + ' Ignore and remove the device until next restart');
+                            delete this.deviceObjects[deviceId];
+                        }
+                        else {
+                            this.log.info('No stok found for: ' + deviceId + ' this means the device is offline or connection lost. No update or commands possible');
+                        }
+                    }
+                    continue;
+                }
+                if (!this.deviceObjects[deviceId]._connected) {
+                    continue;
+                }
+                this.deviceObjects[deviceId]
+                    .getDeviceInfo(true)
+                    .then(async (sysInfo) => {
+                    this.log.debug(JSON.stringify(sysInfo));
+                    if (!sysInfo || sysInfo.name === 'Error' || sysInfo.request) {
+                        this.log.debug('Malformed response sysinfo');
+                        // this.log.error(JSON.stringify(sysInfo));
+                        return;
+                    }
+                    await this.json2iob.parse(deviceId, sysInfo);
+                    if (this.deviceObjects[deviceId].getEnergyUsage) {
+                        this.log.debug('Receive energy usage');
+                        const energyUsage = await this.deviceObjects[deviceId].getEnergyUsage();
+                        this.log.debug(JSON.stringify(energyUsage));
+                        if (energyUsage.request) {
+                            this.log.error('Malformed response getEnergyUsage');
+                            this.log.error(JSON.stringify(energyUsage));
+                            return;
+                        }
+                        await this.json2iob.parse(deviceId, energyUsage);
+                        const power_usage = this.deviceObjects[deviceId].getPowerConsumption();
+                        if (power_usage.request) {
+                            this.log.error('Malformed response getPowerConsumption');
+                            this.log.error(JSON.stringify(power_usage));
+                            return;
+                        }
+                        await this.json2iob.parse(deviceId, power_usage);
+                    }
+                })
+                    .catch((error) => {
+                    this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
+                });
+            }
+            this.log.debug('Update done');
+        }
+        catch (error) {
+            this.log.warn(error);
+        }
+    }
+    isBase64(str) {
+        if (str === '' || str.trim() === '') {
+            return false;
         }
         try {
-          const cameraCommands = {
-            setAlertConfig: "alarm",
-            setLensMaskConfig: "eyes",
-            setLedStatus: "led",
-            setMsgPushConfig: "notifications",
-            setDetectionConfig: "motionDetection"
-          };
-          if (this.deviceObjects[deviceId] && (this.deviceObjects[deviceId][command] || cameraCommands[command])) {
-            let result;
-            if (cameraCommands[command]) {
-              result = await this.deviceObjects[deviceId].setStatus(cameraCommands[command], state.val);
-            } else if (command === "setColor" || command === "moveMotor" || command === "setPowerStateChild") {
-              const valueSplit = state.val.replace(" ", "").split(",");
-              result = await this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]);
-            } else {
-              result = await this.deviceObjects[deviceId][command](state.val);
-            }
-            this.log.info(
-              command + " was set to : " + state.val + " for device " + deviceId + " was successful: " + JSON.stringify(result)
-            );
-            this.refreshTimeout && clearTimeout(this.refreshTimeout);
-            this.refreshTimeout = setTimeout(async () => {
-              this.updateDevices();
-            }, 2 * 1e3);
-          } else {
-            if (this.deviceObjects[deviceId]) {
-              this.log.error(`Device ${deviceId} has no command ${command}`);
-            } else {
-              this.log.error(`Device ${deviceId} not found`);
-            }
-          }
-        } catch (error) {
-          this.log.error(error);
+            const strWithoutPadding = str.replace(/=*$/, '');
+            return btoa(atob(strWithoutPadding)) === strWithoutPadding || btoa(atob(str)) === str;
         }
-      } else {
-        const resultDict = {
-          device_on: "setPowerState",
-          eyes: "setLensMaskConfig",
-          alarm: "setAlertConfig",
-          led: "setLedStatus",
-          notifications: "setMsgPushConfig",
-          motionDetection: "setDetectionConfig"
-        };
-        const idArray = id.split(".");
-        const stateName = idArray[idArray.length - 1];
-        const deviceId = id.split(".")[2];
-        if (resultDict[stateName]) {
-          await this.setState(deviceId + ".remote." + resultDict[stateName], state.val, true);
+        catch (err) {
+            return false;
         }
-      }
     }
-  }
+    async sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+    async refreshToken() {
+        this.log.debug('Refresh token');
+    }
+    /**
+     * Is called when adapter shuts down - callback has to be called under any circumstances!
+     */
+    onUnload(callback) {
+        try {
+            this.setState('info.connection', false, true);
+            this.refreshTimeout && clearTimeout(this.refreshTimeout);
+            this.reLoginTimeout && clearTimeout(this.reLoginTimeout);
+            this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
+            this.updateInterval && clearInterval(this.updateInterval);
+            this.refreshTokenInterval && clearInterval(this.refreshTokenInterval);
+            callback();
+        }
+        catch (e) {
+            callback();
+        }
+    }
+    /**
+     * Is called if a subscribed state changes
+     */
+    async onStateChange(id, state) {
+        if (state) {
+            if (!state.ack) {
+                const deviceId = id.split('.')[2];
+                const command = id.split('.')[4];
+                if (id.split('.')[3] !== 'remote') {
+                    return;
+                }
+                if (command === 'Refresh') {
+                    this.deviceObjects[deviceId]
+                        .getDeviceInfo(true)
+                        .then((sysInfo) => {
+                        this.log.debug(JSON.stringify(sysInfo));
+                        this.json2iob.parse(deviceId, sysInfo);
+                    })
+                        .catch((error) => {
+                        this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
+                    });
+                    return;
+                }
+                try {
+                    const cameraCommands = {
+                        setAlertConfig: 'alarm',
+                        setLensMaskConfig: 'eyes',
+                        setLedStatus: 'led',
+                        setMsgPushConfig: 'notifications',
+                        setDetectionConfig: 'motionDetection',
+                    };
+                    if (this.deviceObjects[deviceId] && (this.deviceObjects[deviceId][command] || cameraCommands[command])) {
+                        let result;
+                        if (cameraCommands[command]) {
+                            result = await this.deviceObjects[deviceId].setStatus(cameraCommands[command], state.val);
+                        }
+                        else if (command === 'setColor' || command === 'moveMotor' || command === 'setPowerStateChild') {
+                            const valueSplit = String(state.val).replace(' ', '').split(',');
+                            result = await this.deviceObjects[deviceId][command](valueSplit[0], valueSplit[1]);
+                        }
+                        else {
+                            result = await this.deviceObjects[deviceId][command](state.val);
+                        }
+                        this.log.info(command + ' was set to : ' + state.val + ' for device ' + deviceId + ' was successful: ' + JSON.stringify(result));
+                        this.refreshTimeout && clearTimeout(this.refreshTimeout);
+                        this.refreshTimeout = setTimeout(async () => {
+                            this.updateDevices();
+                        }, 2 * 1000);
+                    }
+                    else {
+                        if (this.deviceObjects[deviceId]) {
+                            this.log.error(`Device ${deviceId} has no command ${command}`);
+                        }
+                        else {
+                            this.log.error(`Device ${deviceId} not found`);
+                        }
+                    }
+                }
+                catch (error) {
+                    this.log.error(error);
+                }
+            }
+            else {
+                const resultDict = {
+                    device_on: 'setPowerState',
+                    eyes: 'setLensMaskConfig',
+                    alarm: 'setAlertConfig',
+                    led: 'setLedStatus',
+                    notifications: 'setMsgPushConfig',
+                    motionDetection: 'setDetectionConfig',
+                };
+                const idArray = id.split('.');
+                const stateName = idArray[idArray.length - 1];
+                const deviceId = id.split('.')[2];
+                if (resultDict[stateName]) {
+                    await this.setState(deviceId + '.remote.' + resultDict[stateName], state.val, true);
+                }
+            }
+        }
+    }
 }
 if (require.main !== module) {
-  module.exports = (options) => new Tapo(options);
-} else {
-  (() => new Tapo())();
+    // Export the constructor in compact mode
+    module.exports = (options) => new Tapo(options);
+}
+else {
+    // otherwise start the instance directly
+    (() => new Tapo())();
 }
 //# sourceMappingURL=main.js.map

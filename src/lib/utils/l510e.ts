@@ -1,5 +1,5 @@
-import { LightSysinfo } from "./types.js";
-import P100 from "./p100.js";
+import { LightSysinfo } from './types.js';
+import P100 from './p100.js';
 
 export default class L510E extends P100 {
   private _lightSysInfo!: LightSysinfo;
@@ -12,7 +12,7 @@ export default class L510E extends P100 {
     public readonly timeout: number,
   ) {
     super(log, ipAddress, email, password, timeout);
-    this.log.debug("Constructing L510E on host: " + ipAddress);
+    this.log.debug('Constructing L510E on host: ' + ipAddress);
   }
 
   async getDeviceInfo(force?: boolean): Promise<LightSysinfo> {
@@ -23,16 +23,16 @@ export default class L510E extends P100 {
 
   async setBrightness(brightness: number): Promise<boolean> {
     const payload =
-      "{" +
+      '{' +
       '"method": "set_device_info",' +
       '"params": {' +
       '"brightness": ' +
       brightness +
-      "}," +
+      '},' +
       '"requestTimeMils": ' +
       Math.round(Date.now() * 1000) +
-      "" +
-      "};";
+      '' +
+      '};';
 
     return this.sendRequest(payload);
   }

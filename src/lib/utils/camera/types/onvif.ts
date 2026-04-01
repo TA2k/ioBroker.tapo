@@ -1,4 +1,4 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 
 export type VideoSource = {
   framerate: number;
@@ -162,7 +162,6 @@ export interface Rule {
     Name: string;
     Type: string;
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parameters: any;
 }
 
@@ -276,7 +275,7 @@ export interface CamOptions {
 
 export interface Cam extends EventEmitter {
   connect(callback: ConnectionCallback): void;
-  on(event: "event", listener: (message: NotificationMessage) => void): this;
+  on(event: 'event', listener: (message: NotificationMessage) => void): this;
   getDeviceInformation(callback: (error: Error, deviceInformation: DeviceInformation) => void): void;
   getProfiles(callback: (error: Error, profiles: Profile[]) => void): void;
 

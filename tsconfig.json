@@ -14,8 +14,8 @@
         "noEmitOnError": true,
         "outDir": "./build/",
         "removeComments": false,
-        "module": "commonjs",
-        "moduleResolution": "node",
+        "module": "node16",
+        "moduleResolution": "node16",
         "esModuleInterop": true,
         // this is necessary for the automatic typing of the adapter config
         "resolveJsonModule": true,
@@ -33,11 +33,12 @@
         // "useUnknownInCatchVariables": false,
 
         // Consider targetting es2019 or higher if you only support Node.js 12+
-        "target": "es2020",
+        "target": "es2022",
+        "rootDir": "./src",
+        "types": ["node"],
 
         "sourceMap": true,
-        "inlineSourceMap": false,
-        "watch": false
+        "inlineSourceMap": false
     },
     "include": ["src/**/*.ts", "admin/**/*.ts", "admin/**/*.tsx"],
     "exclude": ["build/**", "node_modules/**"]

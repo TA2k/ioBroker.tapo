@@ -1,6 +1,6 @@
-import { ConsumptionInfo, PlugSysinfo } from "./types.js";
-import { EnergyUsage } from "./energyUsage.js";
-import { PowerUsage } from "./powerUsage.js";
+import { ConsumptionInfo, PlugSysinfo } from './types.js';
+import { EnergyUsage } from './energyUsage.js';
+import { PowerUsage } from './powerUsage.js';
 
 export interface TpLinkAccessory {
   is_klap: boolean;

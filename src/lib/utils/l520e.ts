@@ -1,5 +1,5 @@
-import L510E from "./l510e";
-import { ColorTempLightSysinfo } from "./types";
+import L510E from './l510e';
+import { ColorTempLightSysinfo } from './types';
 
 export default class L520E extends L510E {
 
@@ -26,7 +26,7 @@ export default class L520E extends L510E {
     const transformedColorTemp = this.transformColorTemp(color_temp);
     this.log.debug('Color Temp Tapo :' + transformedColorTemp);
 
-    const roundedValue = transformedColorTemp > 6500 ? 6500 : transformedColorTemp < 2500 ? 
+    const roundedValue = transformedColorTemp > 6500 ? 6500 : transformedColorTemp < 2500 ?
       2500 : transformedColorTemp;
 
     const payload = '{'+

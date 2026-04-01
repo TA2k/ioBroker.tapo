@@ -1,7 +1,1 @@
-{
-  "version": 3,
-  "sources": ["../../../src/lib/utils/energyUsage.ts"],
-  "sourcesContent": ["export class EnergyUsage{\n  current_power!: number;\n}"],
-  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAO,MAAM,YAAW;AAExB;",
-  "names": []
-}
+{"version":3,"file":"energyUsage.js","sourceRoot":"","sources":["../../../src/lib/utils/energyUsage.ts"],"names":[],"mappings":";;;AAAA,MAAa,WAAW;IACtB,aAAa,CAAU;CACxB;AAFD,kCAEC"}

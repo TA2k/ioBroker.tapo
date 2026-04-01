@@ -1,7 +1,1 @@
-{
-  "version": 3,
-  "sources": ["../../../src/lib/utils/usage.ts"],
-  "sourcesContent": ["export class Usage{\n  today!:number;\n  past7!:number;\n  past30!:number;\n}"],
-  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAO,MAAM,MAAK;AAIlB;",
-  "names": []
-}
+{"version":3,"file":"usage.js","sourceRoot":"","sources":["../../../src/lib/utils/usage.ts"],"names":[],"mappings":";;;AAAA,MAAa,KAAK;IAChB,KAAK,CAAS;IACd,KAAK,CAAS;IACd,MAAM,CAAS;CAChB;AAJD,sBAIC"}

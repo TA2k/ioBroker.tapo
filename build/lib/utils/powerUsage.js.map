@@ -1,7 +1,1 @@
-{
-  "version": 3,
-  "sources": ["../../../src/lib/utils/powerUsage.ts"],
-  "sourcesContent": ["import { Usage } from \"./usage\";\n\nexport class PowerUsage{\n  time_usage!:Usage;\n  power_usage!:Usage;\n  saved_power!:Usage;\n}"],
-  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAEO,MAAM,WAAU;AAIvB;",
-  "names": []
-}
+{"version":3,"file":"powerUsage.js","sourceRoot":"","sources":["../../../src/lib/utils/powerUsage.ts"],"names":[],"mappings":";;;AAEA,MAAa,UAAU;IACrB,UAAU,CAAQ;IAClB,WAAW,CAAQ;IACnB,WAAW,CAAQ;CACpB;AAJD,gCAIC"}

@@ -6,7 +6,7 @@ export type CommonSysinfo = {
     hw_ver: string;
   };
 
-export type PlugSysinfo = CommonSysinfo &{ 
+export type PlugSysinfo = CommonSysinfo &{
     type: 'SMART.TAPOPLUG';
     mac: string;
     hw_id: string;
@@ -15,15 +15,15 @@ export type PlugSysinfo = CommonSysinfo &{
     last_update:number;
   };
 
-export type LightSysinfo = PlugSysinfo &{ 
+export type LightSysinfo = PlugSysinfo &{
     brightness: number;
   };
 
-export type ColorTempLightSysinfo = LightSysinfo &{ 
+export type ColorTempLightSysinfo = LightSysinfo &{
     color_temp: number;
   };
-  
-export type ColorLightSysinfo = ColorTempLightSysinfo &{ 
+
+export type ColorLightSysinfo = ColorTempLightSysinfo &{
     hue: number;
     saturation: number;
   };

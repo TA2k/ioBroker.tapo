@@ -1,6 +1,6 @@
-import L520E from "./l520e";
-import { PowerUsage } from "./powerUsage";
-import { ColorLightSysinfo, ConsumptionInfo } from "./types";
+import L520E from './l520e';
+import { PowerUsage } from './powerUsage';
+import { ColorLightSysinfo, ConsumptionInfo } from './types';
 
 export default class L530 extends L520E {
 
@@ -58,7 +58,7 @@ export default class L530 extends L520E {
     return this._colorLightSysInfo;
   }
 
-  async getEnergyUsage():Promise<PowerUsage>{        
+  async getEnergyUsage():Promise<PowerUsage>{
     const payload = '{'+
                 '"method": "get_device_usage",'+
                     '"requestTimeMils": ' + Math.round(Date.now() * 1000) + ''+
@@ -81,7 +81,7 @@ export default class L530 extends L520E {
             current: 0,
           };
         }
-                        
+
         return response.result;
       }).catch((error)=>{
         if(error.message && error.message.indexOf('9999') > 0){
@@ -107,7 +107,7 @@ export default class L530 extends L520E {
             current: 0,
           };
         }
-                        
+
         return response.result;
       }).catch((error)=>{
         if(error.message && error.message.indexOf('9999') > 0){
@@ -120,7 +120,7 @@ export default class L530 extends L520E {
         return false;
       });
     }
-    
+
   }
 
   public getPowerConsumption():ConsumptionInfo{

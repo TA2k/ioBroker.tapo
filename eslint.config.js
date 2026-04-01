@@ -11,7 +11,7 @@ const compat = new FlatCompat({
 
 module.exports = [
   {
-    ignores: ['**/.prettierrc.js', '**/.eslintrc.js', 'admin/words.js', 'build/**'],
+    ignores: ['**/.prettierrc.js', '**/.eslintrc.js', 'admin/words.js', 'build/**', 'src/**/*.d.ts'],
   },
   ...compat.extends('eslint:recommended'),
   {
@@ -60,6 +60,17 @@ module.exports = [
       ],
 
       semi: ['error', 'always'],
+    },
+  },
+  {
+    files: ['src/**/*.ts'],
+    languageOptions: {
+      sourceType: 'module',
+      parser: require('@typescript-eslint/parser'),
+    },
+    rules: {
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
     },
   },
 ];

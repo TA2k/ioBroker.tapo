@@ -1,6 +1,6 @@
-import { EnergyUsage } from "./energyUsage";
-import P100 from "./p100";
-import { ConsumptionInfo } from "./types";
+import { EnergyUsage } from './energyUsage';
+import P100 from './p100';
+import { ConsumptionInfo } from './types';
 
 export default class P110 extends P100 {
 
@@ -14,15 +14,15 @@ export default class P110 extends P100 {
     public readonly timeout: number,
   ) {
     super(log, ipAddress, email, password, timeout);
-    this.log.info("Constructing P110 on host: " + ipAddress);
+    this.log.info('Constructing P110 on host: ' + ipAddress);
   }
 
-  async getEnergyUsage():Promise<EnergyUsage>{        
+  async getEnergyUsage():Promise<EnergyUsage>{
     const payload = '{'+
         '"method": "get_energy_usage",'+
         '"requestTimeMils": ' + Math.round(Date.now() * 1000) + ''+
         '};';
-     
+
     if(this.is_klap){
       return this.handleKlapRequest(payload).then((response)=>{
         if(response && response.result){
@@ -36,7 +36,7 @@ export default class P110 extends P100 {
             total: 0,
           };
         }
-           
+
         return response.result;
       });
     }else{
@@ -52,11 +52,11 @@ export default class P110 extends P100 {
             total: 0,
           };
         }
-           
+
         return response.result;
       });
     }
-    
+
   }
 
   public getPowerConsumption():ConsumptionInfo{
