@@ -764,10 +764,11 @@ class Tapo extends utils.Adapter {
                         const now = Math.floor(Date.now() / 1000);
                         const lastEvent = events[events.length - 1];
                         const active = now - (lastEvent.end_time || lastEvent.start_time) < 30;
+                        const reversed = [...events].reverse();
                         await this.json2iob.parse(deviceId + '.detection', {
                             active,
-                            lastTimestamp: lastEvent.start_time,
                             eventCount: events.length,
+                            events: reversed,
                         });
                     }
                     else if (events) {

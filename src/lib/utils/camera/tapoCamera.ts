@@ -1012,7 +1012,7 @@ export class TAPOCamera extends OnvifCamera {
                   channel: 0,
                   start_time: startTime || now - 600,
                   end_time: endTime || now + 60,
-                  end_index: 99,
+                  end_index: 9,
                 },
               },
             },
