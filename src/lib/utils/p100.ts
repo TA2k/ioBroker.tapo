@@ -848,6 +848,147 @@ export default class P100 implements TpLinkAccessory {
     });
   }
 
+  // Generic command method - returns full response
+  async sendCommand(method: string, params?: Record<string, any>): Promise<any> {
+    const payload = JSON.stringify({
+      method,
+      params: params || {},
+      terminalUUID: this.terminalUUID,
+      requestTimeMils: Math.round(Date.now() * 1000),
+    });
+    const handler = this.tpLinkCipher
+      ? () => this.handleRequest(payload)
+      : () => this.handleKlapRequest(payload);
+    const doReconnect = this.tpLinkCipher
+      ? () => this.reconnect()
+      : () => this.newReconnect();
+    try {
+      const response = await handler();
+      return response?.result ?? response;
+    } catch (error: any) {
+      if (error.message?.includes('9999') && this._reconnect_counter <= 3) {
+        await doReconnect();
+        const response = await handler();
+        return response?.result ?? response;
+      }
+      throw error;
+    }
+  }
+
+  // --- Plug features ---
+
+  async setLedEnabled(enabled: boolean): Promise<any> {
+    return this.sendCommand('set_led_info', { led_rule: enabled ? 'always' : 'never' });
+  }
+
+  async getLedInfo(): Promise<any> {
+    return this.sendCommand('get_led_info');
+  }
+
+  async setAutoOff(enabled: boolean): Promise<any> {
+    return this.sendCommand('set_auto_off_config', { enable: enabled, delay_min: 120 });
+  }
+
+  async setAutoOffDelay(minutes: number): Promise<any> {
+    return this.sendCommand('set_auto_off_config', { enable: true, delay_min: minutes });
+  }
+
+  async setChildProtection(enabled: boolean): Promise<any> {
+    return this.sendCommand('set_child_protection', { enable: enabled });
+  }
+
+  async setPowerProtection(enabled: boolean): Promise<any> {
+    return this.sendCommand('set_protection_power', { enabled, protection_power: 2300 });
+  }
+
+  async setPowerProtectionThreshold(watts: number): Promise<any> {
+    return this.sendCommand('set_protection_power', { enabled: true, protection_power: watts });
+  }
+
+  async getEmeterData(): Promise<any> {
+    return this.sendCommand('get_emeter_data');
+  }
+
+  // --- Light features ---
+
+  async setLightEffect(effectId: string): Promise<any> {
+    if (effectId === 'off' || effectId === 'Off') {
+      return this.sendCommand('set_dynamic_light_effect_rule_enable', { enable: false });
+    }
+    return this.sendCommand('set_dynamic_light_effect_rule_enable', { enable: true, id: effectId });
+  }
+
+  async setGradualOnOff(enabled: boolean): Promise<any> {
+    return this.sendCommand('set_on_off_gradually_info', {
+      on_state: { enable: enabled },
+      off_state: { enable: enabled },
+    });
+  }
+
+  // --- Fan features ---
+
+  async setFanSpeedLevel(level: number): Promise<any> {
+    return this.sendCommand('set_device_info', { device_on: level > 0, fan_speed_level: level });
+  }
+
+  async setFanSleepMode(enabled: boolean): Promise<any> {
+    return this.sendCommand('set_device_info', { fan_sleep_mode_on: enabled });
+  }
+
+  // --- Hub alarm ---
+
+  async playAlarm(): Promise<any> {
+    return this.sendCommand('play_alarm');
+  }
+
+  async stopAlarm(): Promise<any> {
+    return this.sendCommand('stop_alarm');
+  }
+
+  async setAlarmVolume(volume: string): Promise<any> {
+    return this.sendCommand('set_alarm_configure', { volume });
+  }
+
+  async setAlarmDuration(duration: number): Promise<any> {
+    return this.sendCommand('set_alarm_configure', { duration });
+  }
+
+  // --- Thermostat ---
+
+  async setTargetTemperature(temp: number): Promise<any> {
+    return this.sendCommand('set_device_info', { target_temp: temp, frost_protection_on: false });
+  }
+
+  async setTemperatureOffset(offset: number): Promise<any> {
+    return this.sendCommand('set_device_info', { temp_offset: offset });
+  }
+
+  async setFrostProtection(enabled: boolean): Promise<any> {
+    return this.sendCommand('set_device_info', { frost_protection_on: enabled });
+  }
+
+  // --- Firmware ---
+
+  async setAutoUpdate(enabled: boolean): Promise<any> {
+    return this.sendCommand('set_auto_update_info', { enable: enabled });
+  }
+
+  // --- Generic child device command ---
+
+  async sendChildCommand(deviceId: string, method: string, params?: Record<string, any>): Promise<any> {
+    return this.sendCommand('controlChild', {
+      childControl: {
+        device_id: deviceId,
+        request_data: {
+          method,
+          params: params || {},
+          requestTimeMils: Math.round(Date.now() * 1000),
+          terminalUUID: this.terminalUUID,
+        },
+      },
+    });
+  }
+
   private reAuthenticate(): void {
     this.log.debug('Reauthenticating');
     if (this.is_klap) {

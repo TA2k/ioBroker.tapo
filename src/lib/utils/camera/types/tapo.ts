@@ -1,144 +1,12 @@
-export type TAPOCameraGetRequest =
-  | {
-      method: 'getDeviceInfo';
-      params: {
-        device_info: {
-          name: ['basic_info'];
-        };
-      };
-    }
-  | {
-      method: 'getLensMaskConfig';
-      params: {
-        lens_mask: {
-          name: 'lens_mask_info';
-        };
-      };
-    }
-  | {
-      method: 'getAlertConfig';
-      params: {
-        msg_alarm: {
-          name: 'chn1_msg_alarm_info';
-        };
-      };
-    }
-  | {
-      method: 'getMsgPushConfig';
-      params: {
-        msg_push: {
-          name: 'chn1_msg_push_info';
-        };
-      };
-    }
-  | {
-      method: 'getDetectionConfig';
-      params: {
-        motion_detection: {
-          name: 'motion_det';
-        };
-      };
-    }
-  | {
-      method: 'getLedStatus';
-      params: {
-        led: {
-          name: 'config';
-        };
-      };
-    }
-  | {
-      method: 'getWhitelampStatus';
-      params: {
-        image: {
-          get_wtl_status: 'null';
-        };
-      };
-    };
+export type TAPOCameraGetRequest = {
+  method: string;
+  params?: Record<string, any>;
+};
 
-export type TAPOCameraSetRequest =
-  | {
-      method: 'setLensMaskConfig';
-      params: {
-        lens_mask: {
-          lens_mask_info: {
-            enabled: 'off' | 'on';
-          };
-        };
-      };
-    }
-  | {
-      method: 'setAlertConfig';
-      params: {
-        msg_alarm: {
-          chn1_msg_alarm_info: {
-            alarm_type?: '0' | '1';
-            alarm_mode?: ['sound' | 'light'];
-            enabled: 'on' | 'off';
-            light_type?: '0' | '1';
-          };
-        };
-      };
-    }
-  | {
-      method: 'setMsgPushConfig';
-      params: {
-        msg_push: {
-          chn1_msg_push_info: {
-            notification_enabled: 'on' | 'off';
-            rich_notification_enabled: 'on' | 'off';
-          };
-        };
-      };
-    }
-  | {
-      method: 'setDetectionConfig';
-      params: {
-        motion_detection: {
-          motion_det: {
-            enabled: 'on' | 'off';
-          };
-        };
-      };
-    }
-  | {
-      method: 'setLedStatus';
-      params: {
-        led: {
-          config: {
-            enabled: 'on' | 'off';
-          };
-        };
-      };
-    }
-  | {
-      method: 'setWhitelampConfig';
-      params: {
-        image: {
-          switch: {
-            wtl_intensity_level: string;
-          };
-        };
-      };
-    }
-  | {
-      method: 'setForceWhitelampState';
-      params: {
-        image: {
-          switch: {
-            force_wtl_state: 'on' | 'off';
-          };
-        };
-      };
-    }
-  | {
-      method: 'motorMoveToPreset';
-      params: {
-        goto_preset: {
-          id: string;
-        };
-      };
-    };
+export type TAPOCameraSetRequest = {
+  method: string;
+  params?: Record<string, any>;
+};
 
 export type TAPOCameraUnencryptedRequest = {
   method: 'multipleRequest';
@@ -148,8 +16,8 @@ export type TAPOCameraUnencryptedRequest = {
 };
 
 export type TAPOCameraDoRequest = {
-  method: 'do';
-  motor: Record<string, any>;
+  method: string;
+  [key: string]: any;
 };
 
 export type TAPOCameraEncryptedRequest = {
@@ -166,84 +34,6 @@ export type TAPOCameraEncryptedResponse = {
     response: string;
   };
 };
-
-export type TAPOCameraResponseGetAlert = {
-  method: 'getAlertConfig';
-  result: {
-    msg_alarm: {
-      chn1_msg_alarm_info: {
-        light_type: '1';
-        alarm_type: '1';
-        alarm_mode: ['sound', 'light'];
-        enabled: 'on' | 'off';
-      };
-    };
-  };
-  error_code: number;
-};
-
-export type TAPOCameraResponseGetLensMask = {
-  method: 'getLensMaskConfig';
-  result: {
-    lens_mask: {
-      lens_mask_info: {
-        enabled: 'on' | 'off';
-      };
-    };
-  };
-  error_code: number;
-};
-
-export type TAPOCameraResponseGetNotifications = {
-  method: 'getMsgPushConfig';
-  result: {
-    msg_push: {
-      chn1_msg_push_info: {
-        notification_enabled: 'on' | 'off';
-        rich_notification_enabled: 'on' | 'off';
-      };
-    };
-  };
-  error_code: number;
-};
-
-export type TAPOCameraResponseGetMotionDetection = {
-  method: 'getDetectionConfig';
-  result: {
-    motion_detection: {
-      motion_det: {
-        enabled: 'on' | 'off';
-      };
-    };
-  };
-  error_code: number;
-};
-
-export type TAPOCameraResponseGetLed = {
-  method: 'getLedStatus';
-  result: {
-    led: {
-      config: {
-        enabled: 'on' | 'off';
-      };
-    };
-  };
-  error_code: number;
-};
-
-export type TAPOCameraResponseSet = {
-  method: 'setLensMaskConfig' | 'setAlertConfig' | 'setMsgPushConfig' | 'setDetectionConfig' | 'setLedStatus';
-  result: object;
-  error_code: number;
-};
-
-export type TAPOCameraResponseGet =
-  | TAPOCameraResponseGetAlert
-  | TAPOCameraResponseGetLensMask
-  | TAPOCameraResponseGetNotifications
-  | TAPOCameraResponseGetMotionDetection
-  | TAPOCameraResponseGetLed
-  | TAPOCameraResponseDeviceInfo;
 
 export type TAPOBasicInfo = {
   device_type: string;
@@ -308,7 +98,7 @@ export type TAPOCameraRefreshStokResponse = {
 export type TAPOCameraResponse = {
   result: {
     error_code: number;
-    responses: Array<TAPOCameraResponseGet | TAPOCameraResponseSet>;
+    responses: Array<any>;
   };
   error_code: number;
 };

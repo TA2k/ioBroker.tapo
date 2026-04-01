@@ -49,13 +49,15 @@
     "node": ">=22"
   },
   "files": [
-    "admin{,/!(src)/**}/!(tsconfig|tsconfig.*).json",
+    "admin{,/!(src)/**}/!(tsconfig|tsconfig.*|.eslintrc).json",
     "admin{,/!(src)/**}/*.{html,css,png,svg,jpg,js}",
     "build/",
     "www/",
+    "img",
     "io-package.json",
     "LICENSE"
   ],
+
   "scripts": {
     "prebuild": "rimraf build",
     "build": "build-adapter ts",

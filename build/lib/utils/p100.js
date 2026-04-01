@@ -774,6 +774,119 @@ class P100 {
             return;
         });
     }
+    // Generic command method - returns full response
+    async sendCommand(method, params) {
+        const payload = JSON.stringify({
+            method,
+            params: params || {},
+            terminalUUID: this.terminalUUID,
+            requestTimeMils: Math.round(Date.now() * 1000),
+        });
+        const handler = this.tpLinkCipher
+            ? () => this.handleRequest(payload)
+            : () => this.handleKlapRequest(payload);
+        const doReconnect = this.tpLinkCipher
+            ? () => this.reconnect()
+            : () => this.newReconnect();
+        try {
+            const response = await handler();
+            return response?.result ?? response;
+        }
+        catch (error) {
+            if (error.message?.includes('9999') && this._reconnect_counter <= 3) {
+                await doReconnect();
+                const response = await handler();
+                return response?.result ?? response;
+            }
+            throw error;
+        }
+    }
+    // --- Plug features ---
+    async setLedEnabled(enabled) {
+        return this.sendCommand('set_led_info', { led_rule: enabled ? 'always' : 'never' });
+    }
+    async getLedInfo() {
+        return this.sendCommand('get_led_info');
+    }
+    async setAutoOff(enabled) {
+        return this.sendCommand('set_auto_off_config', { enable: enabled, delay_min: 120 });
+    }
+    async setAutoOffDelay(minutes) {
+        return this.sendCommand('set_auto_off_config', { enable: true, delay_min: minutes });
+    }
+    async setChildProtection(enabled) {
+        return this.sendCommand('set_child_protection', { enable: enabled });
+    }
+    async setPowerProtection(enabled) {
+        return this.sendCommand('set_protection_power', { enabled, protection_power: 2300 });
+    }
+    async setPowerProtectionThreshold(watts) {
+        return this.sendCommand('set_protection_power', { enabled: true, protection_power: watts });
+    }
+    async getEmeterData() {
+        return this.sendCommand('get_emeter_data');
+    }
+    // --- Light features ---
+    async setLightEffect(effectId) {
+        if (effectId === 'off' || effectId === 'Off') {
+            return this.sendCommand('set_dynamic_light_effect_rule_enable', { enable: false });
+        }
+        return this.sendCommand('set_dynamic_light_effect_rule_enable', { enable: true, id: effectId });
+    }
+    async setGradualOnOff(enabled) {
+        return this.sendCommand('set_on_off_gradually_info', {
+            on_state: { enable: enabled },
+            off_state: { enable: enabled },
+        });
+    }
+    // --- Fan features ---
+    async setFanSpeedLevel(level) {
+        return this.sendCommand('set_device_info', { device_on: level > 0, fan_speed_level: level });
+    }
+    async setFanSleepMode(enabled) {
+        return this.sendCommand('set_device_info', { fan_sleep_mode_on: enabled });
+    }
+    // --- Hub alarm ---
+    async playAlarm() {
+        return this.sendCommand('play_alarm');
+    }
+    async stopAlarm() {
+        return this.sendCommand('stop_alarm');
+    }
+    async setAlarmVolume(volume) {
+        return this.sendCommand('set_alarm_configure', { volume });
+    }
+    async setAlarmDuration(duration) {
+        return this.sendCommand('set_alarm_configure', { duration });
+    }
+    // --- Thermostat ---
+    async setTargetTemperature(temp) {
+        return this.sendCommand('set_device_info', { target_temp: temp, frost_protection_on: false });
+    }
+    async setTemperatureOffset(offset) {
+        return this.sendCommand('set_device_info', { temp_offset: offset });
+    }
+    async setFrostProtection(enabled) {
+        return this.sendCommand('set_device_info', { frost_protection_on: enabled });
+    }
+    // --- Firmware ---
+    async setAutoUpdate(enabled) {
+        return this.sendCommand('set_auto_update_info', { enable: enabled });
+    }
+    // --- Generic child device command ---
+    async sendChildCommand(deviceId, method, params) {
+        return this.sendCommand('controlChild', {
+            childControl: {
+                device_id: deviceId,
+                request_data: {
+                    method,
+                    params: params || {},
+                    requestTimeMils: Math.round(Date.now() * 1000),
+                    terminalUUID: this.terminalUUID,
+                },
+            },
+        });
+    }
     reAuthenticate() {
         this.log.debug('Reauthenticating');
         if (this.is_klap) {

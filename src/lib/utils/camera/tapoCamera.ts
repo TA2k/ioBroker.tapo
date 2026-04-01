@@ -39,6 +39,19 @@ export type Status = {
   notifications: boolean | undefined;
   motionDetection: boolean | undefined;
   led: boolean | undefined;
+  autoTrack: boolean | undefined;
+  personDetection: boolean | undefined;
+  vehicleDetection: boolean | undefined;
+  petDetection: boolean | undefined;
+  babyCryDetection: boolean | undefined;
+  barkDetection: boolean | undefined;
+  meowDetection: boolean | undefined;
+  glassBreakDetection: boolean | undefined;
+  tamperDetection: boolean | undefined;
+  imageFlip: boolean | undefined;
+  ldc: boolean | undefined;
+  recordAudio: boolean | undefined;
+  autoUpgrade: boolean | undefined;
 };
 type CameraConfig = {
   name: string;
@@ -646,6 +659,136 @@ export class TAPOCamera extends OnvifCamera {
         },
       },
     }),
+    autoTrack: (value) => ({
+      method: 'setTargetTrackConfig',
+      params: {
+        target_track: {
+          target_track_info: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    personDetection: (value) => ({
+      method: 'setPersonDetectionConfig',
+      params: {
+        people_detection: {
+          detection: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    vehicleDetection: (value) => ({
+      method: 'setVehicleDetectionConfig',
+      params: {
+        vehicle_detection: {
+          detection: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    petDetection: (value) => ({
+      method: 'setPetDetectionConfig',
+      params: {
+        pet_detection: {
+          detection: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    babyCryDetection: (value) => ({
+      method: 'setBCDConfig',
+      params: {
+        sound_detection: {
+          bcd: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    barkDetection: (value) => ({
+      method: 'setBarkDetectionConfig',
+      params: {
+        bark_detection: {
+          detection: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    meowDetection: (value) => ({
+      method: 'setMeowDetectionConfig',
+      params: {
+        meow_detection: {
+          detection: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    glassBreakDetection: (value) => ({
+      method: 'setGlassDetectionConfig',
+      params: {
+        glass_detection: {
+          detection: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    tamperDetection: (value) => ({
+      method: 'setTamperDetectionConfig',
+      params: {
+        tamper_detection: {
+          tamper_det: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    imageFlip: (value) => ({
+      method: 'setLdc',
+      params: {
+        image: {
+          switch: {
+            flip_type: value ? 'center' : 'off',
+          },
+        },
+      },
+    }),
+    ldc: (value) => ({
+      method: 'setLdc',
+      params: {
+        image: {
+          switch: {
+            ldc: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    recordAudio: (value) => ({
+      method: 'setRecordAudio',
+      params: {
+        audio_config: {
+          record_audio: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
+    autoUpgrade: (value) => ({
+      method: 'setFirmwareAutoUpgradeConfig',
+      params: {
+        auto_upgrade: {
+          common: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
   };
 
   async setStatus(service: keyof Status, value: boolean) {
@@ -695,46 +838,24 @@ export class TAPOCamera extends OnvifCamera {
       method: 'multipleRequest',
       params: {
         requests: [
-          {
-            method: 'getAlertConfig',
-            params: {
-              msg_alarm: {
-                name: 'chn1_msg_alarm_info',
-              },
-            },
-          },
-          {
-            method: 'getLensMaskConfig',
-            params: {
-              lens_mask: {
-                name: 'lens_mask_info',
-              },
-            },
-          },
-          {
-            method: 'getMsgPushConfig',
-            params: {
-              msg_push: {
-                name: 'chn1_msg_push_info',
-              },
-            },
-          },
-          {
-            method: 'getDetectionConfig',
-            params: {
-              motion_detection: {
-                name: 'motion_det',
-              },
-            },
-          },
-          {
-            method: 'getLedStatus',
-            params: {
-              led: {
-                name: 'config',
-              },
-            },
-          },
+          { method: 'getAlertConfig', params: { msg_alarm: { name: 'chn1_msg_alarm_info' } } },
+          { method: 'getLensMaskConfig', params: { lens_mask: { name: 'lens_mask_info' } } },
+          { method: 'getMsgPushConfig', params: { msg_push: { name: 'chn1_msg_push_info' } } },
+          { method: 'getDetectionConfig', params: { motion_detection: { name: 'motion_det' } } },
+          { method: 'getLedStatus', params: { led: { name: 'config' } } },
+          { method: 'getTargetTrackConfig', params: { target_track: { name: ['target_track_info'] } } },
+          { method: 'getPersonDetectionConfig', params: { people_detection: { name: ['detection'] } } },
+          { method: 'getVehicleDetectionConfig', params: { vehicle_detection: { name: ['detection'] } } },
+          { method: 'getPetDetectionConfig', params: { pet_detection: { name: ['detection'] } } },
+          { method: 'getBCDConfig', params: { sound_detection: { name: ['bcd'] } } },
+          { method: 'getBarkDetectionConfig', params: { bark_detection: { name: ['detection'] } } },
+          { method: 'getMeowDetectionConfig', params: { meow_detection: { name: ['detection'] } } },
+          { method: 'getGlassDetectionConfig', params: { glass_detection: { name: ['detection'] } } },
+          { method: 'getTamperDetectionConfig', params: { tamper_detection: { name: ['tamper_det'] } } },
+          { method: 'getRotationStatus', params: { image: { name: ['switch'] } } },
+          { method: 'getLdc', params: { image: { name: ['switch'] } } },
+          { method: 'getAudioConfig', params: { audio_config: { name: ['record_audio'] } } },
+          { method: 'getFirmwareAutoUpgradeConfig', params: { auto_upgrade: { name: ['common'] } } },
         ],
       },
     });
@@ -747,29 +868,74 @@ export class TAPOCamera extends OnvifCamera {
         notifications: undefined,
         motionDetection: undefined,
         led: undefined,
+        autoTrack: undefined,
+        personDetection: undefined,
+        vehicleDetection: undefined,
+        petDetection: undefined,
+        babyCryDetection: undefined,
+        barkDetection: undefined,
+        meowDetection: undefined,
+        glassBreakDetection: undefined,
+        tamperDetection: undefined,
+        imageFlip: undefined,
+        ldc: undefined,
+        recordAudio: undefined,
+        autoUpgrade: undefined,
       };
     }
-    const operations = responseData.result.responses;
+    const ops = responseData.result.responses;
+    const find = (m: string) => ops.find((r: any) => r.method === m);
 
-    const alert = operations.find((r) => r.method === 'getAlertConfig');
-    const lensMask = operations.find((r) => r.method === 'getLensMaskConfig');
-    const notifications = operations.find((r) => r.method === 'getMsgPushConfig');
-    const motionDetection = operations.find((r) => r.method === 'getDetectionConfig');
-    const led = operations.find((r) => r.method === 'getLedStatus');
-
-    if (!alert) this.log.debug('No alert config found');
-    if (!lensMask) this.log.debug('No lens mask config found');
-    if (!notifications) this.log.debug('No notifications config found');
-    if (!motionDetection) this.log.debug('No motion detection config found');
-    if (!led) this.log.debug('No led config found');
+    const alert = find('getAlertConfig');
+    const lensMask = find('getLensMaskConfig');
+    const notifications = find('getMsgPushConfig');
+    const motionDetection = find('getDetectionConfig');
+    const led = find('getLedStatus');
+    const autoTrack = find('getTargetTrackConfig');
+    const personDet = find('getPersonDetectionConfig');
+    const vehicleDet = find('getVehicleDetectionConfig');
+    const petDet = find('getPetDetectionConfig');
+    const babyCry = find('getBCDConfig');
+    const bark = find('getBarkDetectionConfig');
+    const meow = find('getMeowDetectionConfig');
+    const glass = find('getGlassDetectionConfig');
+    const tamper = find('getTamperDetectionConfig');
+    const rotation = find('getRotationStatus');
+    const ldcResp = find('getLdc');
+    const audio = find('getAudioConfig');
+    const autoUpg = find('getFirmwareAutoUpgradeConfig');
 
     return {
-      alarm: alert ? alert.result.msg_alarm.chn1_msg_alarm_info.enabled === 'on' : undefined,
-      // Watch out for the inversion
-      eyes: lensMask ? lensMask.result.lens_mask.lens_mask_info.enabled === 'off' : undefined,
-      notifications: notifications ? notifications.result.msg_push.chn1_msg_push_info.notification_enabled === 'on' : undefined,
-      motionDetection: motionDetection ? motionDetection.result.motion_detection.motion_det.enabled === 'on' : undefined,
-      led: led ? led.result.led.config.enabled === 'on' : undefined,
+      alarm: alert?.result?.msg_alarm?.chn1_msg_alarm_info?.enabled === 'on' ? true : alert ? false : undefined,
+      eyes: lensMask?.result?.lens_mask?.lens_mask_info?.enabled === 'off' ? true : lensMask ? false : undefined,
+      notifications:
+        notifications?.result?.msg_push?.chn1_msg_push_info?.notification_enabled === 'on'
+          ? true
+          : notifications
+            ? false
+            : undefined,
+      motionDetection:
+        motionDetection?.result?.motion_detection?.motion_det?.enabled === 'on' ? true : motionDetection ? false : undefined,
+      led: led?.result?.led?.config?.enabled === 'on' ? true : led ? false : undefined,
+      autoTrack:
+        autoTrack?.result?.target_track?.target_track_info?.enabled === 'on' ? true : autoTrack ? false : undefined,
+      personDetection:
+        personDet?.result?.people_detection?.detection?.enabled === 'on' ? true : personDet ? false : undefined,
+      vehicleDetection:
+        vehicleDet?.result?.vehicle_detection?.detection?.enabled === 'on' ? true : vehicleDet ? false : undefined,
+      petDetection: petDet?.result?.pet_detection?.detection?.enabled === 'on' ? true : petDet ? false : undefined,
+      babyCryDetection:
+        babyCry?.result?.sound_detection?.bcd?.enabled === 'on' ? true : babyCry ? false : undefined,
+      barkDetection: bark?.result?.bark_detection?.detection?.enabled === 'on' ? true : bark ? false : undefined,
+      meowDetection: meow?.result?.meow_detection?.detection?.enabled === 'on' ? true : meow ? false : undefined,
+      glassBreakDetection:
+        glass?.result?.glass_detection?.detection?.enabled === 'on' ? true : glass ? false : undefined,
+      tamperDetection:
+        tamper?.result?.tamper_detection?.tamper_det?.enabled === 'on' ? true : tamper ? false : undefined,
+      imageFlip: rotation?.result?.image?.switch?.flip_type === 'center' ? true : rotation ? false : undefined,
+      ldc: ldcResp?.result?.image?.switch?.ldc === 'on' ? true : ldcResp ? false : undefined,
+      recordAudio: audio?.result?.audio_config?.record_audio?.enabled === 'on' ? true : audio ? false : undefined,
+      autoUpgrade: autoUpg?.result?.auto_upgrade?.common?.enabled === 'on' ? true : autoUpg ? false : undefined,
     };
   }
   async setForceWhitelampState(value: boolean) {
@@ -815,5 +981,181 @@ export class TAPOCamera extends OnvifCamera {
     });
 
     return json.error_code !== 0;
+  }
+
+  // --- Action methods ---
+
+  async calibrateMotor() {
+    return this.apiRequest({ method: 'do', motor: { manual_cali: '' } });
+  }
+
+  async startManualAlarm() {
+    return this.apiRequest({ method: 'do', msg_alarm: { manual_msg_alarm: { action: 'start' } } });
+  }
+
+  async stopManualAlarm() {
+    return this.apiRequest({ method: 'do', msg_alarm: { manual_msg_alarm: { action: 'stop' } } });
+  }
+
+  async reboot() {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: { requests: [{ method: 'rebootDevice', params: { system: { reboot: 'null' } } }] },
+    });
+  }
+
+  async formatSdCard() {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: { requests: [{ method: 'formatSdCard', params: { harddisk_manage: { format_hd: '1' } } }] },
+    });
+  }
+
+  async savePreset(name: string) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: { requests: [{ method: 'addMotorPostion', params: { preset: { set_preset: { name, save_ptz: '1' } } } }] },
+    });
+  }
+
+  async deletePreset(id: string) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: { requests: [{ method: 'deletePreset', params: { preset: { remove_preset: { id: [id] } } } }] },
+    });
+  }
+
+  async setCruise(mode: string) {
+    if (mode === 'off') {
+      return this.apiRequest({ method: 'do', motor: { cruise_stop: {} } });
+    }
+    return this.apiRequest({ method: 'do', motor: { cruise: { coord: mode } } });
+  }
+
+  async setDayNightMode(mode: string) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: {
+        requests: [{ method: 'setNightVisionModeConfig', params: { image: { switch: { night_vision_mode: mode } } } }],
+      },
+    });
+  }
+
+  async setLightFrequencyMode(mode: string) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: {
+        requests: [{ method: 'setLightFrequencyInfo', params: { image: { common: { light_freq_mode: mode } } } }],
+      },
+    });
+  }
+
+  async setAlarmMode(mode: string) {
+    const enabled = mode !== 'off';
+    const soundEnabled = mode === 'both' || mode === 'sound';
+    const lightEnabled = mode === 'both' || mode === 'light';
+    const alarmMode: string[] = [];
+    if (soundEnabled) alarmMode.push('sound');
+    if (lightEnabled) alarmMode.push('light');
+
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: {
+        requests: [
+          {
+            method: 'setAlertConfig',
+            params: {
+              msg_alarm: {
+                chn1_msg_alarm_info: {
+                  enabled: enabled ? 'on' : 'off',
+                  alarm_mode: alarmMode,
+                },
+              },
+            },
+          },
+        ],
+      },
+    });
+  }
+
+  async setSpeakerVolume(volume: number) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: { requests: [{ method: 'setSpeakerVolume', params: { audio_config: { speaker: { volume } } } }] },
+    });
+  }
+
+  async setMicrophoneVolume(volume: number) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: { requests: [{ method: 'setMicrophoneVolume', params: { audio_config: { microphone: { volume } } } }] },
+    });
+  }
+
+  async setMotionDetectionSensitivity(sensitivity: string) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: {
+        requests: [
+          { method: 'setDetectionConfig', params: { motion_detection: { motion_det: { sensitivity } } } },
+        ],
+      },
+    });
+  }
+
+  async setPersonDetectionSensitivity(sensitivity: string) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: {
+        requests: [
+          { method: 'setPersonDetectionConfig', params: { people_detection: { detection: { sensitivity } } } },
+        ],
+      },
+    });
+  }
+
+  async setCoverConfig(value: boolean) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: {
+        requests: [{ method: 'setCoverConfig', params: { cover: { cover: { enabled: value ? 'on' : 'off' } } } }],
+      },
+    });
+  }
+
+  async setHDR(value: boolean) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: {
+        requests: [{ method: 'setHDR', params: { video: { set_hdr: { hdr: value ? 1 : 0, secname: 'main' } } } }],
+      },
+    });
+  }
+
+  async setRecordPlan(value: boolean) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: {
+        requests: [{ method: 'setRecordPlan', params: { record_plan: { chn1_channel: { enabled: value ? 'on' : 'off' } } } }],
+      },
+    });
+  }
+
+  async setOsd(label: string) {
+    return this.apiRequest({
+      method: 'multipleRequest',
+      params: {
+        requests: [
+          {
+            method: 'set',
+            params: {
+              OSD: {
+                label_info_1: { enabled: label ? 'on' : 'off', text: label || '' },
+              },
+            },
+          },
+        ],
+      },
+    });
   }
 }
