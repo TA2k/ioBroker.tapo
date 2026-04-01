@@ -620,7 +620,8 @@ export default class P100 implements TpLinkAccessory {
               this.cookie = res.headers['set-cookie'][0].split(';')[0];
             }
 
-            const response = JSON.parse(this.newTpLinkCipher.decrypt(res.data));
+            const decrypted = this.newTpLinkCipher.decrypt(res.data);
+            const response = JSON.parse(decrypted);
 
             if (response.error_code !== 0) {
               return this.handleError(response.error_code, '333');
@@ -629,10 +630,10 @@ export default class P100 implements TpLinkAccessory {
             this.log.debug('Device Info: ', response.result);
 
             return this.getSysInfo();
-          } catch (error) {
-            this.log.debug(this.newTpLinkCipher.decrypt(res.data));
+          } catch (error: any) {
+            this.log.debug('Decrypt/parse error: ' + error.message);
             this.log.debug('Status: ' + res.status);
-            return this.handleError(res.data.error_code, '480');
+            return this.handleError(res.data?.error_code || error.message, '480');
           }
         })
         .catch((error: Error) => {
@@ -710,7 +711,10 @@ export default class P100 implements TpLinkAccessory {
   protected handleError(errorCode: number | string, line: string): boolean {
     //@ts-ignore
     const errorMessage = this.ERROR_CODES[errorCode];
-    if (typeof errorCode === 'number' && errorCode === 1003) {
+    if (typeof errorCode === 'number' && errorCode === 0) {
+      // success — not an error
+      return true;
+    } else if (typeof errorCode === 'number' && errorCode === 1003) {
       this.log.info('Trying KLAP Auth');
       this.is_klap = true;
     } else {
@@ -821,6 +825,10 @@ export default class P100 implements TpLinkAccessory {
 
       return this.raw_request('request', data.encryptedPayload, 'arraybuffer', { seq: data.seq.toString() })
         .then((res) => {
+          if (!res || !Buffer.isBuffer(res)) {
+            this.log.debug('KLAP request returned non-buffer response: ' + typeof res);
+            return false;
+          }
           return JSON.parse(this.newTpLinkCipher.decrypt(res));
         })
         .catch((error: Error) => {

@@ -37,6 +37,10 @@ class NewTpLinkCipher {
         };
     }
     decrypt(data) {
+        if (!Buffer.isBuffer(data)) {
+            const preview = JSON.stringify(data)?.substring(0, 200) || String(data).substring(0, 200);
+            throw new Error('decrypt expected Buffer but got ' + typeof data + ': ' + preview);
+        }
         const decipher = this._crypto.createDecipheriv('aes-128-cbc', this.key, this.ivSeqPair());
         const decrypted = Buffer.concat([decipher.update(data.subarray(32)), decipher.final()]);
         const dec = decrypted.toString('utf8');
