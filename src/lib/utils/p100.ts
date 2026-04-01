@@ -1029,7 +1029,11 @@ export default class P100 implements TpLinkAccessory {
       const response = await handler();
       return response?.result ?? response;
     } catch (error: any) {
-      if (error.message?.includes('9999') && this._reconnect_counter <= 3) {
+      const shouldReconnect =
+        error.message?.includes('9999') ||
+        error.response?.status === 401 ||
+        error.message?.includes('TPAP cipher not ready');
+      if (shouldReconnect && this._reconnect_counter <= 3) {
         await doReconnect();
         const response = await handler();
         return response?.result ?? response;
