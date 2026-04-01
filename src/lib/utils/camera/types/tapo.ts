@@ -280,6 +280,7 @@ export type TAPOCameraLoginResponse = {
   result?: {
     data?: {
       encrypt_type?: string;
+      nonce?: string;
     };
   };
 };

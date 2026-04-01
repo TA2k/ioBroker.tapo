@@ -16,7 +16,7 @@ import type {
 const MAX_LOGIN_RETRIES = 3;
 const AES_BLOCK_SIZE = 16;
 
-import { Agent, setGlobalDispatcher } from 'undici';
+import { Agent } from 'undici';
 
 const ERROR_CODES_MAP = {
   '-40401': 'Invalid stok value',
@@ -85,7 +85,7 @@ export class TAPOCamera extends OnvifCamera {
 
   private stokPromise: (() => Promise<void>) | undefined;
 
-  private readonly cnonce: string;
+  private cnonce: string;
   private lsk: Buffer | undefined;
   private ivb: Buffer | undefined;
   private seq: number | undefined;
@@ -96,16 +96,14 @@ export class TAPOCamera extends OnvifCamera {
     protected readonly config: CameraConfig,
   ) {
     super(log, config);
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     this.fetchAgent = new Agent({
       connectTimeout: 5_000,
       connect: {
         // TAPO devices have self-signed certificates
         rejectUnauthorized: false,
-        ciphers: 'AES256-SHA:AES128-GCM-SHA256',
+        ciphers: 'ECDHE-RSA-AES128-GCM-SHA256:AES256-GCM-SHA384:AES256-SHA256:AES128-GCM-SHA256:AES128-SHA256:AES256-SHA',
       },
     });
-    setGlobalDispatcher(this.fetchAgent);
 
     this.cnonce = this.generateCnonce();
 
@@ -119,7 +117,7 @@ export class TAPOCamera extends OnvifCamera {
 
   private getHeaders(): Record<string, string> {
     return {
-      Host: `https://${this.config.ipAddress}`,
+      Host: `${this.config.ipAddress}`,
       Referer: `https://${this.config.ipAddress}`,
       Accept: 'application/json',
       'Accept-Encoding': 'gzip, deflate',
@@ -185,7 +183,7 @@ export class TAPOCamera extends OnvifCamera {
     }
 
     const hashedNoncesWithMD5 = crypto
-      .createHash('md5')
+      .createHash('sha256')
       .update(this.cnonce + this.hashedPassword + nonce)
       .digest('hex')
       .toUpperCase();
@@ -207,6 +205,9 @@ export class TAPOCamera extends OnvifCamera {
 
   async refreshStok(loginRetryCount = 0): Promise<void> {
     this.log.debug('refreshStok: Refreshing stok...');
+
+    // Generate fresh cnonce for each handshake attempt (new firmware rejects replayed cnonces)
+    this.cnonce = this.generateCnonce();
 
     const isSecureConnection = await this.isSecureConnection();
 
@@ -317,12 +318,17 @@ export class TAPOCamera extends OnvifCamera {
           this.seq = responseData.result.start_seq;
         }
       } else {
-        if (responseLoginData.error_code === -40413 && loginRetryCount < MAX_LOGIN_RETRIES) {
+        if (
+          (responseLoginData.error_code === -40413 || responseLoginData.error_code === -40211) &&
+          loginRetryCount < MAX_LOGIN_RETRIES
+        ) {
           this.log.debug(
             `refreshStock: Invalid device confirm, retrying: ${loginRetryCount}/${MAX_LOGIN_RETRIES}.`,
             responseLogin.status,
             responseLoginData,
           );
+          // Reset secure connection cache so next retry re-probes
+          this.isSecureConnectionValue = null;
           return this.refreshStok(loginRetryCount + 1);
         }
 
@@ -331,6 +337,7 @@ export class TAPOCamera extends OnvifCamera {
           loginRetryCount,
           responseLoginData,
         );
+        this.isSecureConnectionValue = null;
         this.log.error('Invalid device confirm. Please activate 3rd Patry support in the TP App under TP Labor -> 3rd Party Control');
         return;
       }
@@ -363,16 +370,21 @@ export class TAPOCamera extends OnvifCamera {
       return;
     }
 
-    if (responseData?.error_code === -40413 && loginRetryCount < MAX_LOGIN_RETRIES) {
+    if (
+      (responseData?.error_code === -40413 || responseData?.error_code === -40211) &&
+      loginRetryCount < MAX_LOGIN_RETRIES
+    ) {
       this.log.debug(
         `refreshStock: Unexpected response, retrying: ${loginRetryCount}/${MAX_LOGIN_RETRIES}.`,
         response.status,
         responseData,
       );
+      this.isSecureConnectionValue = null;
       return this.refreshStok(loginRetryCount + 1);
     }
 
     this.log.debug('refreshStock: Unexpected end of flow, raising exception');
+    this.isSecureConnectionValue = null;
     this.log.error('Invalid authentication data');
   }
 
@@ -395,8 +407,15 @@ export class TAPOCamera extends OnvifCamera {
 
       this.log.debug('isSecureConnection response', response.status, JSON.stringify(responseData));
 
+      const errorCode = responseData?.error_code;
+      const encryptType = String(responseData?.result?.data?.encrypt_type || '');
+      const hasNonce = !!responseData?.result?.data?.nonce;
+
+      // -40413 (INVALID_NONCE): standard secure connection indicator
+      // -40211 (MISSING_NECESSARY_PARAMS): new firmware secure connection indicator
+      // hasNonce: device already returned nonce in probe response
       this.isSecureConnectionValue =
-        responseData?.error_code == -40413 && String(responseData.result?.data?.encrypt_type || '')?.includes('3');
+        (errorCode === -40413 && encryptType.includes('3')) || errorCode === -40211 || hasNonce;
     }
 
     return this.isSecureConnectionValue;
