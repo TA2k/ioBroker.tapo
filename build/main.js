@@ -677,6 +677,27 @@ class Tapo extends utils.Adapter {
                 },
                 native: {},
             });
+            // Detection event states
+            await this.setObjectNotExistsAsync(id + '.detection', {
+                type: 'channel',
+                common: { name: 'Detection Events' },
+                native: {},
+            });
+            await this.setObjectNotExistsAsync(id + '.detection.active', {
+                type: 'state',
+                common: { name: 'Detection active (last 30s)', type: 'boolean', role: 'sensor.alarm', def: false, write: false, read: true },
+                native: {},
+            });
+            await this.setObjectNotExistsAsync(id + '.detection.lastTimestamp', {
+                type: 'state',
+                common: { name: 'Last detection timestamp', type: 'number', role: 'date', def: 0, write: false, read: true },
+                native: {},
+            });
+            await this.setObjectNotExistsAsync(id + '.detection.eventCount', {
+                type: 'state',
+                common: { name: 'Events in last 10 min', type: 'number', role: 'value', def: 0, write: false, read: true },
+                native: {},
+            });
             this.log.debug('Init event listener for "motion"');
             eventEmitter.addListener('motion', async (motionDetected) => {
                 await this.setStateAsync(id + '.motionEvent', motionDetected, true);
@@ -756,6 +777,40 @@ class Tapo extends utils.Adapter {
                     });
                     this.log.debug(JSON.stringify(status));
                     this.json2iob.parse(deviceId, status);
+                    // Poll detection events (searchDetectionList)
+                    const events = await this.deviceObjects[deviceId].getDetectionEvents().catch((e) => {
+                        this.log.debug('getDetectionEvents not supported: ' + e.message);
+                    });
+                    if (events && events.length > 0) {
+                        const now = Math.floor(Date.now() / 1000);
+                        const lastEvent = events[events.length - 1];
+                        const active = now - (lastEvent.end_time || lastEvent.start_time) < 30;
+                        await this.setState(deviceId + '.detection.active', active, true);
+                        await this.setState(deviceId + '.detection.lastTimestamp', lastEvent.start_time, true);
+                        await this.setState(deviceId + '.detection.eventCount', events.length, true);
+                    }
+                    else if (events) {
+                        await this.setState(deviceId + '.detection.active', false, true);
+                        await this.setState(deviceId + '.detection.eventCount', 0, true);
+                    }
+                    // Poll last alarm info
+                    const alarmInfo = await this.deviceObjects[deviceId].getLastAlarmInfo().catch((e) => {
+                        this.log.debug('getLastAlarmInfo not supported: ' + e.message);
+                    });
+                    if (alarmInfo) {
+                        await this.json2iob.parse(deviceId + '.alarmInfo', alarmInfo);
+                    }
+                    // Poll alert event types (which detections trigger alarm)
+                    const alertTypes = await this.deviceObjects[deviceId].getAlertEventType().catch((e) => {
+                        this.log.debug('getAlertEventType not supported: ' + e.message);
+                    });
+                    if (alertTypes && alertTypes.length > 0) {
+                        for (const alertType of alertTypes) {
+                            if (alertType.name) {
+                                await this.setState(deviceId + '.alertEventTypes.' + alertType.name, alertType.enabled === 'on', true);
+                            }
+                        }
+                    }
                     if (this.deviceObjects[deviceId].stok === undefined) {
                         if (this.firstStart) {
                             this.log.error('No stok found for: ' + deviceId + ' Ignore and remove the device until next restart');

@@ -104,6 +104,24 @@ Alle Sensoren liefern zusaetzlich `battery_percentage`, `at_low_battery` und `si
 
 Nicht jedes Geraet liefert alle Werte. Felder die das Geraet nicht unterstuetzt werden nicht angelegt.
 
+### Kamera-Erkennungsereignisse
+
+Die Kamera wird lokal gepollt und liefert Erkennungs-Events (Bewegung, Personen, etc.):
+
+| Wert | Typ | Beschreibung |
+| --- | --- | --- |
+| detection.active | boolean | true wenn Erkennung in den letzten 30 Sekunden |
+| detection.lastTimestamp | number | Unix-Timestamp der letzten Erkennung |
+| detection.eventCount | number | Anzahl Ereignisse in den letzten 10 Minuten |
+| motionEvent | boolean | ONVIF Echtzeit-Bewegungserkennung |
+| alarmInfo.* | mixed | Letzte Alarm-Infos (Typ, Modus, Lautstaerke, Dauer) |
+| alertEventTypes.motion | boolean | Alarm bei Bewegung aktiviert |
+| alertEventTypes.person | boolean | Alarm bei Person aktiviert |
+| alertEventTypes.vehicle | boolean | Alarm bei Fahrzeug aktiviert |
+| alertEventTypes.pet | boolean | Alarm bei Tier aktiviert |
+
+`detection.active` eignet sich zum Triggern von Benachrichtigungen (z.B. Telegram, Pushover) via ioBroker-Skripte. Das Polling ist lokal und kann ueber das Abfrageintervall in den Adaptereinstellungen konfiguriert werden.
+
 ## Steuern
 
 tapo.0.id.remote auf true/false setzen steuert den jeweiligen Befehl. Der Befehl wird lokal an das Gerät gesendet.
@@ -231,6 +249,8 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 - fix SSL ciphers, Host header, cnonce reuse, -40211 error handling
 - add 30+ camera remotes (detection toggles, motor, alarm, cruise, presets, image/audio, OSD, system)
 - add camera status polling for all new toggle states
+- add detection event polling (searchDetectionList, getLastAlarmInfo, getAlertEventType)
+- add detection.active state for triggering notifications
 - add non-camera device controls (LED, auto-off, button lock, power protection, light effects, gradual on/off, fan, hub alarm, thermostat, firmware update)
 - add generic sendCommand method for all device types
 - add emeter data polling (voltage, current) for P110/P115

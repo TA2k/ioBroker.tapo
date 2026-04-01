@@ -808,6 +808,59 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
         });
         return json.error_code !== 0;
     }
+    // --- Detection event polling ---
+    async getLastAlarmInfo() {
+        const response = await this.apiRequest({
+            method: 'multipleRequest',
+            params: {
+                requests: [{ method: 'getLastAlarmInfo', params: { msg_alarm: { name: ['chn1_msg_alarm_info'] } } }],
+            },
+        });
+        const ops = response?.result?.responses;
+        if (!ops?.length)
+            return null;
+        return ops[0]?.result?.msg_alarm?.chn1_msg_alarm_info ?? null;
+    }
+    async getDetectionEvents(startTime, endTime) {
+        const now = Math.floor(Date.now() / 1000);
+        const response = await this.apiRequest({
+            method: 'multipleRequest',
+            params: {
+                requests: [
+                    {
+                        method: 'searchDetectionList',
+                        params: {
+                            playback: {
+                                search_detection_list: {
+                                    start_index: 0,
+                                    channel: 0,
+                                    start_time: startTime || now - 600,
+                                    end_time: endTime || now + 60,
+                                    end_index: 99,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        });
+        const ops = response?.result?.responses;
+        if (!ops?.length)
+            return [];
+        return ops[0]?.result?.playback?.search_detection_list ?? [];
+    }
+    async getAlertEventType() {
+        const response = await this.apiRequest({
+            method: 'multipleRequest',
+            params: {
+                requests: [{ method: 'getAlertEventType', params: { msg_alarm: { table: 'msg_alarm_type' } } }],
+            },
+        });
+        const ops = response?.result?.responses;
+        if (!ops?.length)
+            return [];
+        return ops[0]?.result?.msg_alarm?.msg_alarm_type ?? [];
+    }
     // --- Action methods ---
     async calibrateMotor() {
         return this.apiRequest({ method: 'do', motor: { manual_cali: '' } });
