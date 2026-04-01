@@ -659,27 +659,6 @@ class Tapo extends utils.Adapter {
         },
         native: {},
       });
-      // Detection event states
-      await this.setObjectNotExistsAsync(id + '.detection', {
-        type: 'channel',
-        common: { name: 'Detection Events' },
-        native: {},
-      });
-      await this.setObjectNotExistsAsync(id + '.detection.active', {
-        type: 'state',
-        common: { name: 'Detection active (last 30s)', type: 'boolean', role: 'sensor.alarm', def: false, write: false, read: true },
-        native: {},
-      });
-      await this.setObjectNotExistsAsync(id + '.detection.lastTimestamp', {
-        type: 'state',
-        common: { name: 'Last detection timestamp', type: 'number', role: 'date', def: 0, write: false, read: true },
-        native: {},
-      });
-      await this.setObjectNotExistsAsync(id + '.detection.eventCount', {
-        type: 'state',
-        common: { name: 'Events in last 10 min', type: 'number', role: 'value', def: 0, write: false, read: true },
-        native: {},
-      });
       this.log.debug('Init event listener for "motion"');
       eventEmitter.addListener('motion', async (motionDetected: any) => {
         await this.setStateAsync(id + '.motionEvent', motionDetected, true);
@@ -769,12 +748,16 @@ class Tapo extends utils.Adapter {
             const now = Math.floor(Date.now() / 1000);
             const lastEvent = events[events.length - 1];
             const active = now - (lastEvent.end_time || lastEvent.start_time) < 30;
-            await this.setState(deviceId + '.detection.active', active, true);
-            await this.setState(deviceId + '.detection.lastTimestamp', lastEvent.start_time, true);
-            await this.setState(deviceId + '.detection.eventCount', events.length, true);
+            await this.json2iob.parse(deviceId + '.detection', {
+              active,
+              lastTimestamp: lastEvent.start_time,
+              eventCount: events.length,
+            });
           } else if (events) {
-            await this.setState(deviceId + '.detection.active', false, true);
-            await this.setState(deviceId + '.detection.eventCount', 0, true);
+            await this.json2iob.parse(deviceId + '.detection', {
+              active: false,
+              eventCount: 0,
+            });
           }
 
           // Poll last alarm info
@@ -790,11 +773,13 @@ class Tapo extends utils.Adapter {
             this.log.debug('getAlertEventType not supported: ' + e.message);
           });
           if (alertTypes && alertTypes.length > 0) {
+            const alertObj: Record<string, boolean> = {};
             for (const alertType of alertTypes) {
               if (alertType.name) {
-                await this.setState(deviceId + '.alertEventTypes.' + alertType.name, alertType.enabled === 'on', true);
+                alertObj[alertType.name] = alertType.enabled === 'on';
               }
             }
+            await this.json2iob.parse(deviceId + '.alertEventTypes', alertObj);
           }
 
           if (this.deviceObjects[deviceId].stok === undefined) {
