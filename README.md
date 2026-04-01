@@ -106,21 +106,50 @@ Nicht jedes Geraet liefert alle Werte. Felder die das Geraet nicht unterstuetzt 
 
 ### Kamera-Erkennungsereignisse
 
-Die Kamera wird lokal gepollt und liefert Erkennungs-Events (Bewegung, Personen, etc.):
+Die Kamera wird lokal gepollt und liefert Erkennungs-Events (Bewegung, Personen, etc.). Die letzten 10 Events werden abgerufen (`searchDetectionList`), neuestes Event zuerst.
 
 | Wert | Typ | Beschreibung |
 | --- | --- | --- |
 | detection.active | boolean | true wenn Erkennung in den letzten 30 Sekunden |
-| detection.lastTimestamp | number | Unix-Timestamp der letzten Erkennung |
 | detection.eventCount | number | Anzahl Ereignisse in den letzten 10 Minuten |
+| detection.events.0.start_time | number | Unix-Timestamp Start des neuesten Events |
+| detection.events.0.end_time | number | Unix-Timestamp Ende des neuesten Events |
+| detection.events.1.start_time | number | Zweitneuestes Event (usw. bis 9) |
 | motionEvent | boolean | ONVIF Echtzeit-Bewegungserkennung |
-| alarmInfo.* | mixed | Letzte Alarm-Infos (Typ, Modus, Lautstaerke, Dauer) |
-| alertEventTypes.motion | boolean | Alarm bei Bewegung aktiviert |
-| alertEventTypes.person | boolean | Alarm bei Person aktiviert |
-| alertEventTypes.vehicle | boolean | Alarm bei Fahrzeug aktiviert |
-| alertEventTypes.pet | boolean | Alarm bei Tier aktiviert |
 
-`detection.active` eignet sich zum Triggern von Benachrichtigungen (z.B. Telegram, Pushover) via ioBroker-Skripte. Das Polling ist lokal und kann ueber das Abfrageintervall in den Adaptereinstellungen konfiguriert werden.
+### Alarm-Konfiguration
+
+| Wert | Typ | Beschreibung |
+| --- | --- | --- |
+| alarmInfo.enabled | string | Alarm aktiv (on/off) |
+| alarmInfo.alarm_mode | mixed | Alarm-Modus (z.B. sound, light) |
+| alarmInfo.alarm_volume | string | Lautstaerke |
+| alarmInfo.alarm_duration | string | Dauer in Sekunden |
+| alarmInfo.alarm_type | string | Sirenen-Typ |
+| alarmInfo.light_type | string | Licht-Typ |
+
+### Alarm-Event-Typen (welche Erkennungen loesen Alarm aus)
+
+| Wert | Typ | Beschreibung |
+| --- | --- | --- |
+| alertEventTypes.motion | boolean | Alarm bei Bewegung |
+| alertEventTypes.person | boolean | Alarm bei Person |
+| alertEventTypes.vehicle | boolean | Alarm bei Fahrzeug |
+| alertEventTypes.pet | boolean | Alarm bei Tier |
+
+### Benachrichtigungen einrichten
+
+Fuer Benachrichtigungen bei Erkennung ein ioBroker-Skript auf `detection.events.0.start_time` triggern:
+
+```javascript
+on({ id: 'tapo.0.DEVICE_ID.detection.events.0.start_time', change: 'ne' }, (obj) => {
+  sendTo('telegram.0', {
+    text: 'Erkennung um ' + new Date(obj.state.val * 1000).toLocaleString()
+  });
+});
+```
+
+Das Polling-Intervall ist in den Adaptereinstellungen konfigurierbar (Standard: 10 Sekunden). Alles lokal, kein Cloud-Zugriff noetig.
 
 ## Steuern
 
