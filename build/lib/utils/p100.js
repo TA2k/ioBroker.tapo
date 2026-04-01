@@ -451,7 +451,25 @@ class P100 {
     async handshake_tpap() {
         this.log.debug('Trying TPAP/SPAKE2+ handshake for ' + this.ip);
         this.tpapCipher = new tpapCipher_js_1.default(this.log, this.ip, this.email, this.password, this.deviceMac);
-        await this.tpapCipher.handshake();
+        // Discover to get pake list
+        let pakeList = [2];
+        try {
+            const discoverRes = await this._axios.post('http://' + this.ip + '/', {
+                method: 'login',
+                params: { sub_method: 'discover' },
+            }, { timeout: 5000 });
+            if (discoverRes.data?.result?.tpap?.pake) {
+                pakeList = discoverRes.data.result.tpap.pake;
+                if (discoverRes.data.result.tpap.mac) {
+                    this.deviceMac = discoverRes.data.result.tpap.mac;
+                }
+                this.log.debug('TPAP discover: pake=' + JSON.stringify(pakeList) + ' mac=' + this.deviceMac);
+            }
+        }
+        catch (e) {
+            this.log.debug('TPAP discover failed, using defaults: ' + e.message);
+        }
+        await this.tpapCipher.handshake(pakeList);
         this.is_tpap = true;
         this.is_klap = false;
     }

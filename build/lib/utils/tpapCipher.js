@@ -72,6 +72,10 @@ function encodeW(w) {
     const hex = w.toString(16);
     const padded = hex.length % 2 !== 0 ? '0' + hex : hex;
     const buf = Buffer.from(padded, 'hex');
+    // Match Python: if byte length is even, return as-is (no 0x00 prefix even if high bit set)
+    if (buf.length % 2 === 0) {
+        return buf;
+    }
     if (buf[0] & 0x80) {
         return Buffer.concat([Buffer.from([0x00]), buf]);
     }
@@ -81,6 +85,7 @@ function pointToUncompressed(point) {
     return Buffer.from(point.encode('array', false));
 }
 function hkdfExpand(label, prk, length, hashAlgo) {
+    // Python uses zero_salt = b"\x00" * digest_len where digest_len = the output length parameter
     const salt = Buffer.alloc(length, 0);
     return Buffer.from(crypto_1.default.hkdfSync(hashAlgo, prk, salt, label, length));
 }
@@ -403,7 +408,7 @@ class TpapCipher {
         return !!this.key && !!this.baseNonce && !!this.stok;
     }
     /** Full SPAKE2+ handshake: register → share → derive keys */
-    async handshake() {
+    async handshake(pakeList) {
         const axios = (await import('axios')).default;
         const baseUrl = `http://${this.ip}`;
         const headers = {
@@ -414,8 +419,17 @@ class TpapCipher {
         // Username for register: md5("admin")
         const authUsername = crypto_1.default.createHash('md5').update('admin').digest('hex');
         const userRandom = crypto_1.default.randomBytes(32);
+        // Determine passcode_type from pake list
+        const pake = pakeList || [];
+        let passcodeType = 'default_userpw';
+        if (pake.includes(2) || pake.includes(5)) {
+            passcodeType = 'userpw';
+        }
+        else if (pake.includes(3)) {
+            passcodeType = 'shared_token';
+        }
         // Step 1: pake_register — start conservative, device negotiates
-        this.log.debug(`TPAP register to ${this.ip} with username hash ${authUsername}`);
+        this.log.debug(`TPAP register to ${this.ip} with username hash ${authUsername}, passcode_type=${passcodeType}`);
         const registerPayload = {
             method: 'login',
             params: {
@@ -424,7 +438,7 @@ class TpapCipher {
                 user_random: userRandom.toString('base64'),
                 cipher_suites: [1],
                 encryption: ['aes_128_ccm'],
-                passcode_type: 'default_userpw',
+                passcode_type: passcodeType,
                 stok: null,
             },
         };
