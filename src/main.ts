@@ -663,69 +663,70 @@ class Tapo extends utils.Adapter {
       deviceObject = new P100(this.log, device.ip, this.config.username, this.config.password, 2);
     }
     this.deviceObjects[id] = deviceObject;
-    await deviceObject
-      .handshake()
-      .then(async () => {
-        if (deviceObject.is_klap) {
-          this.log.debug('Detected KLAP device');
-          await deviceObject.handshake_new().catch(async (error: any) => {
-            this.log.info('KLAP Handshake failed, trying TPAP/SPAKE2+');
-            this.log.debug(error.message || error);
+    try {
+      await deviceObject.handshake();
+      if (deviceObject.is_klap) {
+        this.log.debug('Detected KLAP device');
+        try {
+          await deviceObject.handshake_new();
+        } catch (error: any) {
+          this.log.info('KLAP Handshake failed, trying TPAP/SPAKE2+');
+          this.log.debug(error.message || error);
+          try {
+            await deviceObject.handshake_tpap();
+            this.log.info('TPAP handshake successful for ' + device.ip);
+          } catch (tpapError: any) {
+            this.log.debug('TPAP also failed: ' + (tpapError.message || tpapError));
+            this.log.info('KLAP and TPAP Handshake failed for ' + device.ip + '. Try old handshake');
+            deviceObject.is_klap = false;
+            deviceObject.is_tpap = false;
             try {
-              await deviceObject.handshake_tpap();
-              this.log.info('TPAP handshake successful for ' + device.ip);
-            } catch (tpapError: any) {
-              this.log.debug('TPAP also failed: ' + (tpapError.message || tpapError));
-              this.log.info('KLAP and TPAP Handshake failed for ' + device.ip + '. Try old handshake');
-              deviceObject.is_klap = false;
-              deviceObject.is_tpap = false;
-              await deviceObject.reAuthenticate().catch(() => {
-                this.log.error('Login failed');
-                this.deviceObjects[id]._connected = false;
-              });
-            }
-          });
-        } else {
-          await deviceObject.login().catch(() => {
-            this.log.error('Login failed');
-            this.deviceObjects[id]._connected = false;
-          });
-        }
-        deviceObject
-          .getDeviceInfo(true)
-          .then(async (sysInfo: any) => {
-            this.log.debug(JSON.stringify(sysInfo));
-            if (sysInfo.request) {
-              this.log.error('Malformed response sysinfo');
-              this.log.error(JSON.stringify(sysInfo));
+              await deviceObject.reAuthenticate();
+            } catch {
+              this.log.info('All handshakes failed for ' + device.ip + '. Will retry on next poll.');
+              this.deviceObjects[id]._connected = false;
               return;
             }
-            this.json2iob.parse(id, sysInfo);
-
-            this.deviceObjects[id]._connected = true;
-            if (this.deviceObjects[id].getEnergyUsage) {
-              this.log.debug('Receive energy usage');
-              const energyUsage = await this.deviceObjects[id].getEnergyUsage();
-              this.log.debug(JSON.stringify(energyUsage));
-              this.json2iob.parse(id, energyUsage);
-            }
-            const childList = await this.deviceObjects[id].getChildDevices();
-            this.log.debug('Childlist: ' + JSON.stringify(childList));
-            if (childList && childList.error_code === 0) {
-              this.json2iob.parse(id + '.childlist', childList);
-            }
-          })
-          .catch((error: any) => {
-            this.log.error(JSON.stringify(error));
-            this.log.error('52 - Get Device Info failed');
-
-            this.deviceObjects[id]._connected = false;
-          });
-      })
-      .catch(() => {
-        this.log.error('Handshake failed');
-        this.deviceObjects[id]._connected = false;
-      });
+          }
+        }
+      } else {
+        try {
+          await deviceObject.login();
+        } catch {
+          this.log.info('Login failed for ' + device.ip + '. Will retry on next poll.');
+          this.deviceObjects[id]._connected = false;
+          return;
+        }
+      }
+    } catch {
+      this.log.info('Device ' + device.ip + ' not reachable. Will retry on next poll.');
+      this.deviceObjects[id]._connected = false;
+      return;
+    }
+    try {
+      const sysInfo = await deviceObject.getDeviceInfo(true);
+      if (!sysInfo || sysInfo.request) {
+        this.log.error('Malformed response sysinfo');
+        this.log.error(JSON.stringify(sysInfo));
+        return;
+      }
+      this.json2iob.parse(id, sysInfo);
+      this.deviceObjects[id]._connected = true;
+      if (this.deviceObjects[id].getEnergyUsage) {
+        this.log.debug('Receive energy usage');
+        const energyUsage = await this.deviceObjects[id].getEnergyUsage();
+        this.log.debug(JSON.stringify(energyUsage));
+        this.json2iob.parse(id, energyUsage);
+      }
+      const childList = await this.deviceObjects[id].getChildDevices();
+      this.log.debug('Childlist: ' + JSON.stringify(childList));
+      if (childList && childList.error_code === 0) {
+        this.json2iob.parse(id + '.childlist', childList);
+      }
+    } catch (error: any) {
+      this.log.debug('Get Device Info failed for ' + device.ip + ': ' + (error.message || error));
+      this.deviceObjects[id]._connected = false;
+    }
   }
 
   async updateDevices(): Promise<void> {
@@ -797,7 +798,15 @@ class Tapo extends utils.Adapter {
           continue;
         }
         if (!this.deviceObjects[deviceId]._connected) {
-          continue;
+          this.log.debug('Device ' + deviceId + ' not connected, trying reconnect...');
+          try {
+            await this.deviceObjects[deviceId].reAuthenticate();
+            this.deviceObjects[deviceId]._connected = true;
+            this.log.info('Reconnected to ' + this.deviceObjects[deviceId].ip);
+          } catch {
+            this.log.debug('Reconnect failed for ' + this.deviceObjects[deviceId].ip);
+            continue;
+          }
         }
 
         this.deviceObjects[deviceId]

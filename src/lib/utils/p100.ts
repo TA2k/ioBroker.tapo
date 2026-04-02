@@ -1185,39 +1185,23 @@ export default class P100 implements TpLinkAccessory {
     });
   }
 
-  private reAuthenticate(): void {
+  async reAuthenticate(): Promise<void> {
     this.log.debug('Reauthenticating ' + this.ip);
-    if (this.is_tpap) {
-      this.handshake_tpap()
-        .then(() => {
-          this.log.info('TPAP Authenticated successfully ' + this.ip);
-        })
-        .catch(() => {
-          this.log.debug('TPAP Handshake failed ' + this.ip);
-        });
-    } else if (this.is_klap) {
-      this.handshake_new()
-        .then(() => {
-          this.log.info('KLAP Authenticated successfully ' + this.ip);
-        })
-        .catch(() => {
-          this.log.debug('KLAP Handshake failed ' + this.ip);
-          this.is_klap = false;
-        });
-    } else {
-      this.handshake()
-        .then(() => {
-          this.login()
-            .then(() => {
-              this.log.info('Authenticated successfully ' + this.ip);
-            })
-            .catch(() => {
-              this.log.debug('Login failed ' + this.ip);
-            });
-        })
-        .catch(() => {
-          this.log.debug('Old handshake failed ' + this.ip);
-        });
+    try {
+      if (this.is_tpap) {
+        await this.handshake_tpap();
+        this.log.info('TPAP Authenticated successfully ' + this.ip);
+      } else if (this.is_klap) {
+        await this.handshake_new();
+        this.log.info('KLAP Authenticated successfully ' + this.ip);
+      } else {
+        await this.handshake();
+        await this.login();
+        this.log.info('Authenticated successfully ' + this.ip);
+      }
+    } catch (error: any) {
+      this.log.debug('Reauthenticate failed ' + this.ip + ': ' + (error.message || error));
+      throw error;
     }
   }
 }
