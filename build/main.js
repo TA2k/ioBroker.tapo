@@ -144,7 +144,7 @@ class Tapo extends utils.Adapter {
                             this.log.info(`Initialized ${id}`);
                         })
                             .catch((e) => {
-                            this.log.error(e);
+                            this.log.error(e?.message || e || 'initDevice failed');
                         });
                         this.log.debug(`initResult ${id} ${JSON.stringify(initResult)}`);
                     }

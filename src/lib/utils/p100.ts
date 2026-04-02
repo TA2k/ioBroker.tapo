@@ -714,7 +714,7 @@ export default class P100 implements TpLinkAccessory {
         })
         .catch((error: Error) => {
           this.log.debug('469 Error: ' + JSON.stringify(error));
-          this.log.info('469 Error: ' + error.message);
+          this.log.debug('469 Error: ' + error.message);
           if (error.message.indexOf('403') > -1) {
             this.reAuthenticate();
           }
@@ -824,7 +824,7 @@ export default class P100 implements TpLinkAccessory {
   protected handleError(errorCode: number | string, line: string): boolean {
     //@ts-ignore
     const errorMessage = this.ERROR_CODES[errorCode];
-    if (typeof errorCode === 'number' && errorCode === 0) {
+    if (errorCode === 0 || errorCode === '0') {
       // success — not an error
       return true;
     } else if (typeof errorCode === 'number' && errorCode === 1003) {
@@ -1200,7 +1200,7 @@ export default class P100 implements TpLinkAccessory {
         this.log.debug('Authenticated successfully ' + this.ip);
       }
     } catch (error: any) {
-      this.log.debug('Reauthenticate failed ' + this.ip + ': ' + (error.message || error));
+      this.log.debug('Reauthenticate failed ' + this.ip + ': ' + (error?.message || error || 'unknown'));
       throw error;
     }
   }

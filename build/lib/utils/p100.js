@@ -647,7 +647,7 @@ class P100 {
             })
                 .catch((error) => {
                 this.log.debug('469 Error: ' + JSON.stringify(error));
-                this.log.info('469 Error: ' + error.message);
+                this.log.debug('469 Error: ' + error.message);
                 if (error.message.indexOf('403') > -1) {
                     this.reAuthenticate();
                 }
@@ -751,7 +751,7 @@ class P100 {
     handleError(errorCode, line) {
         //@ts-ignore
         const errorMessage = this.ERROR_CODES[errorCode];
-        if (typeof errorCode === 'number' && errorCode === 0) {
+        if (errorCode === 0 || errorCode === '0') {
             // success — not an error
             return true;
         }
@@ -1091,7 +1091,7 @@ class P100 {
             }
         }
         catch (error) {
-            this.log.debug('Reauthenticate failed ' + this.ip + ': ' + (error.message || error));
+            this.log.debug('Reauthenticate failed ' + this.ip + ': ' + (error?.message || error || 'unknown'));
             throw error;
         }
     }
