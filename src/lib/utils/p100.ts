@@ -215,7 +215,7 @@ export default class P100 implements TpLinkAccessory {
         }
       })
       .catch((error: Error) => {
-        this.log.error('111 Error: ' + error ? error.message : '');
+        this.log.debug('111 Error: ' + error ? error.message : '');
         return error;
       });
   }
@@ -281,7 +281,7 @@ export default class P100 implements TpLinkAccessory {
           }
         })
         .catch((error: Error) => {
-          this.log.error('Error Login: ' + error ? error.message : '');
+          this.log.debug('Error Login: ' + error ? error.message : '');
           return error;
         });
     }
@@ -334,7 +334,7 @@ export default class P100 implements TpLinkAccessory {
         }
       })
       .catch((error: Error) => {
-        this.log.error('276 Error: ' + error.message + ' ' + this.ip);
+        this.log.debug('276 Error: ' + error.message + ' ' + this.ip);
         if (error.message.indexOf('403') > -1) {
           this.reAuthenticate();
         }
@@ -658,7 +658,7 @@ export default class P100 implements TpLinkAccessory {
           }
         })
         .catch((error: Error) => {
-          this.log.error('371 Error: ' + error ? error.message : '');
+          this.log.debug('371 Error: ' + error ? error.message : '');
           return error;
         });
     } else if (this.newTpLinkCipher) {
@@ -1190,14 +1190,14 @@ export default class P100 implements TpLinkAccessory {
     try {
       if (this.is_tpap) {
         await this.handshake_tpap();
-        this.log.info('TPAP Authenticated successfully ' + this.ip);
+        this.log.debug('TPAP Authenticated successfully ' + this.ip);
       } else if (this.is_klap) {
         await this.handshake_new();
-        this.log.info('KLAP Authenticated successfully ' + this.ip);
+        this.log.debug('KLAP Authenticated successfully ' + this.ip);
       } else {
         await this.handshake();
         await this.login();
-        this.log.info('Authenticated successfully ' + this.ip);
+        this.log.debug('Authenticated successfully ' + this.ip);
       }
     } catch (error: any) {
       this.log.debug('Reauthenticate failed ' + this.ip + ': ' + (error.message || error));

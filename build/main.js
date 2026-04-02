@@ -828,8 +828,6 @@ class Tapo extends utils.Adapter {
                     this.log.debug('Device ' + deviceId + ' not connected, trying reconnect...');
                     try {
                         await this.deviceObjects[deviceId].reAuthenticate();
-                        this.deviceObjects[deviceId]._connected = true;
-                        this.log.info('Reconnected to ' + this.deviceObjects[deviceId].ip);
                     }
                     catch {
                         this.log.debug('Reconnect failed for ' + this.deviceObjects[deviceId].ip);
@@ -845,6 +843,10 @@ class Tapo extends utils.Adapter {
                         // this.log.error(JSON.stringify(sysInfo));
                         return;
                     }
+                    if (!this.deviceObjects[deviceId]._connected) {
+                        this.log.info('Reconnected to ' + this.deviceObjects[deviceId].ip);
+                    }
+                    this.deviceObjects[deviceId]._connected = true;
                     await this.json2iob.parse(deviceId, sysInfo);
                     if (this.deviceObjects[deviceId].getEnergyUsage) {
                         this.log.debug('Receive energy usage');
