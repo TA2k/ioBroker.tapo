@@ -114,20 +114,33 @@ Die Kamera wird lokal gepollt und liefert Erkennungs-Events (Bewegung, Personen,
 | detection.eventCount | number | Anzahl Ereignisse in den letzten 10 Minuten |
 | detection.events.0.start_time | number | Unix-Timestamp Start des neuesten Events |
 | detection.events.0.end_time | number | Unix-Timestamp Ende des neuesten Events |
-| detection.events.0.alarm_type | number | Erkennungstyp (int, geraeteabhaengig) |
+| detection.events.0.alarm_type | number | Erkennungstyp (siehe Tabelle unten) |
 | detection.events.1.start_time | number | Zweitneuestes Event (usw. bis 9) |
 | motionEvent | boolean | ONVIF Echtzeit-Bewegungserkennung |
 
-Die genauen int-Werte fuer `alarm_type` sind geraete- und firmwareabhaengig. Moegliche Erkennungstypen: motion, person, vehicle, pet, bark, meow, glass break, baby cry, tamper, line crossing. Den genauen Wert fuer euer Geraet koennt ihr im Debug-Log oder in den ioBroker-Objekten pruefen.
+#### alarm_type Werte
+
+| ID | Beschreibung |
+| --- | --- |
+| 0 | Bewegung (motion) |
+| 1 | Person (person) |
+| 2 | Fahrzeug (vehicle) |
+| 3 | Tier (pet) |
+| 4 | Bellen (bark) |
+| 5 | Miauen (meow) |
+| 6 | Glasbruch (glass break) |
+| 7 | Baby-Schrei (baby cry) |
+| 8 | Manipulation (tamper) |
+| 9 | Linienueberquerung (line crossing) |
+
+Nicht jede Kamera liefert alle Typen. Die verfuegbaren Werte haengen von Modell und Firmware ab.
 
 ### Letzter Alarm
 
 | Wert | Typ | Beschreibung |
 | --- | --- | --- |
-| alarmInfo.last_alarm_type | string | Typ der letzten Erkennung |
+| alarmInfo.last_alarm_type | string | Typ der letzten Erkennung (z.B. motion, person) |
 | alarmInfo.last_alarm_time | string | Unix-Timestamp der letzten Erkennung |
-
-Moegliche Werte fuer `last_alarm_type`: `motion`, `person`, `vehicle`, `pet`, `bark`, `meow`, `glass_break`, `baby_cry`, `tamper`, `line_crossing`. Nicht jede Kamera unterstuetzt alle Typen.
 
 ### Alarm-Konfiguration
 
