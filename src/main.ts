@@ -849,6 +849,7 @@ class Tapo extends utils.Adapter {
           })
           .catch((error: any) => {
             this.log.debug(`Get Device Info failed for ${deviceId} - ${error}`);
+            this.deviceObjects[deviceId]._connected = false;
           });
       }
       this.log.debug('Update done');
@@ -924,6 +925,7 @@ class Tapo extends utils.Adapter {
               })
               .catch((error: any) => {
                 this.log.debug(`Get Device Info failed for ${deviceId} - ${error}`);
+                this.deviceObjects[deviceId]._connected = false;
               });
           }
           return;
