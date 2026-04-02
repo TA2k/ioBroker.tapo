@@ -749,11 +749,11 @@ export default class P100 implements TpLinkAccessory {
               this.setSysInfo(response.result);
               return this.getSysInfo();
             } catch (retryError: any) {
-              this.log.error('TPAP reconnect failed: ' + retryError.message);
+              this.log.debug('TPAP reconnect failed: ' + retryError.message);
               return retryError;
             }
           }
-          this.log.error('TPAP getDeviceInfo Error: ' + (error ? error.message : ''));
+          this.log.debug('TPAP getDeviceInfo Error: ' + (error ? error.message : ''));
           this._reconnect_counter = 0;
           return error;
         });

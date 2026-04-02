@@ -848,7 +848,7 @@ class Tapo extends utils.Adapter {
             }
           })
           .catch((error: any) => {
-            this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
+            this.log.debug(`Get Device Info failed for ${deviceId} - ${error}`);
           });
       }
       this.log.debug('Update done');
@@ -913,7 +913,7 @@ class Tapo extends utils.Adapter {
                 this.json2iob.parse(deviceId, status);
               })
               .catch((error: any) => {
-                this.log.error(`Get camera status failed for ${deviceId} - ${error}`);
+                this.log.debug(`Get camera status failed for ${deviceId} - ${error}`);
               });
           } else {
             this.deviceObjects[deviceId]
@@ -923,7 +923,7 @@ class Tapo extends utils.Adapter {
                 this.json2iob.parse(deviceId, sysInfo);
               })
               .catch((error: any) => {
-                this.log.error(`Get Device Info failed for ${deviceId} - ${error}`);
+                this.log.debug(`Get Device Info failed for ${deviceId} - ${error}`);
               });
           }
           return;

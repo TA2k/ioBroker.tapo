@@ -684,11 +684,11 @@ class P100 {
                         return this.getSysInfo();
                     }
                     catch (retryError) {
-                        this.log.error('TPAP reconnect failed: ' + retryError.message);
+                        this.log.debug('TPAP reconnect failed: ' + retryError.message);
                         return retryError;
                     }
                 }
-                this.log.error('TPAP getDeviceInfo Error: ' + (error ? error.message : ''));
+                this.log.debug('TPAP getDeviceInfo Error: ' + (error ? error.message : ''));
                 this._reconnect_counter = 0;
                 return error;
             });
