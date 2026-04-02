@@ -876,6 +876,9 @@ class Tapo extends utils.Adapter {
                 })
                     .catch((error) => {
                     this.log.debug(`Get Device Info failed for ${deviceId} - ${error}`);
+                    if (this.deviceObjects[deviceId]._connected) {
+                        this.log.info('Connection lost to ' + this.deviceObjects[deviceId].ip);
+                    }
                     this.deviceObjects[deviceId]._connected = false;
                 });
             }
@@ -952,6 +955,9 @@ class Tapo extends utils.Adapter {
                         })
                             .catch((error) => {
                             this.log.debug(`Get Device Info failed for ${deviceId} - ${error}`);
+                            if (this.deviceObjects[deviceId]._connected) {
+                                this.log.info('Connection lost to ' + this.deviceObjects[deviceId].ip);
+                            }
                             this.deviceObjects[deviceId]._connected = false;
                         });
                     }
