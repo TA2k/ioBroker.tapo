@@ -271,17 +271,18 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
+### 0.5.0 (2026-04-02)
 
-### 0.5.0 (2026-04-01)
-
-- Support fuer TPAP/SPAKE2+ Protokoll (P100 FW 1.4.3+ und neuere Geraete)
-- Support fuer KLAP v1 (md5) Handshake
-- Fix Kameraverbindung fuer Firmware 1.9.1+ (C310 etc.)
-- 30+ neue Kamera-Remotes (Erkennung, Motor, Alarm, Cruise, Presets, Bild/Audio, OSD)
-- Neue Datenpunkte fuer Kamera-Status und Erkennungs-Events
-- Neue Remotes fuer Plugs, Lampen, Fans, Hubs und Thermostate
-- Energiedaten (Spannung, Strom) fuer P110/P115
-- Weniger Log-Spam bei nicht erreichbaren Geraeten
+- Support for TPAP/SPAKE2+ protocol (P100 FW 1.4.3+ and newer devices)
+- Support for KLAP v1 (md5) handshake
+- Fix camera connection for firmware 1.9.1+ (C310 etc.)
+- 30+ new camera remotes (detection, motor, alarm, cruise, presets, image/audio, OSD)
+- New data points for camera status and detection events
+- New remotes for plugs, lamps, fans, hubs and thermostats
+- Device-specific remotes (only relevant controls per device type)
+- Energy data (voltage, current) for P110/P115
+- Automatic reconnect for devices that go offline and come back
+- Less log spam for unreachable devices
 
 ### 0.4.8 (2025-02-04)
 
