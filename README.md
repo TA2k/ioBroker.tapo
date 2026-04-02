@@ -114,11 +114,32 @@ Die Kamera wird lokal gepollt und liefert Erkennungs-Events (Bewegung, Personen,
 | detection.eventCount | number | Anzahl Ereignisse in den letzten 10 Minuten |
 | detection.events.0.start_time | number | Unix-Timestamp Start des neuesten Events |
 | detection.events.0.end_time | number | Unix-Timestamp Ende des neuesten Events |
-| detection.events.0.alarm_type | number | Erkennungstyp (geraeteabhaengig, z.B. 6=Person) |
+| detection.events.0.alarm_type | number | Erkennungstyp (siehe Tabelle unten) |
 | detection.events.1.start_time | number | Zweitneuestes Event (usw. bis 9) |
 | motionEvent | boolean | ONVIF Echtzeit-Bewegungserkennung |
 
-Die int-Werte fuer `alarm_type` sind geraete- und firmwareabhaengig. Den genauen Wert fuer euer Geraet koennt ihr im Debug-Log pruefen.
+#### alarm_type Werte
+
+| ID | Beschreibung |
+| --- | --- |
+| 2 | Bewegung (motion) |
+| 3 | Manipulation (tamper) |
+| 4 | Linienueberquerung (line crossing) |
+| 5 | Bereichsintrusion (area intrusion) |
+| 6 | Person (human) |
+| 7 | Baby-Schrei (baby cry) |
+| 8 | Fahrzeug (vehicle) |
+| 9 | Tier (pet) |
+| 11 | Bellen (bark) |
+| 12 | Miauen (meow) |
+| 13 | Glasbruch (glass break) |
+| 14 | Rauch (smoke) |
+| 15 | Paket abgelegt (package delivery) |
+| 16 | Paket abgeholt (package pick-up) |
+| 20 | Gesichtserkennung (face detection) |
+| 32 | Herumlungern (loitering) |
+
+Nicht jede Kamera liefert alle Typen. Die verfuegbaren Werte haengen von Modell und Firmware ab.
 
 ### Alarm-Konfiguration
 
