@@ -816,6 +816,7 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
                 requests: [{ method: 'getLastAlarmInfo', params: { msg_alarm: { name: ['chn1_msg_alarm_info'] } } }],
             },
         });
+        this.log.debug('getLastAlarmInfo raw: ' + JSON.stringify(response));
         const ops = response?.result?.responses;
         if (!ops?.length)
             return null;
@@ -847,7 +848,9 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
         const ops = response?.result?.responses;
         if (!ops?.length)
             return [];
-        return ops[0]?.result?.playback?.search_detection_list ?? [];
+        this.log.debug('searchDetectionList raw: ' + JSON.stringify(ops[0]?.result));
+        const events = ops[0]?.result?.playback?.search_detection_list ?? [];
+        return events;
     }
     async getAlertEventType() {
         const response = await this.apiRequest({
