@@ -1012,7 +1012,9 @@ class Tapo extends utils.Adapter {
         const stateName = idArray[idArray.length - 1];
         const deviceId = id.split('.')[2];
         if (resultDict[stateName]) {
-          await this.setState(deviceId + '.remote.' + resultDict[stateName], state.val, true);
+          const remoteState = deviceId + '.remote.' + resultDict[stateName];
+          const val = typeof state.val === 'string' ? state.val === 'true' || state.val === 'on' : state.val;
+          await this.setState(remoteState, val, true);
         }
       }
     }

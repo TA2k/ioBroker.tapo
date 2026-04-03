@@ -861,7 +861,7 @@ export class TAPOCamera extends OnvifCamera {
     });
 
     if (!responseData || !responseData.result || !responseData.result.responses) {
-      this.log.error('No response data found');
+      this.log.debug('No response data found');
       return {
         alarm: undefined,
         eyes: undefined,
