@@ -184,9 +184,14 @@ Beispiel: `tapo.0.80A5897B21C7.alertEventTypes.motion`, `tapo.0.80A5897B21C7.ale
 Fuer Benachrichtigungen bei Erkennung ein ioBroker-Skript auf `detection.events.0.start_time` triggern:
 
 ```javascript
+const alarmTypen = { 2:'Bewegung', 3:'Manipulation', 4:'Linienueberquerung', 5:'Bereichsintrusion',
+  6:'Person', 7:'Baby-Schrei', 8:'Fahrzeug', 9:'Tier', 11:'Bellen', 12:'Miauen',
+  13:'Glasbruch', 14:'Rauch', 15:'Paket abgelegt', 16:'Paket abgeholt', 20:'Gesicht', 32:'Herumlungern' };
+
 on({ id: 'tapo.0.DEVICE_ID.detection.events.0.start_time', change: 'ne' }, (obj) => {
+  const typ = getState('tapo.0.DEVICE_ID.detection.events.0.alarm_type').val;
   sendTo('telegram.0', {
-    text: 'Erkennung um ' + new Date(obj.state.val * 1000).toLocaleString()
+    text: (alarmTypen[typ] || 'Typ ' + typ) + ' um ' + new Date(obj.state.val * 1000).toLocaleString()
   });
 });
 ```
@@ -209,9 +214,25 @@ Blockly-Beispiel (als XML importierbar):
         <field name="INSTANCE">.0</field>
         <field name="LOG"></field>
         <value name="MESSAGE">
-          <shadow type="text">
-            <field name="TEXT">Tapo Erkennung!</field>
-          </shadow>
+          <block type="text_join">
+            <mutation items="3"></mutation>
+            <value name="ADD0">
+              <block type="text">
+                <field name="TEXT">Tapo Erkennung: Typ </field>
+              </block>
+            </value>
+            <value name="ADD1">
+              <block type="get_value">
+                <field name="ATTR">val</field>
+                <field name="OID">tapo.0.DEVICE_ID.detection.events.0.alarm_type</field>
+              </block>
+            </value>
+            <value name="ADD2">
+              <block type="text">
+                <field name="TEXT"> erkannt</field>
+              </block>
+            </value>
+          </block>
         </value>
       </block>
     </statement>
