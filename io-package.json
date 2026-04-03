@@ -1,11 +1,11 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "news": {
-      "0.5.0": {
+      "0.5.1": {
         "en": "Support for TPAP/SPAKE2+ protocol (P100 FW 1.4.3+ and newer devices)\nSupport for KLAP v1 (md5) handshake\nFix camera connection for firmware 1.9.1+ (C310 etc.)\n30+ new camera remotes (detection, motor, alarm, cruise, presets, image/audio, OSD)\nNew data points for camera status and detection events\nNew remotes for plugs, lamps, fans, hubs and thermostats\nDevice-specific remotes (only relevant controls per device type)\nEnergy data (voltage, current) for P110/P115\nAutomatic reconnect for devices that go offline and come back\nLess log spam for unreachable devices",
-        "de": "Unterstützung für TPAP/SPAKE2+ Protokoll (P100 FW 1.4.3+ und neuere Geräte)\nUnterstützung von KLAP v1 (md5) Handshake\nFix Kameraverbindung für Firmware 1.9.1+ (C310 etc.)\n30+ neue Kamera-Fernbedienungen (Erkennung, Motor, Alarm, Kreuzfahrt, Presets, Image/Audio, OSD)\nNeue Datenpunkte für Kamerastatus und Erkennungsereignisse\nNeue Fernbedienungen für Stecker, Lampen, Ventilatoren, Naben und Thermostate\nGerätespezifische Fernbedienungen (nur relevante Steuerungen pro Gerätetyp)\nEnergiedaten (Spannung, Strom) für P110/P115\nAutomatische Wiederverbindung für Geräte, die offline gehen und zurückkommen\nWeniger log Spam für unlösbare Geräte",
+        "de": "Unterstützung für TPAP/SPAKE2+ Protokoll (P100 FW 1.4.3+ und neuere Geräte)\nUnterstützung von KLAP v1 (md5) Handshake\nFix Kameraverbindung für Firmware 1.9.1+ (C310 etc.)\n30+ neue Kamera-Remotes (Erkennung, Motor, Alarm, Kreuzfahrt, Presets, Image/Audio, OSD)\nNeue Datenpunkte für Kamerastatus und Erkennungsereignisse\nNeue Remotes für Stecker, Lampen, Ventilatoren, Naben und Thermostate\nGerätespezifische Remotes (nur relevante Steuerungen pro Gerätetyp)\nEnergiedaten (Spannung, Strom) für P110/P115\nAutomatische Wiederverbindung für Geräte, die offline gehen und zurückkommen\nWeniger log Spam für unlösbare Geräte",
         "ru": "Поддержка протокола TPAP/SPAKE2+ (P100 FW 1.4.3+ и новые устройства)\nПоддержка рукопожатия KLAP v1 (md5)\nИсправьте подключение камеры для прошивки 1.9.1+ (C310 и т.д.)\n30+ новых пультов камеры (обнаружение, двигатель, сигнализация, круиз, предустановки, изображение/аудио, OSD)\nНовые точки данных о состоянии камеры и событиях обнаружения\nНовые пульты для вилок, ламп, вентиляторов, хабов и термостатов\nУдаленные устройства (только соответствующие элементы управления на тип устройства)\nДанные по энергии (напряжение, ток) для P110/P115\nАвтоматическое подключение к устройствам, которые отключаются и возвращаются\nМеньше логарифмического спама для недоступных устройств",
         "pt": "Suporte para o protocolo TPAP/SPAKE2+ (P100 FW 1.4.3+ e dispositivos mais novos)\nSuporte para o aperto de mão KLAP v1 (md5)\nCorrigir a conexão da câmera para firmware 1.9.1+ (C310 etc.)\n30+ novos controles remotos da câmera (detecção, motor, alarme, cruzeiro, predefinições, imagem/áudio, OSD)\nNovos pontos de dados para o estado da câmera e eventos de detecção\nNovos comandos para tomadas, lâmpadas, ventiladores, cubos e termostatos\nComandos remotos específicos do dispositivo (apenas comandos relevantes por tipo de dispositivo)\nDados de energia (tensão, corrente) para P110/P115\nReconectar automaticamente para dispositivos que vão offline e voltar\nMenos spam log para dispositivos inalcançáveis",
         "nl": "Ondersteuning voor TPAP/SPAKE2+ protocol (P100 FW 1.4.3+ en nieuwere apparaten)\nOndersteuning voor KLAP v1 (md5) handdruk\nFix camera aansluiting voor firmware 1.9.1+ (C310 enz.)\n30+ nieuwe cameraafstandsbedieningen (detectie, motor, alarm, cruise, voorinstellingen, afbeelding/audio, OSD)\nNieuwe gegevenspunten voor camerastatus en detectie-gebeurtenissen\nNieuwe afstandsbedieningen voor pluggen, lampen, ventilatoren, hubs en thermostaten\nApparaatspecifieke afstandsbedieningen (alleen relevante bedieningen per apparaattype)\nEnergiegegevens (spanning, stroom) voor P110/P115\nAutomatische herverbinding voor apparaten die offline gaan en terugkomen\nMinder log spam voor onbereikbare apparaten",
@@ -119,13 +119,8 @@
       "pl": "Adapter do TP-Link Tapo",
       "zh-cn": "TP-Link Tapo 适配器"
     },
-    "authors": [
-      "TA2k <tombox2020@gmail.com>"
-    ],
-    "keywords": [
-      "tp-link",
-      "tapo"
-    ],
+    "authors": ["TA2k <tombox2020@gmail.com>"],
+    "keywords": ["tp-link", "tapo"],
     "license": "MIT",
     "platform": "Javascript/Node.js",
     "main": "build/main.js",
@@ -154,12 +149,8 @@
       }
     ]
   },
-  "encryptedNative": [
-    "password"
-  ],
-  "protectedNative": [
-    "password"
-  ],
+  "encryptedNative": ["password"],
+  "protectedNative": ["password"],
   "native": {
     "username": "",
     "password": "",

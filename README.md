@@ -29,6 +29,8 @@ Alle Geraete werden regelmaessig gepollt. Die Werte werden automatisch unter `ta
 
 ### Alle Geraete
 
+Beispiel: `tapo.0.80A5897B21C7.nickname`, `tapo.0.80A5897B21C7.device_on`
+
 | Wert | Typ | Beschreibung |
 | --- | --- | --- |
 | nickname | string | Geraetename |
@@ -47,6 +49,8 @@ Alle Geraete werden regelmaessig gepollt. Die Werte werden automatisch unter `ta
 
 ### Lampen (zusaetzlich)
 
+Beispiel: `tapo.0.80A5897B21C7.brightness`, `tapo.0.80A5897B21C7.hue`
+
 | Wert | Typ | Beschreibung |
 | --- | --- | --- |
 | brightness | number | Helligkeit (0-100) |
@@ -55,6 +59,8 @@ Alle Geraete werden regelmaessig gepollt. Die Werte werden automatisch unter `ta
 | saturation | number | Saettigung (0-100, nur L530/L630) |
 
 ### P110/P115 Energiedaten (zusaetzlich)
+
+Beispiel: `tapo.0.80A5897B21C7.current_power`, `tapo.0.80A5897B21C7.voltage_mv`
 
 | Wert | Typ | Beschreibung |
 | --- | --- | --- |
@@ -69,6 +75,8 @@ Alle Geraete werden regelmaessig gepollt. Die Werte werden automatisch unter `ta
 
 ### Hub-Sensoren (Child Devices)
 
+Beispiel: `tapo.0.80A5897B21C7.child_SENSOR_ID.current_temp`
+
 | Sensor | Werte | Beschreibung |
 | --- | --- | --- |
 | T100 (Bewegung) | detected | Bewegung erkannt |
@@ -80,6 +88,8 @@ Alle Geraete werden regelmaessig gepollt. Die Werte werden automatisch unter `ta
 Alle Sensoren liefern zusaetzlich `battery_percentage`, `at_low_battery` und `signal_level`.
 
 ### Kamera-Status
+
+Beispiel: `tapo.0.80A5897B21C7.alarm`, `tapo.0.80A5897B21C7.personDetection`
 
 | Wert | Typ | Beschreibung |
 | --- | --- | --- |
@@ -105,6 +115,8 @@ Alle Sensoren liefern zusaetzlich `battery_percentage`, `at_low_battery` und `si
 Nicht jedes Geraet liefert alle Werte. Felder die das Geraet nicht unterstuetzt werden nicht angelegt.
 
 ### Kamera-Erkennungsereignisse
+
+Beispiel: `tapo.0.80A5897B21C7.detection.active`, `tapo.0.80A5897B21C7.detection.events.0.alarm_type`
 
 Die Kamera wird lokal gepollt und liefert Erkennungs-Events (Bewegung, Personen, etc.). Die letzten 10 Events werden abgerufen (`searchDetectionList`), neuestes Event zuerst.
 
@@ -143,6 +155,8 @@ Nicht jede Kamera liefert alle Typen. Die verfuegbaren Werte haengen von Modell 
 
 ### Alarm-Konfiguration
 
+Beispiel: `tapo.0.80A5897B21C7.alarmInfo.enabled`, `tapo.0.80A5897B21C7.alarmInfo.alarm_volume`
+
 | Wert | Typ | Beschreibung |
 | --- | --- | --- |
 | alarmInfo.enabled | string | Alarm aktiv (on/off) |
@@ -155,6 +169,8 @@ Nicht jede Kamera liefert alle Typen. Die verfuegbaren Werte haengen von Modell 
 | alarmInfo.sound_alarm_enabled | string | Sound-Alarm aktiv (on/off) |
 
 ### Alarm-Event-Typen (welche Erkennungen loesen Alarm aus)
+
+Beispiel: `tapo.0.80A5897B21C7.alertEventTypes.motion`, `tapo.0.80A5897B21C7.alertEventTypes.person`
 
 | Wert | Typ | Beschreibung |
 | --- | --- | --- |
@@ -173,6 +189,34 @@ on({ id: 'tapo.0.DEVICE_ID.detection.events.0.start_time', change: 'ne' }, (obj)
     text: 'Erkennung um ' + new Date(obj.state.val * 1000).toLocaleString()
   });
 });
+```
+
+Blockly-Beispiel (als XML importierbar):
+
+```xml
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="on_ext" x="38" y="13">
+    <mutation xmlns="http://www.w3.org/1999/xhtml" items="1"></mutation>
+    <field name="CONDITION">ne</field>
+    <field name="ACK_CONDITION"></field>
+    <value name="OID0">
+      <shadow type="field_oid">
+        <field name="oid">tapo.0.DEVICE_ID.detection.events.0.start_time</field>
+      </shadow>
+    </value>
+    <statement name="STATEMENT">
+      <block type="telegram">
+        <field name="INSTANCE">.0</field>
+        <field name="LOG"></field>
+        <value name="MESSAGE">
+          <shadow type="text">
+            <field name="TEXT">Tapo Erkennung!</field>
+          </shadow>
+        </value>
+      </block>
+    </statement>
+  </block>
+</xml>
 ```
 
 Das Polling-Intervall ist in den Adaptereinstellungen konfigurierbar (Standard: 10 Sekunden). Alles lokal, kein Cloud-Zugriff noetig.
