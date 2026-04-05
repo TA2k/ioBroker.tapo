@@ -1,9 +1,9 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "news": {
-      "0.5.1": {
+      "0.5.2": {
         "en": "Support for TPAP/SPAKE2+ protocol (P100 FW 1.4.3+ and newer devices)\nSupport for KLAP v1 (md5) handshake\nFix camera connection for firmware 1.9.1+ (C310 etc.)\n30+ new camera remotes (detection, motor, alarm, cruise, presets, image/audio, OSD)\nNew data points for camera status and detection events\nNew remotes for plugs, lamps, fans, hubs and thermostats\nDevice-specific remotes (only relevant controls per device type)\nEnergy data (voltage, current) for P110/P115\nAutomatic reconnect for devices that go offline and come back\nLess log spam for unreachable devices",
         "de": "Unterstützung für TPAP/SPAKE2+ Protokoll (P100 FW 1.4.3+ und neuere Geräte)\nUnterstützung von KLAP v1 (md5) Handshake\nFix Kameraverbindung für Firmware 1.9.1+ (C310 etc.)\n30+ neue Kamera-Remotes (Erkennung, Motor, Alarm, Kreuzfahrt, Presets, Image/Audio, OSD)\nNeue Datenpunkte für Kamerastatus und Erkennungsereignisse\nNeue Remotes für Stecker, Lampen, Ventilatoren, Naben und Thermostate\nGerätespezifische Remotes (nur relevante Steuerungen pro Gerätetyp)\nEnergiedaten (Spannung, Strom) für P110/P115\nAutomatische Wiederverbindung für Geräte, die offline gehen und zurückkommen\nWeniger log Spam für unlösbare Geräte",
         "ru": "Поддержка протокола TPAP/SPAKE2+ (P100 FW 1.4.3+ и новые устройства)\nПоддержка рукопожатия KLAP v1 (md5)\nИсправьте подключение камеры для прошивки 1.9.1+ (C310 и т.д.)\n30+ новых пультов камеры (обнаружение, двигатель, сигнализация, круиз, предустановки, изображение/аудио, OSD)\nНовые точки данных о состоянии камеры и событиях обнаружения\nНовые пульты для вилок, ламп, вентиляторов, хабов и термостатов\nУдаленные устройства (только соответствующие элементы управления на тип устройства)\nДанные по энергии (напряжение, ток) для P110/P115\nАвтоматическое подключение к устройствам, которые отключаются и возвращаются\nМеньше логарифмического спама для недоступных устройств",

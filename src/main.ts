@@ -314,6 +314,18 @@ class Tapo extends utils.Adapter {
             },
             native: {},
           });
+          await this.setObjectNotExistsAsync(id + '.connected', {
+            type: 'state',
+            common: {
+              name: 'Device connected',
+              type: 'boolean',
+              role: 'indicator.reachable',
+              read: true,
+              write: false,
+              def: false,
+            },
+            native: {},
+          });
           await this.setObjectNotExistsAsync(id + '.remote', {
             type: 'channel',
             common: {
@@ -684,7 +696,7 @@ class Tapo extends utils.Adapter {
               await deviceObject.reAuthenticate();
             } catch {
               this.log.info('All handshakes failed for ' + device.ip + '. Will retry on next poll.');
-              this.deviceObjects[id]._connected = false;
+              await this.setDeviceConnected(id, false);
               return;
             }
           }
@@ -694,13 +706,13 @@ class Tapo extends utils.Adapter {
           await deviceObject.login();
         } catch {
           this.log.info('Login failed for ' + device.ip + '. Will retry on next poll.');
-          this.deviceObjects[id]._connected = false;
+          await this.setDeviceConnected(id, false);
           return;
         }
       }
     } catch {
       this.log.info('Device ' + device.ip + ' not reachable. Will retry on next poll.');
-      this.deviceObjects[id]._connected = false;
+      await this.setDeviceConnected(id, false);
       return;
     }
     try {
@@ -711,7 +723,7 @@ class Tapo extends utils.Adapter {
         return;
       }
       this.json2iob.parse(id, sysInfo);
-      this.deviceObjects[id]._connected = true;
+      await this.setDeviceConnected(id, true);
       if (this.deviceObjects[id].getEnergyUsage) {
         this.log.debug('Receive energy usage');
         const energyUsage = await this.deviceObjects[id].getEnergyUsage();
@@ -725,7 +737,7 @@ class Tapo extends utils.Adapter {
       }
     } catch (error: any) {
       this.log.debug('Get Device Info failed for ' + device.ip + ': ' + (error.message || error));
-      this.deviceObjects[id]._connected = false;
+      await this.setDeviceConnected(id, false);
     }
   }
 
@@ -820,6 +832,7 @@ class Tapo extends utils.Adapter {
               this.log.info('Reconnected to ' + this.deviceObjects[deviceId].ip);
             }
             this.deviceObjects[deviceId]._connected = true;
+            await this.setState(deviceId + '.connected', true, true);
             await this.json2iob.parse(deviceId, sysInfo);
             if (this.deviceObjects[deviceId].getEnergyUsage) {
               this.log.debug('Receive energy usage');
@@ -855,12 +868,18 @@ class Tapo extends utils.Adapter {
               this.log.info('Connection lost to ' + this.deviceObjects[deviceId].ip);
             }
             this.deviceObjects[deviceId]._connected = false;
+            this.setState(deviceId + '.connected', false, true);
           });
       }
       this.log.debug('Update done');
     } catch (error: any) {
       this.log.warn(error);
     }
+  }
+
+  async setDeviceConnected(deviceId: string, connected: boolean): Promise<void> {
+    this.deviceObjects[deviceId]._connected = connected;
+    await this.setState(deviceId + '.connected', connected, true);
   }
 
   isBase64(str: string): boolean {
@@ -934,6 +953,7 @@ class Tapo extends utils.Adapter {
                   this.log.info('Connection lost to ' + this.deviceObjects[deviceId].ip);
                 }
                 this.deviceObjects[deviceId]._connected = false;
+                this.setState(deviceId + '.connected', false, true);
               });
           }
           return;
