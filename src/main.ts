@@ -751,7 +751,20 @@ class Tapo extends utils.Adapter {
             this.log.debug(JSON.stringify(error));
           });
           this.log.debug(JSON.stringify(status));
-          this.json2iob.parse(deviceId, status);
+          if (status && Object.values(status).some((v) => v !== undefined)) {
+            this.json2iob.parse(deviceId, status);
+            if (!this.deviceObjects[deviceId]._connected) {
+              this.log.info('Reconnected to ' + this.deviceObjects[deviceId].ip);
+            }
+            this.deviceObjects[deviceId]._connected = true;
+            this.setState(deviceId + '.connected', true, true);
+          } else {
+            if (this.deviceObjects[deviceId]._connected) {
+              this.log.info('Connection lost to ' + this.deviceObjects[deviceId].ip);
+            }
+            this.deviceObjects[deviceId]._connected = false;
+            this.setState(deviceId + '.connected', false, true);
+          }
 
           // Poll detection events (searchDetectionList)
           const events = await this.deviceObjects[deviceId].getDetectionEvents().catch((e: any) => {
