@@ -747,8 +747,7 @@ class Tapo extends utils.Adapter {
         if (this.deviceObjects[deviceId].getStatus) {
           this.log.debug('Receive camera status');
           const status = await this.deviceObjects[deviceId].getStatus().catch((error: any) => {
-            this.log.info('Get camera Status failed');
-            this.log.debug(JSON.stringify(error));
+            this.log.debug('Get camera Status failed: ' + (error?.message || error));
           });
           this.log.debug(JSON.stringify(status));
           if (status && Object.values(status).some((v) => v !== undefined)) {
@@ -764,11 +763,12 @@ class Tapo extends utils.Adapter {
             }
             this.deviceObjects[deviceId]._connected = false;
             this.setState(deviceId + '.connected', false, true);
+            continue;
           }
 
           // Poll detection events (searchDetectionList)
           const events = await this.deviceObjects[deviceId].getDetectionEvents().catch((e: any) => {
-            this.log.debug('getDetectionEvents not supported: ' + e.message);
+            this.log.debug('getDetectionEvents not supported: ' + (e?.message || e));
           });
           if (events && events.length > 0) {
             const now = Math.floor(Date.now() / 1000);
@@ -789,7 +789,7 @@ class Tapo extends utils.Adapter {
 
           // Poll last alarm info
           const alarmInfo = await this.deviceObjects[deviceId].getLastAlarmInfo().catch((e: any) => {
-            this.log.debug('getLastAlarmInfo not supported: ' + e.message);
+            this.log.debug('getLastAlarmInfo not supported: ' + (e?.message || e));
           });
           if (alarmInfo) {
             await this.json2iob.parse(deviceId + '.alarmInfo', alarmInfo);
@@ -797,7 +797,7 @@ class Tapo extends utils.Adapter {
 
           // Poll alert event types (which detections trigger alarm)
           const alertTypes = await this.deviceObjects[deviceId].getAlertEventType().catch((e: any) => {
-            this.log.debug('getAlertEventType not supported: ' + e.message);
+            this.log.debug('getAlertEventType not supported: ' + (e?.message || e));
           });
           if (alertTypes && alertTypes.length > 0) {
             const alertObj: Record<string, boolean> = {};
@@ -812,12 +812,13 @@ class Tapo extends utils.Adapter {
           if (this.deviceObjects[deviceId].stok === undefined) {
             if (this.firstStart) {
               this.log.error('No stok found for: ' + deviceId + ' Ignore and remove the device until next restart');
-
               delete this.deviceObjects[deviceId];
             } else {
               this.log.info(
                 'No stok found for: ' + deviceId + ' this means the device is offline or connection lost. No update or commands possible',
               );
+              this.deviceObjects[deviceId]._connected = false;
+              this.setState(deviceId + '.connected', false, true);
             }
           }
           continue;
