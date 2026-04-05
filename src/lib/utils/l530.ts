@@ -59,68 +59,21 @@ export default class L530 extends L520E {
   }
 
   async getEnergyUsage():Promise<PowerUsage>{
-    const payload = '{'+
-                '"method": "get_device_usage",'+
-                    '"requestTimeMils": ' + Math.round(Date.now() * 1000) + ''+
-                    '};';
     this.log.debug('getEnergyUsage called');
-
-    if(this.is_klap){
-      this.log.debug('getEnergyUsage is klap');
-
-      return this.handleKlapRequest(payload).then((response)=>{
-        this.log.debug('Consumption: ' + JSON.stringify(response));
-        if(response && response.result){
-          this._consumption = {
-            total: response.result.power_usage.today / 1000,
-            current: this._consumption ? response.result.power_usage.today / this.toHours(response.result.time_usage.today) : 0,
-          };
-        } else{
-          this._consumption = {
-            total: 0,
-            current: 0,
-          };
-        }
-
-        return response.result;
-      }).catch((error)=>{
-        if(error.message && error.message.indexOf('9999') > 0){
-          return this.reconnect().then(()=>{
-            return this.handleKlapRequest(payload).then(()=>{
-              return true;
-            });
-          });
-        }
-        return false;
-      });
-    }else{
-      return this.handleRequest(payload).then((response)=>{
-        this.log.debug('Consumption: ' + response);
-        if(response && response.result){
-          this._consumption = {
-            total: response.result.power_usage.today / 1000,
-            current: this._consumption ? response.result.power_usage.today / this.toHours(response.result.time_usage.today)  : 0,
-          };
-        } else{
-          this._consumption = {
-            total: 0,
-            current: 0,
-          };
-        }
-
-        return response.result;
-      }).catch((error)=>{
-        if(error.message && error.message.indexOf('9999') > 0){
-          return this.reconnect().then(()=>{
-            return this.handleRequest(payload).then(()=>{
-              return true;
-            });
-          });
-        }
-        return false;
-      });
+    const response = await this.sendCommand('get_device_usage');
+    this.log.debug('Consumption: ' + JSON.stringify(response));
+    if(response && response.power_usage){
+      this._consumption = {
+        total: response.power_usage.today / 1000,
+        current: this._consumption ? response.power_usage.today / this.toHours(response.time_usage.today) : 0,
+      };
+    } else{
+      this._consumption = {
+        total: 0,
+        current: 0,
+      };
     }
-
+    return response;
   }
 
   public getPowerConsumption():ConsumptionInfo{

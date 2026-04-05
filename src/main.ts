@@ -867,7 +867,7 @@ class Tapo extends utils.Adapter {
               // Emeter data (voltage, current) - may not be supported on all devices
               if (this.deviceObjects[deviceId].getEmeterData) {
                 const emeterData = await this.deviceObjects[deviceId].getEmeterData().catch((e: any) => {
-                  this.log.debug('get_emeter_data not supported: ' + e.message);
+                  this.log.debug('get_emeter_data not supported: ' + (e?.message || e));
                 });
                 if (emeterData && !emeterData.request) {
                   await this.json2iob.parse(deviceId, emeterData);
