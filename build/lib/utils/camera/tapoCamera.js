@@ -39,6 +39,7 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
     ivb;
     seq;
     stok;
+    suspendUntil = 0;
     constructor(log, config) {
         super(log, config);
         this.log = log;
@@ -139,6 +140,10 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
     }
     async refreshStok(loginRetryCount = 0) {
         this.log.debug('refreshStok: Refreshing stok...');
+        if (this.suspendUntil > Date.now()) {
+            this.log.debug('refreshStok: Still suspended, skipping');
+            return;
+        }
         // Generate fresh cnonce for each handshake attempt (new firmware rejects replayed cnonces)
         this.cnonce = this.generateCnonce();
         const isSecureConnection = await this.isSecureConnection();
@@ -256,14 +261,18 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
         }
         if (responseData.result?.data?.sec_left && responseData.result.data.sec_left > 0) {
             this.log.debug('refreshStok: temporary suspension', responseData);
+            this.suspendUntil = Date.now() + responseData.result.data.sec_left * 1000;
             this.log.error(`Temporary Suspension: Try again in ${responseData.result.data.sec_left} seconds`);
+            return;
         }
         if (responseData && responseData.result && responseData.result.responses && responseData.result.responses[0].error_code !== 0) {
             this.log.debug(`API request failed with specific error code ${responseData.result.responses[0].error_code}: ${responseData.result.responses[0].error_message}`);
         }
         if (responseData?.data?.code === -40404 && responseData?.data?.sec_left && responseData.data.sec_left > 0) {
             this.log.debug('refreshStok: temporary suspension', responseData);
+            this.suspendUntil = Date.now() + responseData.data.sec_left * 1000;
             this.log.error(`refreshStok: Temporary Suspension: Try again in ${responseData.data.sec_left} seconds`);
+            return;
         }
         if (responseData?.result?.stok) {
             this.stok = responseData.result.stok;
@@ -283,6 +292,7 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
     async isSecureConnection() {
         if (this.isSecureConnectionValue === null) {
             this.log.debug('isSecureConnection: Checking secure connection...');
+            const probeCnonce = crypto_1.default.randomBytes(8).toString('hex').toUpperCase();
             const response = await this.fetch(`https://${this.config.ipAddress}`, {
                 method: 'post',
                 headers: this.getHeaders(),
@@ -291,6 +301,7 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
                     params: {
                         encrypt_type: '3',
                         username: this.getUsername(),
+                        cnonce: probeCnonce,
                     },
                 }),
             });

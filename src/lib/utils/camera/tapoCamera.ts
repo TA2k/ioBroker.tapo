@@ -103,6 +103,7 @@ export class TAPOCamera extends OnvifCamera {
   private ivb: Buffer | undefined;
   private seq: number | undefined;
   private stok: string | undefined;
+  private suspendUntil = 0;
 
   constructor(
     protected readonly log: any,
@@ -218,6 +219,11 @@ export class TAPOCamera extends OnvifCamera {
 
   async refreshStok(loginRetryCount = 0): Promise<void> {
     this.log.debug('refreshStok: Refreshing stok...');
+
+    if (this.suspendUntil > Date.now()) {
+      this.log.debug('refreshStok: Still suspended, skipping');
+      return;
+    }
 
     // Generate fresh cnonce for each handshake attempt (new firmware rejects replayed cnonces)
     this.cnonce = this.generateCnonce();
@@ -362,8 +368,9 @@ export class TAPOCamera extends OnvifCamera {
 
     if (responseData.result?.data?.sec_left && responseData.result.data.sec_left > 0) {
       this.log.debug('refreshStok: temporary suspension', responseData);
-
+      this.suspendUntil = Date.now() + responseData.result.data.sec_left * 1000;
       this.log.error(`Temporary Suspension: Try again in ${responseData.result.data.sec_left} seconds`);
+      return;
     }
     if (responseData && responseData.result && responseData.result.responses && responseData.result.responses[0].error_code !== 0) {
       this.log.debug(
@@ -373,8 +380,9 @@ export class TAPOCamera extends OnvifCamera {
 
     if (responseData?.data?.code === -40404 && responseData?.data?.sec_left && responseData.data.sec_left > 0) {
       this.log.debug('refreshStok: temporary suspension', responseData);
-
+      this.suspendUntil = Date.now() + responseData.data.sec_left * 1000;
       this.log.error(`refreshStok: Temporary Suspension: Try again in ${responseData.data.sec_left} seconds`);
+      return;
     }
 
     if (responseData?.result?.stok) {
@@ -405,6 +413,7 @@ export class TAPOCamera extends OnvifCamera {
     if (this.isSecureConnectionValue === null) {
       this.log.debug('isSecureConnection: Checking secure connection...');
 
+      const probeCnonce = crypto.randomBytes(8).toString('hex').toUpperCase();
       const response = await this.fetch(`https://${this.config.ipAddress}`, {
         method: 'post',
         headers: this.getHeaders(),
@@ -413,6 +422,7 @@ export class TAPOCamera extends OnvifCamera {
           params: {
             encrypt_type: '3',
             username: this.getUsername(),
+            cnonce: probeCnonce,
           },
         }),
       });
