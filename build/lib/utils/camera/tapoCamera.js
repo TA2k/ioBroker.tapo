@@ -147,6 +147,7 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
         // Generate fresh cnonce for each handshake attempt (new firmware rejects replayed cnonces)
         this.cnonce = this.generateCnonce();
         const isSecureConnection = await this.isSecureConnection();
+        this.log.debug('refreshStok: isSecureConnection=' + isSecureConnection + ' username=' + this.getUsername() + ' cnonce=' + this.cnonce);
         let fetchParams = {};
         if (isSecureConnection) {
             fetchParams = {
@@ -189,7 +190,7 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
             this.log.debug('refreshStok: empty response login data, raising exception', responseLogin.status);
             this.log.error('Empty response login data');
         }
-        this.log.debug('refreshStok: Login response', responseLogin.status, responseLoginData);
+        this.log.debug('refreshStok: Login response status=' + responseLogin.status + ' data=' + JSON.stringify(responseLoginData));
         if (responseLogin.status === 401 && responseLoginData.result?.data?.code === -40411) {
             this.log.debug('refreshStok: invalid credentials, raising exception', responseLogin.status);
             this.log.error('Invalid credentials');
@@ -197,7 +198,9 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
         if (isSecureConnection) {
             const nonce = responseLoginData.result?.data?.nonce;
             const deviceConfirm = responseLoginData.result?.data?.device_confirm;
+            this.log.debug('refreshStok: nonce=' + (nonce ? nonce.substring(0, 16) + '...' : 'null') + ' deviceConfirm=' + (deviceConfirm ? deviceConfirm.substring(0, 16) + '...' : 'null'));
             if (nonce && deviceConfirm && this.validateDeviceConfirm(nonce, deviceConfirm)) {
+                this.log.debug('refreshStok: deviceConfirm validated, encryptionMethod=' + this.passwordEncryptionMethod);
                 const digestPasswd = crypto_1.default
                     .createHash('sha256')
                     .update(this.getHashedPassword() + this.cnonce + nonce)
@@ -228,7 +231,8 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
                     return;
                 }
                 this.log.debug('refreshStok: start_seq response', response.status, JSON.stringify(responseData));
-                if (responseData.result?.start_seq) {
+                if (responseData.result?.start_seq !== undefined) {
+                    this.log.debug('refreshStok: start_seq=' + responseData.result.start_seq + ' user_group=' + responseData.result?.user_group + ' stok=' + (responseData.result?.stok ? 'present' : 'missing'));
                     if (responseData.result?.user_group !== 'root') {
                         this.log.debug('refreshStock: Incorrect user_group detected');
                         // # encrypted control via 3rd party account does not seem to be supported
@@ -285,7 +289,7 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
             this.isSecureConnectionValue = null;
             return this.refreshStok(loginRetryCount + 1);
         }
-        this.log.debug('refreshStock: Unexpected end of flow, raising exception');
+        this.log.debug('refreshStock: Unexpected end of flow, responseData=' + JSON.stringify(responseData));
         this.isSecureConnectionValue = null;
         this.log.error('Invalid authentication data');
     }
@@ -306,7 +310,7 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
                 }),
             });
             const responseData = (await response.json());
-            this.log.debug('isSecureConnection response', response.status, JSON.stringify(responseData));
+            this.log.debug('isSecureConnection response status=' + response.status + ' data=' + JSON.stringify(responseData));
             const errorCode = responseData?.error_code;
             const encryptType = String(responseData?.result?.data?.encrypt_type || '');
             const hasNonce = !!responseData?.result?.data?.nonce;
@@ -315,6 +319,7 @@ class TAPOCamera extends onvifCamera_1.OnvifCamera {
             // hasNonce: device already returned nonce in probe response
             this.isSecureConnectionValue =
                 (errorCode === -40413 && encryptType.includes('3')) || errorCode === -40211 || hasNonce;
+            this.log.debug('isSecureConnection result=' + this.isSecureConnectionValue + ' errorCode=' + errorCode + ' encryptType=' + encryptType + ' hasNonce=' + hasNonce);
         }
         return this.isSecureConnectionValue;
     }
