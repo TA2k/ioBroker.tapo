@@ -215,8 +215,8 @@ export default class P100 implements TpLinkAccessory {
         }
       })
       .catch((error: Error) => {
-        this.log.debug('111 Error: ' + error ? error.message : '');
-        return error;
+        this.log.debug('111 Error: ' + (error ? error.message : ''));
+        throw error;
       });
   }
 
@@ -246,45 +246,46 @@ export default class P100 implements TpLinkAccessory {
     this.log.debug('Old Login to P100 with url ' + URL);
     this.log.debug('Headers ' + JSON.stringify(headers));
     this.log.debug('Cipher: ' + this.tpLinkCipher);
-    if (this.tpLinkCipher) {
-      const encryptedPayload = this.tpLinkCipher.encrypt(payload);
-
-      const securePassthroughPayload = {
-        method: 'securePassthrough',
-        params: {
-          request: encryptedPayload,
-        },
-      };
-
-      const config = {
-        headers: headers,
-        timeout: this._timeout * 1000,
-      };
-      this.log.debug('Post request');
-      await this._axios
-        .post(URL, securePassthroughPayload, config)
-        .then((res: AxiosResponse) => {
-          if (res.data.error_code || res.status !== 200) {
-            return this.handleError(res.data!.error_code ? res.data.error_code : res.status, '226');
-          }
-          const decryptedResponse = this.tpLinkCipher.decrypt(res.data.result.response);
-          this.log.debug('Decrypted Response: ' + decryptedResponse);
-          try {
-            const response = JSON.parse(decryptedResponse);
-            if (response.error_code !== 0) {
-              return this.handleError(res.data.error_code, '152');
-            }
-            this.token = response.result.token;
-            return;
-          } catch (error) {
-            return this.handleError(JSON.parse(decryptedResponse).error_code, '157');
-          }
-        })
-        .catch((error: Error) => {
-          this.log.debug('Error Login: ' + error ? error.message : '');
-          return error;
-        });
+    if (!this.tpLinkCipher) {
+      throw new Error('No cipher available for login on ' + this.ip);
     }
+    const encryptedPayload = this.tpLinkCipher.encrypt(payload);
+
+    const securePassthroughPayload = {
+      method: 'securePassthrough',
+      params: {
+        request: encryptedPayload,
+      },
+    };
+
+    const config = {
+      headers: headers,
+      timeout: this._timeout * 1000,
+    };
+    this.log.debug('Post request');
+    await this._axios
+      .post(URL, securePassthroughPayload, config)
+      .then((res: AxiosResponse) => {
+        if (res.data.error_code || res.status !== 200) {
+          return this.handleError(res.data!.error_code ? res.data.error_code : res.status, '226');
+        }
+        const decryptedResponse = this.tpLinkCipher.decrypt(res.data.result.response);
+        this.log.debug('Decrypted Response: ' + decryptedResponse);
+        try {
+          const response = JSON.parse(decryptedResponse);
+          if (response.error_code !== 0) {
+            return this.handleError(res.data.error_code, '152');
+          }
+          this.token = response.result.token;
+          return;
+        } catch (error) {
+          return this.handleError(JSON.parse(decryptedResponse).error_code, '157');
+        }
+      })
+      .catch((error: Error) => {
+        this.log.debug('Error Login: ' + (error ? error.message : ''));
+        throw error;
+      });
   }
 
   private async raw_request(path: string, data: Buffer, responseType: string, params?: any): Promise<any> {
@@ -334,8 +335,8 @@ export default class P100 implements TpLinkAccessory {
         }
       })
       .catch((error: Error) => {
-        this.log.debug('276 Error: ' + error.message + ' ' + this.ip);
-        if (error.message.indexOf('403') > -1) {
+        this.log.debug('276 Error: ' + (error?.message || error) + ' ' + this.ip);
+        if (error?.message?.indexOf('403') > -1) {
           this.reAuthenticate();
         }
         return false;
@@ -653,12 +654,12 @@ export default class P100 implements TpLinkAccessory {
 
             return this.getSysInfo();
           } catch (error: any) {
-            this.log.debug(error.stack);
+            this.log.debug(error?.stack || error);
             return this.handleError(JSON.parse(decryptedResponse).error_code, '340');
           }
         })
         .catch((error: Error) => {
-          this.log.debug('371 Error: ' + error ? error.message : '');
+          this.log.debug('371 Error: ' + (error?.message || error));
           return error;
         });
     } else if (this.newTpLinkCipher) {
@@ -713,9 +714,8 @@ export default class P100 implements TpLinkAccessory {
           }
         })
         .catch((error: Error) => {
-          this.log.debug('469 Error: ' + JSON.stringify(error));
-          this.log.debug('469 Error: ' + error.message);
-          if (error.message.indexOf('403') > -1) {
+          this.log.debug('469 Error: ' + (error?.message || error));
+          if (error?.message?.indexOf('403') > -1) {
             this.reAuthenticate();
           }
           return error;
@@ -759,7 +759,7 @@ export default class P100 implements TpLinkAccessory {
         });
     } else {
       return new Promise<PlugSysinfo>((resolve, reject) => {
-        reject();
+        reject(new Error('No cipher available for ' + this.ip));
       });
     }
   }

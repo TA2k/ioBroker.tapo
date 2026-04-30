@@ -593,7 +593,7 @@ class Tapo extends utils.Adapter {
                         this.log.info(`Initialized ${id}`);
                     })
                         .catch((e) => {
-                        this.log.error(e);
+                        this.log.error(e?.message || e || 'initDevice failed');
                     });
                     this.log.debug(`initResult  camera ${id} ${JSON.stringify(initResult)}`);
                 }
@@ -686,7 +686,7 @@ class Tapo extends utils.Adapter {
                 });
             }
             catch (e) {
-                const msg = e.message || String(e);
+                const msg = e?.message || String(e);
                 if (msg.includes('ECONNREFUSED')) {
                     this.log.info(`ONVIF port 2020 not reachable for ${device.ip}. Enable ONVIF in the Tapo app under camera settings to use motion events.`);
                 }
@@ -710,13 +710,13 @@ class Tapo extends utils.Adapter {
                 }
                 catch (error) {
                     this.log.info('KLAP Handshake failed, trying TPAP/SPAKE2+');
-                    this.log.debug(error.message || error);
+                    this.log.debug(error?.message || error);
                     try {
                         await deviceObject.handshake_tpap();
                         this.log.info('TPAP handshake successful for ' + device.ip);
                     }
                     catch (tpapError) {
-                        this.log.debug('TPAP also failed: ' + (tpapError.message || tpapError));
+                        this.log.debug('TPAP also failed: ' + (tpapError?.message || tpapError));
                         this.log.info('KLAP and TPAP Handshake failed for ' + device.ip + '. Try old handshake');
                         deviceObject.is_klap = false;
                         deviceObject.is_tpap = false;
@@ -769,7 +769,7 @@ class Tapo extends utils.Adapter {
             }
         }
         catch (error) {
-            this.log.debug('Get Device Info failed for ' + device.ip + ': ' + (error.message || error));
+            this.log.debug('Get Device Info failed for ' + device.ip + ': ' + (error?.message || error));
             await this.setDeviceConnected(id, false);
         }
     }
