@@ -362,6 +362,10 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+- (ioBroker-Bot) Adapter requires js-controller >= 6.0.11 now.
+
 ### 0.5.0 (2026-04-02)
 
 - Support for TPAP/SPAKE2+ protocol (P100 FW 1.4.3+ and newer devices)
