@@ -404,21 +404,31 @@ class TpapCipher {
     email;
     password;
     mac;
+    port;
+    useHttps;
     key;
     baseNonce;
     sequence;
     stok;
     cipherAlgorithm = 'aes-128-ccm';
     tagLen = TAG_LEN;
-    constructor(log, ip, email, password, mac = '') {
+    constructor(log, ip, email, password, mac = '', port = 80, useHttps = false) {
         this.log = log;
         this.ip = ip;
         this.email = email;
         this.password = password;
         this.mac = mac;
+        this.port = port;
+        this.useHttps = useHttps;
+    }
+    get baseUrl() {
+        const proto = this.useHttps ? 'https' : 'http';
+        const isDefault = (this.useHttps && this.port === 443) || (!this.useHttps && this.port === 80);
+        const suffix = isDefault ? '' : ':' + this.port;
+        return `${proto}://${this.ip}${suffix}`;
     }
     get sessionUrl() {
-        return `http://${this.ip}/stok=${this.stok}/ds`;
+        return `${this.baseUrl}/stok=${this.stok}/ds`;
     }
     get isReady() {
         return !!this.key && !!this.baseNonce && !!this.stok;
@@ -508,7 +518,10 @@ class TpapCipher {
     /** Single handshake attempt with a specific candidate secret */
     async tryHandshake(pakeList, userHashType, candidateSecret, isSmartCam) {
         const axios = (await import('axios')).default;
-        const baseUrl = `http://${this.ip}`;
+        const https = await import('https');
+        const baseUrl = this.baseUrl;
+        this.log.debug(`TPAP tryHandshake baseUrl=${baseUrl}`);
+        const httpsAgent = this.useHttps ? new https.Agent({ rejectUnauthorized: false }) : undefined;
         const headers = {
             'Content-Type': 'application/json; charset=UTF-8',
             Accept: 'application/json',
@@ -531,7 +544,7 @@ class TpapCipher {
                 stok: null,
             },
         };
-        const r1 = await axios.post(baseUrl, registerPayload, { headers, timeout: 5000 });
+        const r1 = await axios.post(baseUrl, registerPayload, { headers, timeout: 5000, httpsAgent });
         if (r1.data.error_code !== 0) {
             throw new Error(`TPAP register failed: error_code=${r1.data.error_code}`);
         }
@@ -642,7 +655,7 @@ class TpapCipher {
                 user_confirm: userConfirm.toString('base64'),
             },
         };
-        const r2 = await axios.post(baseUrl, sharePayload, { headers, timeout: 5000 });
+        const r2 = await axios.post(baseUrl, sharePayload, { headers, timeout: 5000, httpsAgent });
         if (r2.data.error_code !== 0) {
             throw new Error(`TPAP pake_share failed: error_code=${r2.data.error_code}`);
         }

@@ -11,8 +11,8 @@ class L510E extends p100_js_1.default {
     password;
     timeout;
     _lightSysInfo;
-    constructor(log, ipAddress, email, password, timeout) {
-        super(log, ipAddress, email, password, timeout);
+    constructor(log, ipAddress, email, password, timeout, port, useHttps) {
+        super(log, ipAddress, email, password, timeout, port, useHttps);
         this.log = log;
         this.ipAddress = ipAddress;
         this.email = email;

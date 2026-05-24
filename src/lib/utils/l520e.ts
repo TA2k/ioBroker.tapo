@@ -11,8 +11,10 @@ export default class L520E extends L510E {
     public readonly email: string,
     public readonly password: string,
     public readonly timeout: number,
+    port?: number,
+    useHttps?: boolean,
   ) {
-    super(log, ipAddress, email, password, timeout);
+    super(log, ipAddress, email, password, timeout, port, useHttps);
     this.log.debug('Constructing L510E on host: ' + ipAddress);
   }
 

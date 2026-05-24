@@ -455,10 +455,19 @@ export default class TpapCipher {
     private readonly email: string,
     private readonly password: string,
     private readonly mac: string = '',
+    private readonly port: number = 80,
+    private readonly useHttps: boolean = false,
   ) {}
 
+  private get baseUrl(): string {
+    const proto = this.useHttps ? 'https' : 'http';
+    const isDefault = (this.useHttps && this.port === 443) || (!this.useHttps && this.port === 80);
+    const suffix = isDefault ? '' : ':' + this.port;
+    return `${proto}://${this.ip}${suffix}`;
+  }
+
   get sessionUrl(): string {
-    return `http://${this.ip}/stok=${this.stok}/ds`;
+    return `${this.baseUrl}/stok=${this.stok}/ds`;
   }
 
   get isReady(): boolean {
@@ -556,7 +565,10 @@ export default class TpapCipher {
   /** Single handshake attempt with a specific candidate secret */
   private async tryHandshake(pakeList: number[], userHashType: number, candidateSecret: string, isSmartCam: boolean): Promise<void> {
     const axios = (await import('axios')).default;
-    const baseUrl = `http://${this.ip}`;
+    const https = await import('https');
+    const baseUrl = this.baseUrl;
+    this.log.debug(`TPAP tryHandshake baseUrl=${baseUrl}`);
+    const httpsAgent = this.useHttps ? new https.Agent({ rejectUnauthorized: false }) : undefined;
     const headers = {
       'Content-Type': 'application/json; charset=UTF-8',
       Accept: 'application/json',
@@ -582,7 +594,7 @@ export default class TpapCipher {
       },
     };
 
-    const r1 = await axios.post(baseUrl, registerPayload, { headers, timeout: 5000 });
+    const r1 = await axios.post(baseUrl, registerPayload, { headers, timeout: 5000, httpsAgent });
     if (r1.data.error_code !== 0) {
       throw new Error(`TPAP register failed: error_code=${r1.data.error_code}`);
     }
@@ -712,7 +724,7 @@ export default class TpapCipher {
       },
     };
 
-    const r2 = await axios.post(baseUrl, sharePayload, { headers, timeout: 5000 });
+    const r2 = await axios.post(baseUrl, sharePayload, { headers, timeout: 5000, httpsAgent });
     if (r2.data.error_code !== 0) {
       throw new Error(`TPAP pake_share failed: error_code=${r2.data.error_code}`);
     }

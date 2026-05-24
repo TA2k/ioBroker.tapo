@@ -12,8 +12,8 @@ class L530 extends l520e_1.default {
     timeout;
     _colorLightSysInfo;
     _consumption;
-    constructor(log, ipAddress, email, password, timeout) {
-        super(log, ipAddress, email, password, timeout);
+    constructor(log, ipAddress, email, password, timeout, port, useHttps) {
+        super(log, ipAddress, email, password, timeout, port, useHttps);
         this.log = log;
         this.ipAddress = ipAddress;
         this.email = email;

@@ -11,8 +11,8 @@ class L520E extends l510e_1.default {
     password;
     timeout;
     _colorTempSysInfo;
-    constructor(log, ipAddress, email, password, timeout) {
-        super(log, ipAddress, email, password, timeout);
+    constructor(log, ipAddress, email, password, timeout, port, useHttps) {
+        super(log, ipAddress, email, password, timeout, port, useHttps);
         this.log = log;
         this.ipAddress = ipAddress;
         this.email = email;

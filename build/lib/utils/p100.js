@@ -10,6 +10,7 @@ const axios_1 = __importDefault(require("axios"));
 const crypto_1 = __importDefault(require("crypto"));
 const utf8_1 = __importDefault(require("utf8"));
 const http_1 = __importDefault(require("http"));
+const https_1 = __importDefault(require("https"));
 class P100 {
     log;
     ipAddress;
@@ -90,7 +91,10 @@ class P100 {
         '-2302': 'ERR_DST_SAVE',
         '1003': 'KLAP',
     };
-    constructor(log, ipAddress, email, password, timeout) {
+    port = 80;
+    useHttps = false;
+    _httpsAgent;
+    constructor(log, ipAddress, email, password, timeout, port, useHttps) {
         this.log = log;
         this.ipAddress = ipAddress;
         this.email = email;
@@ -98,11 +102,35 @@ class P100 {
         this.timeout = timeout;
         this.log.debug('Constructing P100 on host: ' + ipAddress);
         this.ip = ipAddress;
+        if (port)
+            this.port = port;
+        if (useHttps)
+            this.useHttps = useHttps;
+        if (this.useHttps) {
+            this._axios = axios_1.default.create({
+                httpsAgent: new https_1.default.Agent({ rejectUnauthorized: false }),
+            });
+        }
+        this.log.debug('P100 transport: ' + (this.useHttps ? 'https' : 'http') + '://' + this.ip + ':' + this.port);
         this.encryptCredentials(email, password);
         this.createKeyPair();
         this.terminalUUID = crypto_1.default.randomUUID();
         this._reconnect_counter = 0;
         this._timeout = timeout;
+    }
+    getBaseUrl() {
+        const proto = this.useHttps ? 'https' : 'http';
+        const isDefault = (this.useHttps && this.port === 443) || (!this.useHttps && this.port === 80);
+        const suffix = isDefault ? '' : ':' + this.port;
+        return `${proto}://${this.ip}${suffix}`;
+    }
+    getHttpsAgent() {
+        if (!this.useHttps)
+            return undefined;
+        if (!this._httpsAgent) {
+            this._httpsAgent = new https_1.default.Agent({ rejectUnauthorized: false });
+        }
+        return this._httpsAgent;
     }
     encryptCredentials(email, password) {
         //Password Encoding
@@ -166,7 +194,8 @@ class P100 {
     }
     //old tapo requests
     async handshake() {
-        const URL = 'http://' + this.ip + '/app';
+        const URL = this.getBaseUrl() + '/app';
+        this.log.debug('Old AES handshake URL: ' + URL);
         const payload = {
             method: 'handshake',
             params: {
@@ -207,7 +236,8 @@ class P100 {
         });
     }
     async login() {
-        const URL = 'http://' + this.ip + '/app';
+        const URL = this.getBaseUrl() + '/app';
+        this.log.debug('Old AES login URL: ' + URL);
         const payload = '{' +
             '"method": "login_device",' +
             '"params": {' +
@@ -270,7 +300,8 @@ class P100 {
         });
     }
     async raw_request(path, data, responseType, params) {
-        const URL = 'http://' + this.ip + '/app/' + path;
+        const URL = this.getBaseUrl() + '/app/' + path;
+        this.log.debug('KLAP raw_request URL: ' + URL);
         const headers = {
             Connection: 'Keep-Alive',
             Host: this.ip,
@@ -337,18 +368,21 @@ class P100 {
         const options = {
             method: 'POST',
             hostname: this.ip,
+            port: this.port,
             path: '/app/handshake1',
             headers: {
                 Connection: 'Keep-Alive',
                 'Content-Type': 'application/octet-stream',
                 'Content-Length': local_seed.length,
             },
-            agent: new http_1.default.Agent({
-                keepAlive: true,
-            }),
+            agent: this.useHttps
+                ? new https_1.default.Agent({ keepAlive: true, rejectUnauthorized: false })
+                : new http_1.default.Agent({ keepAlive: true }),
         };
+        this.log.debug('KLAP handshake1 ' + (this.useHttps ? 'https' : 'http') + '://' + this.ip + ':' + this.port + '/app/handshake1');
         const response = await new Promise((resolve, reject) => {
-            const request = http_1.default
+            const requester = this.useHttps ? https_1.default : http_1.default;
+            const request = requester
                 .request(options, (res) => {
                 const chunks = [];
                 if (res.headers && res.headers['set-cookie']) {
@@ -452,15 +486,15 @@ class P100 {
     //TPAP/SPAKE2+ handshake for newer firmware devices
     async handshake_tpap() {
         this.log.debug('Trying TPAP/SPAKE2+ handshake for ' + this.ip);
-        this.tpapCipher = new tpapCipher_js_1.default(this.log, this.ip, this.email, this.password, this.deviceMac);
+        this.tpapCipher = new tpapCipher_js_1.default(this.log, this.ip, this.email, this.password, this.deviceMac, this.port, this.useHttps);
         // Discover to get pake list, MAC, user_hash_type
         let pakeList = [2];
         let userHashType = 0;
         try {
-            const discoverRes = await this._axios.post('http://' + this.ip + '/', {
+            const discoverRes = await this._axios.post(this.getBaseUrl() + '/', {
                 method: 'login',
                 params: { sub_method: 'discover' },
-            }, { timeout: 5000 });
+            }, { timeout: 5000, httpsAgent: this.getHttpsAgent() });
             const tpap = discoverRes.data?.result?.tpap;
             if (tpap?.pake) {
                 pakeList = tpap.pake;
@@ -548,7 +582,8 @@ class P100 {
                 resolve(this.getSysInfo());
             });
         }
-        const URL = 'http://' + this.ip + '/app?token=' + this.token;
+        const URL = this.getBaseUrl() + '/app?token=' + this.token;
+        this.log.debug('getDeviceInfo URL: ' + URL);
         const payload = '{' + '"method": "get_device_info",' + '"requestTimeMils": ' + Math.round(Date.now() * 1000) + '' + '};';
         const headers = {
             Cookie: this.cookie,
@@ -603,7 +638,8 @@ class P100 {
         }
         else if (this.newTpLinkCipher) {
             const data = this.newTpLinkCipher.encrypt(payload);
-            const URL = 'http://' + this.ip + '/app/' + 'request';
+            const URL = this.getBaseUrl() + '/app/request';
+            this.log.debug('KLAP getDeviceInfo URL: ' + URL);
             const headers = {
                 Connection: 'Keep-Alive',
                 Host: this.ip,
@@ -825,7 +861,8 @@ class P100 {
         }
     }
     handleRequest(payload) {
-        const URL = 'http://' + this.ip + '/app?token=' + this.token;
+        const URL = this.getBaseUrl() + '/app?token=' + this.token;
+        this.log.debug('handleRequest URL: ' + URL);
         const headers = {
             Cookie: this.cookie,
             Connection: 'Keep-Alive',

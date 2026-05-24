@@ -52,6 +52,7 @@ const l520e_1 = __importDefault(require("./lib/utils/l520e"));
 const l530_1 = __importDefault(require("./lib/utils/l530"));
 const p100_1 = __importDefault(require("./lib/utils/p100"));
 const p110_1 = __importDefault(require("./lib/utils/p110"));
+const udpDiscovery_1 = require("./lib/utils/udpDiscovery");
 class Tapo extends utils.Adapter {
     devices;
     deviceObjects;
@@ -623,24 +624,41 @@ class Tapo extends utils.Adapter {
             return;
         }
         this.log.info(`Init device ${id} type ${device.deviceName} with ip ${device.ip}`);
+        let port;
+        let useHttps;
+        try {
+            this.log.debug(`UDP discovery for ${device.ip} on port 20002`);
+            const discovery = await (0, udpDiscovery_1.discoverDevice)(device.ip, 3000);
+            if (discovery) {
+                port = discovery.http_port;
+                useHttps = discovery.https;
+                this.log.info(`UDP discovery for ${device.ip}: port=${port} https=${useHttps} encrypt=${discovery.encrypt_type} lv=${discovery.login_version} mac=${discovery.mac}`);
+            }
+            else {
+                this.log.debug(`UDP discovery for ${device.ip}: no response (will use default port 80)`);
+            }
+        }
+        catch (e) {
+            this.log.debug(`UDP discovery failed for ${device.ip}: ${e?.message || e}`);
+        }
         let deviceObject;
         if (device.deviceName === 'P100') {
-            deviceObject = new p100_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+            deviceObject = new p100_1.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
         }
         else if (device.deviceName.startsWith('P110') || device.deviceName.startsWith('P115')) {
-            deviceObject = new p110_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+            deviceObject = new p110_1.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
         }
         else if (device.deviceName === 'L530' || device.deviceName.startsWith('L630')) {
-            deviceObject = new l530_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+            deviceObject = new l530_1.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
         }
         else if (device.deviceName === 'L510E') {
-            deviceObject = new l510e_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+            deviceObject = new l510e_1.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
         }
         else if (device.deviceName === 'L520E') {
-            deviceObject = new l520e_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+            deviceObject = new l520e_1.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
         }
         else if (device.deviceName.startsWith('L') || device.deviceName.startsWith('KL')) {
-            deviceObject = new l510e_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+            deviceObject = new l510e_1.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
         }
         else if (device.deviceName.startsWith('C') || device.deviceName.startsWith('TC')) {
             if (device.deviceName.startsWith('C4') && !this.config.enableBatteryDevices) {
@@ -698,7 +716,7 @@ class Tapo extends utils.Adapter {
         }
         else {
             this.log.info(`Unknown device type ${device.deviceName} init as P100`);
-            deviceObject = new p100_1.default(this.log, device.ip, this.config.username, this.config.password, 2);
+            deviceObject = new p100_1.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
         }
         this.deviceObjects[id] = deviceObject;
         try {

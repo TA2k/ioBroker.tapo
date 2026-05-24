@@ -10,10 +10,11 @@ import crypto from 'crypto';
 import utf8 from 'utf8';
 
 import http from 'http';
+import https from 'https';
 
 export default class P100 implements TpLinkAccessory {
   private _crypto = crypto;
-  protected _axios = axios;
+  protected _axios: any = axios;
   private _utf8 = utf8;
   public is_klap = true;
   public is_tpap = false;
@@ -90,20 +91,49 @@ export default class P100 implements TpLinkAccessory {
     '1003': 'KLAP',
   };
 
+  protected port = 80;
+  protected useHttps = false;
+  private _httpsAgent?: https.Agent;
+
   constructor(
     public readonly log: any,
     public readonly ipAddress: string,
     public email: string,
     public readonly password: string,
     public readonly timeout: number,
+    port?: number,
+    useHttps?: boolean,
   ) {
     this.log.debug('Constructing P100 on host: ' + ipAddress);
     this.ip = ipAddress;
+    if (port) this.port = port;
+    if (useHttps) this.useHttps = useHttps;
+    if (this.useHttps) {
+      this._axios = axios.create({
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+      });
+    }
+    this.log.debug('P100 transport: ' + (this.useHttps ? 'https' : 'http') + '://' + this.ip + ':' + this.port);
     this.encryptCredentials(email, password);
     this.createKeyPair();
     this.terminalUUID = crypto.randomUUID();
     this._reconnect_counter = 0;
     this._timeout = timeout;
+  }
+
+  protected getBaseUrl(): string {
+    const proto = this.useHttps ? 'https' : 'http';
+    const isDefault = (this.useHttps && this.port === 443) || (!this.useHttps && this.port === 80);
+    const suffix = isDefault ? '' : ':' + this.port;
+    return `${proto}://${this.ip}${suffix}`;
+  }
+
+  protected getHttpsAgent(): https.Agent | undefined {
+    if (!this.useHttps) return undefined;
+    if (!this._httpsAgent) {
+      this._httpsAgent = new https.Agent({ rejectUnauthorized: false });
+    }
+    return this._httpsAgent;
   }
 
   private encryptCredentials(email: string, password: string) {
@@ -176,7 +206,8 @@ export default class P100 implements TpLinkAccessory {
 
   //old tapo requests
   async handshake(): Promise<void> {
-    const URL = 'http://' + this.ip + '/app';
+    const URL = this.getBaseUrl() + '/app';
+    this.log.debug('Old AES handshake URL: ' + URL);
     const payload = {
       method: 'handshake',
       params: {
@@ -221,7 +252,8 @@ export default class P100 implements TpLinkAccessory {
   }
 
   async login(): Promise<void> {
-    const URL = 'http://' + this.ip + '/app';
+    const URL = this.getBaseUrl() + '/app';
+    this.log.debug('Old AES login URL: ' + URL);
     const payload =
       '{' +
       '"method": "login_device",' +
@@ -289,7 +321,8 @@ export default class P100 implements TpLinkAccessory {
   }
 
   private async raw_request(path: string, data: Buffer, responseType: string, params?: any): Promise<any> {
-    const URL = 'http://' + this.ip + '/app/' + path;
+    const URL = this.getBaseUrl() + '/app/' + path;
+    this.log.debug('KLAP raw_request URL: ' + URL);
 
     const headers: Record<string, string> = {
       Connection: 'Keep-Alive',
@@ -371,18 +404,21 @@ export default class P100 implements TpLinkAccessory {
     const options: http.RequestOptions = {
       method: 'POST',
       hostname: this.ip,
+      port: this.port,
       path: '/app/handshake1',
       headers: {
         Connection: 'Keep-Alive',
         'Content-Type': 'application/octet-stream',
         'Content-Length': local_seed.length,
       },
-      agent: new http.Agent({
-        keepAlive: true,
-      }),
+      agent: this.useHttps
+        ? new https.Agent({ keepAlive: true, rejectUnauthorized: false })
+        : new http.Agent({ keepAlive: true }),
     };
+    this.log.debug('KLAP handshake1 ' + (this.useHttps ? 'https' : 'http') + '://' + this.ip + ':' + this.port + '/app/handshake1');
     const response = await new Promise<Buffer>((resolve, reject) => {
-      const request = http
+      const requester = this.useHttps ? https : http;
+      const request = requester
         .request(options, (res: any) => {
           const chunks: any = [];
           if (res.headers && res.headers['set-cookie']) {
@@ -501,16 +537,16 @@ export default class P100 implements TpLinkAccessory {
   //TPAP/SPAKE2+ handshake for newer firmware devices
   async handshake_tpap(): Promise<void> {
     this.log.debug('Trying TPAP/SPAKE2+ handshake for ' + this.ip);
-    this.tpapCipher = new TpapCipher(this.log, this.ip, this.email, this.password, this.deviceMac);
+    this.tpapCipher = new TpapCipher(this.log, this.ip, this.email, this.password, this.deviceMac, this.port, this.useHttps);
 
     // Discover to get pake list, MAC, user_hash_type
     let pakeList: number[] = [2];
     let userHashType = 0;
     try {
-      const discoverRes = await this._axios.post('http://' + this.ip + '/', {
+      const discoverRes = await this._axios.post(this.getBaseUrl() + '/', {
         method: 'login',
         params: { sub_method: 'discover' },
-      }, { timeout: 5000 });
+      }, { timeout: 5000, httpsAgent: this.getHttpsAgent() });
       const tpap = discoverRes.data?.result?.tpap;
       if (tpap?.pake) {
         pakeList = tpap.pake;
@@ -605,7 +641,8 @@ export default class P100 implements TpLinkAccessory {
         resolve(this.getSysInfo());
       });
     }
-    const URL = 'http://' + this.ip + '/app?token=' + this.token;
+    const URL = this.getBaseUrl() + '/app?token=' + this.token;
+    this.log.debug('getDeviceInfo URL: ' + URL);
 
     const payload = '{' + '"method": "get_device_info",' + '"requestTimeMils": ' + Math.round(Date.now() * 1000) + '' + '};';
     const headers = {
@@ -665,7 +702,8 @@ export default class P100 implements TpLinkAccessory {
     } else if (this.newTpLinkCipher) {
       const data = this.newTpLinkCipher.encrypt(payload);
 
-      const URL = 'http://' + this.ip + '/app/' + 'request';
+      const URL = this.getBaseUrl() + '/app/request';
+      this.log.debug('KLAP getDeviceInfo URL: ' + URL);
       const headers = {
         Connection: 'Keep-Alive',
         Host: this.ip,
@@ -895,7 +933,8 @@ export default class P100 implements TpLinkAccessory {
   }
 
   protected handleRequest(payload: string): Promise<any> {
-    const URL = 'http://' + this.ip + '/app?token=' + this.token;
+    const URL = this.getBaseUrl() + '/app?token=' + this.token;
+    this.log.debug('handleRequest URL: ' + URL);
 
     const headers = {
       Cookie: this.cookie,

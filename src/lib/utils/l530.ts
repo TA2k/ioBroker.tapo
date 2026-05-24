@@ -13,8 +13,10 @@ export default class L530 extends L520E {
     public readonly email: string,
     public readonly password: string,
     public readonly timeout: number,
+    port?: number,
+    useHttps?: boolean,
   ) {
-    super(log, ipAddress, email, password, timeout);
+    super(log, ipAddress, email, password, timeout, port, useHttps);
     this.log.debug('Constructing L530 on host: ' + ipAddress);
     this._consumption = {
       total: 0,
