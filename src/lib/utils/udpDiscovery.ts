@@ -3,6 +3,8 @@ import crypto from 'crypto';
 
 const DISCOVERY_PORT = 20002;
 const HEADER_SIZE = 16;
+const RETRY_COUNT = 8;
+const RETRY_INTERVAL_MS = 300;
 
 export interface DiscoveryResult {
   ip: string;
@@ -33,7 +35,7 @@ function buildDiscoveryQuery(): Buffer {
   header.writeUInt8(0, 1);
   header.writeUInt16BE(1, 2);
   header.writeUInt16BE(payload.length, 4);
-  header.writeUInt8(17, 6);
+  header.writeUInt8(0x21, 6);
   header.writeUInt8(0, 7);
   header.writeUInt32BE(deviceSerial, 8);
   header.writeUInt32BE(0x5a6b7c8d, 12);
@@ -68,10 +70,12 @@ export async function discoverDevice(ip: string, timeout = 3000): Promise<Discov
   return new Promise((resolve) => {
     const socket = dgram.createSocket('udp4');
     let resolved = false;
+    let retryTimer: NodeJS.Timeout | null = null;
 
     const finish = (result: DiscoveryResult | null): void => {
       if (resolved) return;
       resolved = true;
+      if (retryTimer) clearInterval(retryTimer);
       try {
         socket.close();
       } catch {
@@ -111,17 +115,31 @@ export async function discoverDevice(ip: string, timeout = 3000): Promise<Discov
       }
     });
 
-    try {
-      const query = buildDiscoveryQuery();
-      socket.send(query, DISCOVERY_PORT, ip, (err) => {
-        if (err) {
-          clearTimeout(timer);
-          finish(null);
-        }
-      });
-    } catch {
-      clearTimeout(timer);
-      finish(null);
-    }
+    const sendOne = (): void => {
+      if (resolved) return;
+      try {
+        const query = buildDiscoveryQuery();
+        socket.send(query, DISCOVERY_PORT, ip, (err) => {
+          if (err && !resolved) {
+            clearTimeout(timer);
+            finish(null);
+          }
+        });
+      } catch {
+        clearTimeout(timer);
+        finish(null);
+      }
+    };
+
+    sendOne();
+    let sentCount = 1;
+    retryTimer = setInterval(() => {
+      if (resolved || sentCount >= RETRY_COUNT) {
+        if (retryTimer) clearInterval(retryTimer);
+        return;
+      }
+      sentCount++;
+      sendOne();
+    }, RETRY_INTERVAL_MS);
   });
 }

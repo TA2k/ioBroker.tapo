@@ -363,7 +363,7 @@ function resolveCredential(
     }
     if (passwdId === 3) {
       // SHA-1(MD5(password) + "_" + MAC_WITH_COLONS)
-      const macNoColon = mac.replace(/[:\-]/g, '').toUpperCase();
+      const macNoColon = mac.replace(/[:-]/g, '').toUpperCase();
       const macFormatted = macNoColon.match(/.{2}/g)!.join(':');
       const md5pw = crypto.createHash('md5').update(password).digest('hex');
       const result = crypto.createHash('sha1').update(md5pw + '_' + macFormatted).digest('hex');
@@ -427,7 +427,7 @@ function resolveCredential(
 // --- Default passcode from device MAC (pake:[0]) ---
 
 function macPassFromDeviceMac(mac: string): string {
-  const macHex = mac.replace(/[:\-]/g, '');
+  const macHex = mac.replace(/[:-]/g, '');
   const macBytes = Buffer.from(macHex, 'hex');
   if (macBytes.length < 6) {
     throw new Error('Device MAC too short for default passcode derivation');

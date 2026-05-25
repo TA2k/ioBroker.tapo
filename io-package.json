@@ -1,9 +1,22 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.5.2",
+    "version": "0.5.5",
     "news": {
-      "0.5.2": {
+      "0.5.5": {
+        "en": "added udp detection for better device detection",
+        "de": "UDP-Discovery für bessere Geräteerkennung",
+        "ru": "добавлено обнаружение udp для лучшего обнаружения устройства",
+        "pt": "detecção udp adicionada para melhor detecção do dispositivo",
+        "nl": "toegevoegd udp detectie voor betere apparaatdetectie",
+        "fr": "a ajouté la détection de l'oudp pour une meilleure détection des appareils",
+        "it": "rilevamento udp aggiunto per una migliore rilevazione del dispositivo",
+        "es": "detección de udp agregada para una mejor detección de dispositivos",
+        "pl": "dodana detekcja udp dla lepszego wykrywania urządzeń",
+        "uk": "додано виявлення udp для кращого виявлення пристроїв",
+        "zh-cn": "为更好的设备检测添加 up 检测"
+      },
+      "0.5.4": {
         "en": "Support for TPAP/SPAKE2+ protocol (P100 FW 1.4.3+ and newer devices)\nSupport for KLAP v1 (md5) handshake\nFix camera connection for firmware 1.9.1+ (C310 etc.)\n30+ new camera remotes (detection, motor, alarm, cruise, presets, image/audio, OSD)\nNew data points for camera status and detection events\nNew remotes for plugs, lamps, fans, hubs and thermostats\nDevice-specific remotes (only relevant controls per device type)\nEnergy data (voltage, current) for P110/P115\nAutomatic reconnect for devices that go offline and come back\nLess log spam for unreachable devices",
         "de": "Unterstützung für TPAP/SPAKE2+ Protokoll (P100 FW 1.4.3+ und neuere Geräte)\nUnterstützung von KLAP v1 (md5) Handshake\nFix Kameraverbindung für Firmware 1.9.1+ (C310 etc.)\n30+ neue Kamera-Remotes (Erkennung, Motor, Alarm, Kreuzfahrt, Presets, Image/Audio, OSD)\nNeue Datenpunkte für Kamerastatus und Erkennungsereignisse\nNeue Remotes für Stecker, Lampen, Ventilatoren, Naben und Thermostate\nGerätespezifische Remotes (nur relevante Steuerungen pro Gerätetyp)\nEnergiedaten (Spannung, Strom) für P110/P115\nAutomatische Wiederverbindung für Geräte, die offline gehen und zurückkommen\nWeniger log Spam für unlösbare Geräte",
         "ru": "Поддержка протокола TPAP/SPAKE2+ (P100 FW 1.4.3+ и новые устройства)\nПоддержка рукопожатия KLAP v1 (md5)\nИсправьте подключение камеры для прошивки 1.9.1+ (C310 и т.д.)\n30+ новых пультов камеры (обнаружение, двигатель, сигнализация, круиз, предустановки, изображение/аудио, OSD)\nНовые точки данных о состоянии камеры и событиях обнаружения\nНовые пульты для вилок, ламп, вентиляторов, хабов и термостатов\nУдаленные устройства (только соответствующие элементы управления на тип устройства)\nДанные по энергии (напряжение, ток) для P110/P115\nАвтоматическое подключение к устройствам, которые отключаются и возвращаются\nМеньше логарифмического спама для недоступных устройств",
@@ -80,19 +93,6 @@
         "pl": "poprawić uścisk dłoni, jeśli e- mail nie jest wprowadzany w małych przypadkach",
         "uk": "покращуйте руки, якщо e-mail не вводиться в нижній край",
         "zh-cn": "如果电子邮件没有在小写中输入, 则改善握手方式"
-      },
-      "0.4.3": {
-        "en": "fix handshake for device with HW v1.20",
-        "de": "Fix für handshake für Gerät mit HW v1.20",
-        "ru": "исправить рукопожатие для устройства с HW v1.20",
-        "pt": "corrigir aperto de mão para dispositivo com HW v1.20",
-        "nl": "fix handshake voor apparaat met HW v1.20",
-        "fr": "fixer la poignée de main pour l'appareil avec HW v1.20",
-        "it": "fix handshake per dispositivo con HW v1.20",
-        "es": "fijar apretón de manos para el dispositivo con HW v1.20",
-        "pl": "naprawić uścisk dłoni dla urządzenia z HW v1.20",
-        "uk": "закріпити запіканка для пристрою з HW v1.20",
-        "zh-cn": "以 HW v1. 20 为设备固定握手方式"
       }
     },
     "titleLang": {
