@@ -105,6 +105,19 @@ export async function discoverDevice(ip: string, timeout = 3000): Promise<Discov
         const result = json.result || {};
         const schm = result.mgt_encrypt_schm || {};
         const tpap = result.tpap || {};
+
+        // login_version normally comes from mgt_encrypt_schm.lv, but cameras often
+        // omit it and expose the version(s) in the top-level encrypt_type array
+        // (e.g. ["3"]). Fall back to the highest numeric value there. See
+        // python-kasa DiscoveryResult.encrypt_type.
+        let loginVersion: number | undefined = schm.lv;
+        if (loginVersion == null && Array.isArray(result.encrypt_type)) {
+          const nums = result.encrypt_type.map((v: any) => parseInt(v, 10)).filter((n: number) => !isNaN(n));
+          if (nums.length) {
+            loginVersion = Math.max(...nums);
+          }
+        }
+
         finish({
           ip,
           device_id: result.device_id,
@@ -114,7 +127,7 @@ export async function discoverDevice(ip: string, timeout = 3000): Promise<Discov
           http_port: schm.http_port || 80,
           https: !!schm.is_support_https,
           encrypt_type: schm.encrypt_type,
-          login_version: schm.lv,
+          login_version: loginVersion,
           tpap_preferred: !!result.tpap_preferred,
           pake: Array.isArray(tpap.pake) ? tpap.pake : undefined,
           user_hash_type: tpap.user_hash_type,

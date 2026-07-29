@@ -106,6 +106,13 @@ async function discoverDevice(ip, timeout = 3e3) {
         const result = json.result || {};
         const schm = result.mgt_encrypt_schm || {};
         const tpap = result.tpap || {};
+        let loginVersion = schm.lv;
+        if (loginVersion == null && Array.isArray(result.encrypt_type)) {
+          const nums = result.encrypt_type.map((v) => parseInt(v, 10)).filter((n) => !isNaN(n));
+          if (nums.length) {
+            loginVersion = Math.max(...nums);
+          }
+        }
         finish({
           ip,
           device_id: result.device_id,
@@ -115,7 +122,7 @@ async function discoverDevice(ip, timeout = 3e3) {
           http_port: schm.http_port || 80,
           https: !!schm.is_support_https,
           encrypt_type: schm.encrypt_type,
-          login_version: schm.lv,
+          login_version: loginVersion,
           tpap_preferred: !!result.tpap_preferred,
           pake: Array.isArray(tpap.pake) ? tpap.pake : void 0,
           user_hash_type: tpap.user_hash_type,

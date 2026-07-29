@@ -95,8 +95,12 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
   // TPAP/SPAKE2+ path (newer camera firmware, FW 1.4.3+). When set and ready, the
   // stok/device_confirm flow is bypassed and requests go through this cipher instead.
   tpapCipher;
-  tpapChecked = false;
-  tpapUnavailable = false;
+  // TPAP is disabled only after repeated failures (transient errors get retried).
+  tpapFailCount = 0;
+  static TPAP_MAX_FAILS = 3;
+  // pake list resolved via TPAP HTTP discovery (fallback when UDP discovery lacks it).
+  tpapPakeList;
+  tpapUserHashType;
   // TLS ciphers accepted by Tapo cameras (self-signed, legacy suites).
   static CAMERA_CIPHERS = "ECDHE-RSA-AES128-GCM-SHA256:AES256-GCM-SHA384:AES256-SHA256:AES128-GCM-SHA256:AES128-SHA256:AES256-SHA";
   getUsername() {
@@ -366,7 +370,11 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
       }
       this.stokPromise().then(() => {
         if (!this.stok) {
-          this.log.error("STOK not found");
+          if (this.suspendUntil > Date.now()) {
+            this.log.debug("STOK not found (camera suspended)");
+          } else {
+            this.log.error("STOK not found");
+          }
         }
         resolve(this.stok);
       }).finally(() => {
@@ -417,18 +425,74 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     return this.config.encryptType === "TPAP" || !!this.config.tpapPreferred || ((_b = (_a = this.config.pake) == null ? void 0 : _a.length) != null ? _b : 0) > 0;
   }
   /**
+   * TPAP HTTP discovery: POST {method:login, params:{sub_method:discover}} to fetch
+   * the pake list / mac / user_hash_type. Mirrors P100.handshake_tpap().
+   * Returns true only when the device genuinely advertises a TPAP pake list.
+   *
+   * IMPORTANT: we do NOT default to a pake list when discovery is silent. A blind
+   * SPAKE2+ handshake against a plain stok camera counts as a failed login and can
+   * trigger the device's lockout (error -40404 sec_left). Only handshake when the
+   * device actually reports TPAP support.
+   */
+  async tpapDiscover(tpapPort, useHttps) {
+    var _a, _b, _c, _d, _e, _f, _g;
+    if ((_a = this.config.pake) == null ? void 0 : _a.length) {
+      this.tpapPakeList = this.config.pake;
+      this.tpapUserHashType = this.config.userHashType;
+      return true;
+    }
+    if ((_b = this.tpapPakeList) == null ? void 0 : _b.length) {
+      return true;
+    }
+    const axios = (await Promise.resolve().then(() => __toESM(require("axios")))).default;
+    const https = await Promise.resolve().then(() => __toESM(require("https")));
+    const proto = useHttps ? "https" : "http";
+    const isDefault = useHttps && tpapPort === 443 || !useHttps && tpapPort === 80;
+    const baseUrl = `${proto}://${this.config.ipAddress}${isDefault ? "" : ":" + tpapPort}`;
+    const httpsAgent = useHttps ? new https.Agent({ rejectUnauthorized: false, ciphers: TAPOCamera.CAMERA_CIPHERS }) : void 0;
+    try {
+      const res = await axios.post(
+        baseUrl + "/",
+        { method: "login", params: { sub_method: "discover" } },
+        { timeout: 5e3, httpsAgent }
+      );
+      const tpap = (_d = (_c = res.data) == null ? void 0 : _c.result) == null ? void 0 : _d.tpap;
+      this.log.debug(`TPAP camera discover response: ${JSON.stringify((_g = (_f = (_e = res.data) == null ? void 0 : _e.result) == null ? void 0 : _f.tpap) != null ? _g : res.data)}`);
+      if (Array.isArray(tpap == null ? void 0 : tpap.pake) && tpap.pake.length) {
+        this.tpapPakeList = tpap.pake;
+        if (tpap.user_hash_type != null) {
+          this.tpapUserHashType = tpap.user_hash_type;
+        }
+        this.log.debug(`TPAP camera discover: pake=${JSON.stringify(this.tpapPakeList)} user_hash_type=${this.tpapUserHashType}`);
+        return true;
+      }
+    } catch (e) {
+      this.log.debug(`TPAP camera discover failed: ${(e == null ? void 0 : e.message) || e}`);
+    }
+    this.log.debug(`TPAP camera discover: no pake info for ${this.config.ipAddress}, TPAP not available`);
+    return false;
+  }
+  /**
    * Establish a TPAP/SPAKE2+ session (newer camera firmware, FW 1.4.3+).
    * Reuses the plug SPAKE2+ handshake (TpapCipher) over HTTPS. Returns true on success.
+   * Only handshakes when TPAP discovery confirms support, to avoid failed-login
+   * lockouts on plain stok cameras. Disabled after TPAP_MAX_FAILS failures.
    */
   async tryTpapHandshake() {
-    this.tpapChecked = true;
+    var _a;
     const tpapPort = this.config.tpapPort || 443;
     const useHttps = this.config.tpapTls === void 0 ? true : this.config.tpapTls === 1;
     this.log.debug(
       `TPAP camera discovery info for ${this.config.ipAddress}: encryptType=${this.config.encryptType} tpapPreferred=${this.config.tpapPreferred} pake=${JSON.stringify(this.config.pake)} userHashType=${this.config.userHashType} tpapPort=${this.config.tpapPort} tpapTls=${this.config.tpapTls} mac=${this.config.mac} loginVersion=${this.config.loginVersion}`
     );
     try {
-      this.log.debug(`TPAP camera handshake to ${this.config.ipAddress}:${tpapPort} useHttps=${useHttps} pake=${JSON.stringify(this.config.pake)}`);
+      if (!await this.tpapDiscover(tpapPort, useHttps)) {
+        this.tpapFailCount = TAPOCamera.TPAP_MAX_FAILS;
+        return false;
+      }
+      const pakeList = this.tpapPakeList;
+      const userHashType = (_a = this.config.userHashType) != null ? _a : this.tpapUserHashType;
+      this.log.debug(`TPAP camera handshake to ${this.config.ipAddress}:${tpapPort} useHttps=${useHttps} pake=${JSON.stringify(pakeList)}`);
       const cipher = new import_tpapCipher.default(
         this.log,
         this.config.ipAddress,
@@ -439,9 +503,10 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
         useHttps,
         TAPOCamera.CAMERA_CIPHERS
       );
-      await cipher.handshake(this.config.pake, this.config.userHashType);
+      await cipher.handshake(pakeList, userHashType);
       if (cipher.isReady) {
         this.tpapCipher = cipher;
+        this.tpapFailCount = 0;
         this.log.info(`TPAP camera session established for ${this.config.ipAddress}`);
         return true;
       }
@@ -449,7 +514,10 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     } catch (e) {
       this.log.debug(`TPAP camera handshake failed for ${this.config.ipAddress}: ${(e == null ? void 0 : e.message) || e}`);
     }
-    this.tpapUnavailable = true;
+    this.tpapFailCount += 1;
+    if (this.tpapFailCount >= TAPOCamera.TPAP_MAX_FAILS) {
+      this.log.debug(`TPAP camera handshake disabled for ${this.config.ipAddress} after ${this.tpapFailCount} failures`);
+    }
     return false;
   }
   /** Send an already-built request through the TPAP/SPAKE2+ session. */
@@ -474,7 +542,6 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     } catch (e) {
       this.log.debug("TPAP camera request failed: " + ((e == null ? void 0 : e.message) || e));
       this.tpapCipher = void 0;
-      this.tpapChecked = false;
       return {};
     }
   }
@@ -497,7 +564,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
           }
           const isSecureConnection = await this.isSecureConnection();
           const url = await this.getAuthenticatedAPIURL(loginRetryCount);
-          if (!this.stok && !this.tpapChecked && !this.tpapUnavailable) {
+          if (!this.stok && this.suspendUntil <= Date.now() && this.tpapFailCount < TAPOCamera.TPAP_MAX_FAILS) {
             this.log.debug(
               `stok login unavailable, attempting TPAP/SPAKE2+ for ${this.config.ipAddress} (tpapCapable=${this.isTpapCapable()})`
             );
