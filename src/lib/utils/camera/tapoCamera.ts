@@ -287,6 +287,13 @@ export class TAPOCamera extends OnvifCamera {
     const isSecureConnection = await this.isSecureConnection();
     this.log.debug('refreshStok: isSecureConnection=' + isSecureConnection + ' username=' + this.getUsername() + ' cnonce=' + this.cnonce);
 
+    // The probe above may have detected a fresh lockout (-40404 sec_left) and set
+    // suspendUntil. Bail out before sending any login so we don't extend the lockout.
+    if (this.suspendUntil > Date.now()) {
+      this.log.debug('refreshStok: camera locked out (detected during probe), skipping login');
+      return;
+    }
+
     let fetchParams = {};
     if (isSecureConnection) {
       fetchParams = {
@@ -470,6 +477,13 @@ export class TAPOCamera extends OnvifCamera {
   }
 
   async isSecureConnection() {
+    // Never send the login-probe while the camera is locked out: the probe is itself
+    // a login attempt and would prolong the lockout. Return the last known value.
+    if (this.suspendUntil > Date.now()) {
+      this.log.debug('isSecureConnection: camera suspended, skipping probe');
+      return this.isSecureConnectionValue === true;
+    }
+
     if (this.isSecureConnectionValue === null) {
       this.log.debug('isSecureConnection: Checking secure connection...');
 
@@ -489,6 +503,20 @@ export class TAPOCamera extends OnvifCamera {
       const responseData = (await response.json()) as TAPOCameraLoginResponse;
 
       this.log.debug('isSecureConnection response status=' + response.status + ' data=' + JSON.stringify(responseData));
+
+      // Lockout detection: the camera blocks logins after repeated failures and
+      // answers the probe with {data:{code:-40404, sec_left:N}}. Record the
+      // suspension here so refreshStok is skipped - otherwise it would fire another
+      // (legacy) login against the locked device and prolong the lockout.
+      const secLeft = (responseData as any)?.data?.sec_left;
+      const innerCode = (responseData as any)?.data?.code;
+      if (innerCode === -40404 && secLeft > 0) {
+        this.suspendUntil = Date.now() + secLeft * 1000;
+        this.log.error(`Temporary Suspension: Try again in ${secLeft} seconds`);
+        // Do not cache a connection type while locked; re-probe once the lockout expires.
+        this.isSecureConnectionValue = null;
+        return false;
+      }
 
       const errorCode = responseData?.error_code;
       const encryptType = String(responseData?.result?.data?.encrypt_type || '');

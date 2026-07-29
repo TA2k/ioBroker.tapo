@@ -186,6 +186,10 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     this.cnonce = this.generateCnonce();
     const isSecureConnection = await this.isSecureConnection();
     this.log.debug("refreshStok: isSecureConnection=" + isSecureConnection + " username=" + this.getUsername() + " cnonce=" + this.cnonce);
+    if (this.suspendUntil > Date.now()) {
+      this.log.debug("refreshStok: camera locked out (detected during probe), skipping login");
+      return;
+    }
     let fetchParams = {};
     if (isSecureConnection) {
       fetchParams = {
@@ -334,7 +338,11 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     this.log.error("Invalid authentication data");
   }
   async isSecureConnection() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f;
+    if (this.suspendUntil > Date.now()) {
+      this.log.debug("isSecureConnection: camera suspended, skipping probe");
+      return this.isSecureConnectionValue === true;
+    }
     if (this.isSecureConnectionValue === null) {
       this.log.debug("isSecureConnection: Checking secure connection...");
       const probeCnonce = import_crypto.default.randomBytes(8).toString("hex").toUpperCase();
@@ -352,9 +360,17 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
       });
       const responseData = await response.json();
       this.log.debug("isSecureConnection response status=" + response.status + " data=" + JSON.stringify(responseData));
+      const secLeft = (_a = responseData == null ? void 0 : responseData.data) == null ? void 0 : _a.sec_left;
+      const innerCode = (_b = responseData == null ? void 0 : responseData.data) == null ? void 0 : _b.code;
+      if (innerCode === -40404 && secLeft > 0) {
+        this.suspendUntil = Date.now() + secLeft * 1e3;
+        this.log.error(`Temporary Suspension: Try again in ${secLeft} seconds`);
+        this.isSecureConnectionValue = null;
+        return false;
+      }
       const errorCode = responseData == null ? void 0 : responseData.error_code;
-      const encryptType = String(((_b = (_a = responseData == null ? void 0 : responseData.result) == null ? void 0 : _a.data) == null ? void 0 : _b.encrypt_type) || "");
-      const hasNonce = !!((_d = (_c = responseData == null ? void 0 : responseData.result) == null ? void 0 : _c.data) == null ? void 0 : _d.nonce);
+      const encryptType = String(((_d = (_c = responseData == null ? void 0 : responseData.result) == null ? void 0 : _c.data) == null ? void 0 : _d.encrypt_type) || "");
+      const hasNonce = !!((_f = (_e = responseData == null ? void 0 : responseData.result) == null ? void 0 : _e.data) == null ? void 0 : _f.nonce);
       this.isSecureConnectionValue = errorCode === -40413 && encryptType.includes("3") || errorCode === -40211 || hasNonce;
       this.log.debug("isSecureConnection result=" + this.isSecureConnectionValue + " errorCode=" + errorCode + " encryptType=" + encryptType + " hasNonce=" + hasNonce);
     }
