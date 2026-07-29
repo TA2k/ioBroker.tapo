@@ -144,7 +144,8 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
   }
   validateDeviceConfirm(nonce, deviceConfirm) {
     this.passwordEncryptionMethod = null;
-    for (const candidate of this.passwordCandidates) {
+    for (let i = 0; i < this.passwordCandidates.length; i++) {
+      const candidate = this.passwordCandidates[i];
       const md5Hash = import_crypto.default.createHash("md5").update(candidate).digest("hex").toUpperCase();
       const sha256Hash = import_crypto.default.createHash("sha256").update(candidate).digest("hex").toUpperCase();
       const confirmSha256 = import_crypto.default.createHash("sha256").update(this.cnonce + sha256Hash + nonce).digest("hex").toUpperCase() + nonce + this.cnonce;
@@ -152,6 +153,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
         this.hashedPassword = md5Hash;
         this.hashedSha256Password = sha256Hash;
         this.passwordEncryptionMethod = "sha256";
+        this.log.debug(`validateDeviceConfirm: matched candidate #${i} via sha256`);
         return true;
       }
       const confirmMd5 = import_crypto.default.createHash("sha256").update(this.cnonce + md5Hash + nonce).digest("hex").toUpperCase() + nonce + this.cnonce;
@@ -159,6 +161,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
         this.hashedPassword = md5Hash;
         this.hashedSha256Password = sha256Hash;
         this.passwordEncryptionMethod = "md5";
+        this.log.debug(`validateDeviceConfirm: matched candidate #${i} via md5`);
         return true;
       }
     }
@@ -421,8 +424,11 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     this.tpapChecked = true;
     const tpapPort = this.config.tpapPort || 443;
     const useHttps = this.config.tpapTls === void 0 ? true : this.config.tpapTls === 1;
+    this.log.debug(
+      `TPAP camera discovery info for ${this.config.ipAddress}: encryptType=${this.config.encryptType} tpapPreferred=${this.config.tpapPreferred} pake=${JSON.stringify(this.config.pake)} userHashType=${this.config.userHashType} tpapPort=${this.config.tpapPort} tpapTls=${this.config.tpapTls} mac=${this.config.mac} loginVersion=${this.config.loginVersion}`
+    );
     try {
-      this.log.debug(`TPAP camera handshake to ${this.config.ipAddress}:${tpapPort} pake=${JSON.stringify(this.config.pake)}`);
+      this.log.debug(`TPAP camera handshake to ${this.config.ipAddress}:${tpapPort} useHttps=${useHttps} pake=${JSON.stringify(this.config.pake)}`);
       const cipher = new import_tpapCipher.default(
         this.log,
         this.config.ipAddress,
@@ -439,6 +445,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
         this.log.info(`TPAP camera session established for ${this.config.ipAddress}`);
         return true;
       }
+      this.log.debug(`TPAP camera handshake for ${this.config.ipAddress} returned but cipher not ready`);
     } catch (e) {
       this.log.debug(`TPAP camera handshake failed for ${this.config.ipAddress}: ${(e == null ? void 0 : e.message) || e}`);
     }
@@ -452,6 +459,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     const cipher = this.tpapCipher;
     const httpsAgent = new https.Agent({ rejectUnauthorized: false, ciphers: TAPOCamera.CAMERA_CIPHERS });
     try {
+      this.log.debug(`TPAP camera request to ${cipher.sessionUrl}: ${JSON.stringify(req)}`);
       const encrypted = cipher.encrypt(JSON.stringify(req));
       const res = await axios.post(cipher.sessionUrl, encrypted.data, {
         timeout: 1e4,
@@ -461,7 +469,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
       });
       const buf = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data);
       const responseData = JSON.parse(cipher.decrypt(buf));
-      this.log.debug("TPAP camera response", JSON.stringify(responseData));
+      this.log.debug("TPAP camera response status=" + res.status + " data=" + JSON.stringify(responseData));
       return responseData;
     } catch (e) {
       this.log.debug("TPAP camera request failed: " + ((e == null ? void 0 : e.message) || e));

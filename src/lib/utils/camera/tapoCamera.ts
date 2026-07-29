@@ -230,7 +230,8 @@ export class TAPOCamera extends OnvifCamera {
     // Try each candidate password (cloud password first, then camera defaults).
     // For each, test both the sha256- and md5-hashed variant. On match, promote
     // the candidate to the active hashes so digest_passwd/lsk/ivb/Tapo_tag use it.
-    for (const candidate of this.passwordCandidates) {
+    for (let i = 0; i < this.passwordCandidates.length; i++) {
+      const candidate = this.passwordCandidates[i];
       const md5Hash = crypto.createHash('md5').update(candidate).digest('hex').toUpperCase();
       const sha256Hash = crypto.createHash('sha256').update(candidate).digest('hex').toUpperCase();
 
@@ -242,6 +243,7 @@ export class TAPOCamera extends OnvifCamera {
         this.hashedPassword = md5Hash;
         this.hashedSha256Password = sha256Hash;
         this.passwordEncryptionMethod = 'sha256';
+        this.log.debug(`validateDeviceConfirm: matched candidate #${i} via sha256`);
         return true;
       }
 
@@ -253,6 +255,7 @@ export class TAPOCamera extends OnvifCamera {
         this.hashedPassword = md5Hash;
         this.hashedSha256Password = sha256Hash;
         this.passwordEncryptionMethod = 'md5';
+        this.log.debug(`validateDeviceConfirm: matched candidate #${i} via md5`);
         return true;
       }
     }
@@ -589,8 +592,14 @@ export class TAPOCamera extends OnvifCamera {
     this.tpapChecked = true;
     const tpapPort = this.config.tpapPort || 443;
     const useHttps = this.config.tpapTls === undefined ? true : this.config.tpapTls === 1;
+    this.log.debug(
+      `TPAP camera discovery info for ${this.config.ipAddress}: encryptType=${this.config.encryptType} ` +
+        `tpapPreferred=${this.config.tpapPreferred} pake=${JSON.stringify(this.config.pake)} ` +
+        `userHashType=${this.config.userHashType} tpapPort=${this.config.tpapPort} tpapTls=${this.config.tpapTls} ` +
+        `mac=${this.config.mac} loginVersion=${this.config.loginVersion}`,
+    );
     try {
-      this.log.debug(`TPAP camera handshake to ${this.config.ipAddress}:${tpapPort} pake=${JSON.stringify(this.config.pake)}`);
+      this.log.debug(`TPAP camera handshake to ${this.config.ipAddress}:${tpapPort} useHttps=${useHttps} pake=${JSON.stringify(this.config.pake)}`);
       const cipher = new TpapCipher(
         this.log,
         this.config.ipAddress,
@@ -607,6 +616,7 @@ export class TAPOCamera extends OnvifCamera {
         this.log.info(`TPAP camera session established for ${this.config.ipAddress}`);
         return true;
       }
+      this.log.debug(`TPAP camera handshake for ${this.config.ipAddress} returned but cipher not ready`);
     } catch (e: any) {
       this.log.debug(`TPAP camera handshake failed for ${this.config.ipAddress}: ${e?.message || e}`);
     }
@@ -621,6 +631,7 @@ export class TAPOCamera extends OnvifCamera {
     const cipher = this.tpapCipher!;
     const httpsAgent = new https.Agent({ rejectUnauthorized: false, ciphers: TAPOCamera.CAMERA_CIPHERS });
     try {
+      this.log.debug(`TPAP camera request to ${cipher.sessionUrl}: ${JSON.stringify(req)}`);
       const encrypted = cipher.encrypt(JSON.stringify(req));
       const res = await axios.post(cipher.sessionUrl, encrypted.data, {
         timeout: 10000,
@@ -630,7 +641,7 @@ export class TAPOCamera extends OnvifCamera {
       });
       const buf = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data);
       const responseData = JSON.parse(cipher.decrypt(buf)) as TAPOCameraResponse;
-      this.log.debug('TPAP camera response', JSON.stringify(responseData));
+      this.log.debug('TPAP camera response status=' + res.status + ' data=' + JSON.stringify(responseData));
       return responseData;
     } catch (e: any) {
       // Session likely expired or invalid; force a fresh handshake on the next request.
