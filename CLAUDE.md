@@ -71,6 +71,14 @@ Communicates with devices locally via three protocols depending on device/firmwa
 - `TAPOCamera` → camera devices (C210, C310, etc.)
   - Supports: TPAP/stok protocol over HTTPS (old camera variant)
   - Uses `undici` fetch with special TLS ciphers
+  - stok login tries password candidates in order: cloud password, "admin",
+    and (login_version 3) built-in "TPL075526460603" — matches python-kasa
+    `sslaestransport` default-credential fallback
+  - Newer FW (1.4.3+, e.g. C200 1.4.4) switches cameras to TPAP/SPAKE2+. When the
+    stok login yields no token, `TAPOCamera` falls back once to `TpapCipher`
+    (same `pake_register`/`pake_share` handshake as plugs) over HTTPS/443 and
+    routes `apiRequest` through it. Detection is by stok-failure, not solely the
+    discovery `encrypt_type` (some cameras report empty encrypt_type yet need TPAP)
 
 ### Key Files
 

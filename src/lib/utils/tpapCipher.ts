@@ -457,6 +457,7 @@ export default class TpapCipher {
     private readonly mac: string = '',
     private readonly port: number = 80,
     private readonly useHttps: boolean = false,
+    private readonly ciphers?: string,
   ) {}
 
   private get baseUrl(): string {
@@ -568,7 +569,9 @@ export default class TpapCipher {
     const https = await import('https');
     const baseUrl = this.baseUrl;
     this.log.debug(`TPAP tryHandshake baseUrl=${baseUrl}`);
-    const httpsAgent = this.useHttps ? new https.Agent({ rejectUnauthorized: false }) : undefined;
+    const httpsAgent = this.useHttps
+      ? new https.Agent({ rejectUnauthorized: false, ...(this.ciphers ? { ciphers: this.ciphers } : {}) })
+      : undefined;
     const headers = {
       'Content-Type': 'application/json; charset=UTF-8',
       Accept: 'application/json',

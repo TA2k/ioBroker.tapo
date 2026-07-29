@@ -1,6 +1,7 @@
 // import https, { Agent } from "https";
 import crypto from 'crypto';
 import { OnvifCamera } from './onvifCamera';
+import TpapCipher from '../tpapCipher.js';
 import type {
   TAPOBasicInfo,
   TAPOCameraEncryptedRequest,
@@ -61,6 +62,19 @@ type CameraConfig = {
   streamUser: string;
   streamPassword: string;
 
+  loginVersion?: number;
+
+  // TPAP/SPAKE2+ detection info from UDP discovery
+  port?: number;
+  useHttps?: boolean;
+  encryptType?: string;
+  tpapPreferred?: boolean;
+  pake?: number[];
+  userHashType?: number;
+  tpapPort?: number;
+  tpapTls?: number;
+  mac?: string;
+
   pullInterval?: number;
   disableStreaming?: boolean;
   disableEyesToggleAccessory?: boolean;
@@ -90,9 +104,16 @@ export class TAPOCamera extends OnvifCamera {
   private readonly kStreamPort = 554;
   private readonly fetchAgent: Agent;
 
-  private readonly hashedPassword: string;
-  private readonly hashedSha256Password: string;
+  // Active hashes for the currently matched credential candidate. Not readonly:
+  // validateDeviceConfirm switches these to whichever candidate the device accepts,
+  // so that digest_passwd, lsk/ivb and Tapo_tag stay consistent.
+  private hashedPassword: string;
+  private hashedSha256Password: string;
   private passwordEncryptionMethod: 'md5' | 'sha256' | null = null;
+
+  // Candidate plaintext passwords tried during device_confirm validation.
+  // Cloud password first, then camera defaults (matches python-kasa sslaestransport).
+  private readonly passwordCandidates: string[];
 
   private isSecureConnectionValue: boolean | null = null;
 
@@ -104,6 +125,16 @@ export class TAPOCamera extends OnvifCamera {
   private seq: number | undefined;
   private stok: string | undefined;
   private suspendUntil = 0;
+
+  // TPAP/SPAKE2+ path (newer camera firmware, FW 1.4.3+). When set and ready, the
+  // stok/device_confirm flow is bypassed and requests go through this cipher instead.
+  private tpapCipher?: TpapCipher;
+  private tpapChecked = false;
+  private tpapUnavailable = false;
+
+  // TLS ciphers accepted by Tapo cameras (self-signed, legacy suites).
+  private static readonly CAMERA_CIPHERS =
+    'ECDHE-RSA-AES128-GCM-SHA256:AES256-GCM-SHA384:AES256-SHA256:AES128-GCM-SHA256:AES128-SHA256:AES256-SHA';
 
   constructor(
     protected readonly log: any,
@@ -121,6 +152,16 @@ export class TAPOCamera extends OnvifCamera {
 
     this.cnonce = this.generateCnonce();
 
+    // Default camera credentials tried when the cloud password does not match the
+    // device_confirm challenge. LV3 uses a fixed built-in passcode. See
+    // python-kasa credentials.py (TAPOCAMERA / TAPOCAMERA_LV3).
+    const candidates = [config.password, 'admin'];
+    if (config.loginVersion === 3) {
+      candidates.push('TPL075526460603');
+    }
+    this.passwordCandidates = [...new Set(candidates.filter(Boolean))];
+
+    // Start with the cloud password; validateDeviceConfirm updates these on match.
     this.hashedPassword = crypto.createHash('md5').update(config.password).digest('hex').toUpperCase();
     this.hashedSha256Password = crypto.createHash('sha256').update(config.password).digest('hex').toUpperCase();
   }
@@ -186,35 +227,43 @@ export class TAPOCamera extends OnvifCamera {
   private validateDeviceConfirm(nonce: string, deviceConfirm: string) {
     this.passwordEncryptionMethod = null;
 
-    const hashedNoncesWithSHA256 = crypto
-      .createHash('sha256')
-      .update(this.cnonce + this.hashedSha256Password + nonce)
-      .digest('hex')
-      .toUpperCase();
-    if (deviceConfirm === hashedNoncesWithSHA256 + nonce + this.cnonce) {
-      this.passwordEncryptionMethod = 'sha256';
-      return true;
+    // Try each candidate password (cloud password first, then camera defaults).
+    // For each, test both the sha256- and md5-hashed variant. On match, promote
+    // the candidate to the active hashes so digest_passwd/lsk/ivb/Tapo_tag use it.
+    for (const candidate of this.passwordCandidates) {
+      const md5Hash = crypto.createHash('md5').update(candidate).digest('hex').toUpperCase();
+      const sha256Hash = crypto.createHash('sha256').update(candidate).digest('hex').toUpperCase();
+
+      const confirmSha256 =
+        crypto.createHash('sha256').update(this.cnonce + sha256Hash + nonce).digest('hex').toUpperCase() +
+        nonce +
+        this.cnonce;
+      if (deviceConfirm === confirmSha256) {
+        this.hashedPassword = md5Hash;
+        this.hashedSha256Password = sha256Hash;
+        this.passwordEncryptionMethod = 'sha256';
+        return true;
+      }
+
+      const confirmMd5 =
+        crypto.createHash('sha256').update(this.cnonce + md5Hash + nonce).digest('hex').toUpperCase() +
+        nonce +
+        this.cnonce;
+      if (deviceConfirm === confirmMd5) {
+        this.hashedPassword = md5Hash;
+        this.hashedSha256Password = sha256Hash;
+        this.passwordEncryptionMethod = 'md5';
+        return true;
+      }
     }
 
-    const hashedNoncesWithMD5 = crypto
-      .createHash('sha256')
-      .update(this.cnonce + this.hashedPassword + nonce)
-      .digest('hex')
-      .toUpperCase();
-    if (deviceConfirm === hashedNoncesWithMD5 + nonce + this.cnonce) {
-      this.passwordEncryptionMethod = 'md5';
-      return true;
-    }
-
-    this.log.debug('Invalid device confirm, expected "sha256" or "md5" to match, but none found', {
-      hashedNoncesWithMD5,
-      hashedNoncesWithSHA256,
+    this.log.debug('Invalid device confirm, no candidate password matched (sha256 or md5)', {
       deviceConfirm,
       nonce,
-      cnonce: this,
+      candidates: this.passwordCandidates.length,
     });
 
-    return this.passwordEncryptionMethod !== null;
+    return false;
   }
 
   async refreshStok(loginRetryCount = 0): Promise<void> {
@@ -523,6 +572,75 @@ export class TAPOCamera extends OnvifCamera {
       .toUpperCase();
   }
 
+  /** Whether UDP discovery flagged this camera as TPAP/SPAKE2+ capable. */
+  private isTpapCapable(): boolean {
+    return (
+      this.config.encryptType === 'TPAP' ||
+      !!this.config.tpapPreferred ||
+      (this.config.pake?.length ?? 0) > 0
+    );
+  }
+
+  /**
+   * Establish a TPAP/SPAKE2+ session (newer camera firmware, FW 1.4.3+).
+   * Reuses the plug SPAKE2+ handshake (TpapCipher) over HTTPS. Returns true on success.
+   */
+  private async tryTpapHandshake(): Promise<boolean> {
+    this.tpapChecked = true;
+    const tpapPort = this.config.tpapPort || 443;
+    const useHttps = this.config.tpapTls === undefined ? true : this.config.tpapTls === 1;
+    try {
+      this.log.debug(`TPAP camera handshake to ${this.config.ipAddress}:${tpapPort} pake=${JSON.stringify(this.config.pake)}`);
+      const cipher = new TpapCipher(
+        this.log,
+        this.config.ipAddress,
+        this.config.username || '',
+        this.config.password,
+        this.config.mac || '',
+        tpapPort,
+        useHttps,
+        TAPOCamera.CAMERA_CIPHERS,
+      );
+      await cipher.handshake(this.config.pake, this.config.userHashType);
+      if (cipher.isReady) {
+        this.tpapCipher = cipher;
+        this.log.info(`TPAP camera session established for ${this.config.ipAddress}`);
+        return true;
+      }
+    } catch (e: any) {
+      this.log.debug(`TPAP camera handshake failed for ${this.config.ipAddress}: ${e?.message || e}`);
+    }
+    this.tpapUnavailable = true;
+    return false;
+  }
+
+  /** Send an already-built request through the TPAP/SPAKE2+ session. */
+  private async tpapApiRequest(req: TAPOCameraRequest): Promise<TAPOCameraResponse> {
+    const axios = (await import('axios')).default;
+    const https = await import('https');
+    const cipher = this.tpapCipher!;
+    const httpsAgent = new https.Agent({ rejectUnauthorized: false, ciphers: TAPOCamera.CAMERA_CIPHERS });
+    try {
+      const encrypted = cipher.encrypt(JSON.stringify(req));
+      const res = await axios.post(cipher.sessionUrl, encrypted.data, {
+        timeout: 10000,
+        responseType: 'arraybuffer',
+        httpsAgent,
+        headers: { 'Content-Type': 'application/octet-stream', Connection: 'Keep-Alive' },
+      });
+      const buf = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data);
+      const responseData = JSON.parse(cipher.decrypt(buf)) as TAPOCameraResponse;
+      this.log.debug('TPAP camera response', JSON.stringify(responseData));
+      return responseData;
+    } catch (e: any) {
+      // Session likely expired or invalid; force a fresh handshake on the next request.
+      this.log.debug('TPAP camera request failed: ' + (e?.message || e));
+      this.tpapCipher = undefined;
+      this.tpapChecked = false;
+      return {} as TAPOCameraResponse;
+    }
+  }
+
   private pendingAPIRequests: Map<string, Promise<TAPOCameraResponse>> = new Map();
 
   private async apiRequest(req: TAPOCameraRequest, loginRetryCount = 0): Promise<TAPOCameraResponse> {
@@ -539,8 +657,27 @@ export class TAPOCamera extends OnvifCamera {
       reqJson,
       (async () => {
         try {
+          // TPAP/SPAKE2+ path: if a session is already established, use it directly.
+          if (this.tpapCipher?.isReady) {
+            return await this.tpapApiRequest(req);
+          }
+
           const isSecureConnection = await this.isSecureConnection();
           const url = await this.getAuthenticatedAPIURL(loginRetryCount);
+
+          // stok login did not yield a token. Fall back to the TPAP/SPAKE2+
+          // handshake (newer firmware, FW 1.4.3+). Attempted once per session;
+          // tpapUnavailable prevents repeated tries on genuinely old cameras.
+          // The discovery TPAP flags only bias logging - some cameras report an
+          // empty encrypt_type yet still require TPAP, so we try regardless.
+          if (!this.stok && !this.tpapChecked && !this.tpapUnavailable) {
+            this.log.debug(
+              `stok login unavailable, attempting TPAP/SPAKE2+ for ${this.config.ipAddress} (tpapCapable=${this.isTpapCapable()})`,
+            );
+            if (await this.tryTpapHandshake()) {
+              return await this.tpapApiRequest(req);
+            }
+          }
 
           const fetchParams: RequestInit = {
             method: 'post',

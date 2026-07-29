@@ -16,6 +16,12 @@ export interface DiscoveryResult {
   https: boolean;
   encrypt_type?: string;
   login_version?: number;
+  // TPAP/SPAKE2+ info from the `tpap` block and top-level `tpap_preferred`
+  tpap_preferred?: boolean;
+  pake?: number[];
+  user_hash_type?: number;
+  tpap_port?: number;
+  tpap_tls?: number;
   raw: any;
 }
 
@@ -98,6 +104,7 @@ export async function discoverDevice(ip: string, timeout = 3000): Promise<Discov
         const json = JSON.parse(msg.slice(HEADER_SIZE).toString('utf8'));
         const result = json.result || {};
         const schm = result.mgt_encrypt_schm || {};
+        const tpap = result.tpap || {};
         finish({
           ip,
           device_id: result.device_id,
@@ -108,6 +115,11 @@ export async function discoverDevice(ip: string, timeout = 3000): Promise<Discov
           https: !!schm.is_support_https,
           encrypt_type: schm.encrypt_type,
           login_version: schm.lv,
+          tpap_preferred: !!result.tpap_preferred,
+          pake: Array.isArray(tpap.pake) ? tpap.pake : undefined,
+          user_hash_type: tpap.user_hash_type,
+          tpap_port: tpap.port,
+          tpap_tls: tpap.tls,
           raw: result,
         });
       } catch {

@@ -608,9 +608,10 @@ class Tapo extends utils.Adapter {
 
     let port: number | undefined;
     let useHttps: boolean | undefined;
+    let discovery: Awaited<ReturnType<typeof discoverDevice>> = null;
     try {
       this.log.debug(`UDP discovery for ${device.ip} on port 20002`);
-      const discovery = await discoverDevice(device.ip, 3000);
+      discovery = await discoverDevice(device.ip, 3000);
       if (discovery) {
         port = discovery.http_port;
         useHttps = discovery.https;
@@ -652,6 +653,16 @@ class Tapo extends utils.Adapter {
         streamUser: this.config.streamusername || '',
         streamPassword: this.config.streampassword || '',
         disableStreaming: true,
+        loginVersion: discovery?.login_version,
+        port,
+        useHttps,
+        encryptType: discovery?.encrypt_type,
+        tpapPreferred: discovery?.tpap_preferred,
+        pake: discovery?.pake,
+        userHashType: discovery?.user_hash_type,
+        tpapPort: discovery?.tpap_port,
+        tpapTls: discovery?.tpap_tls,
+        mac: discovery?.mac,
       });
 
       //new Camera(this.log, device.ip, this.config.username, this.config.password, 2);
