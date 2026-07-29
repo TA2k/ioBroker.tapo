@@ -125,6 +125,9 @@ export class TAPOCamera extends OnvifCamera {
   private seq: number | undefined;
   private stok: string | undefined;
   private suspendUntil = 0;
+  // Tracks the suspension window we already logged, so the lockout warning is
+  // emitted once per window instead of on every 10s poll.
+  private suspendLoggedUntil = 0;
 
   // TPAP/SPAKE2+ path (newer camera firmware, FW 1.4.3+). When set and ready, the
   // stok/device_confirm flow is bypassed and requests go through this cipher instead.
@@ -172,6 +175,25 @@ export class TAPOCamera extends OnvifCamera {
 
   private getUsername() {
     return this.config.username || 'admin';
+  }
+
+  /**
+   * Record a device-side login lockout (error -40404, sec_left seconds) and log it
+   * once per lockout window as an actionable warning. Called from every place that
+   * observes sec_left so the suspension is handled consistently.
+   */
+  private noteSuspension(secLeft: number): void {
+    this.suspendUntil = Date.now() + secLeft * 1000;
+    if (this.suspendUntil > this.suspendLoggedUntil) {
+      this.suspendLoggedUntil = this.suspendUntil;
+      const mins = Math.ceil(secLeft / 60);
+      this.log.warn(
+        `Camera ${this.config.name} (${this.config.ipAddress}) is temporarily locked by the device for ~${mins} min ` +
+          `(too many failed logins). The adapter pauses login attempts until then. If this keeps recurring, the local ` +
+          `credentials are likely wrong: set a Camera Account in the Tapo app (Advanced Settings -> Camera Account) and ` +
+          `use those credentials, or toggle "Third-Party Compatibility" off and on.`,
+      );
+    }
   }
 
   private getHeaders(): Record<string, string> {
@@ -343,7 +365,10 @@ export class TAPOCamera extends OnvifCamera {
 
     if (responseLogin.status === 401 && responseLoginData.result?.data?.code === -40411) {
       this.log.debug('refreshStok: invalid credentials, raising exception', responseLogin.status);
-      this.log.error('Invalid credentials');
+      this.log.warn(
+        `Camera ${this.config.name} (${this.config.ipAddress}): invalid credentials. Check the password, or set up a ` +
+          `Camera Account in the Tapo app (Advanced Settings -> Camera Account) and use those credentials.`,
+      );
     }
 
     if (isSecureConnection) {
@@ -424,7 +449,11 @@ export class TAPOCamera extends OnvifCamera {
           responseLoginData,
         );
         this.isSecureConnectionValue = null;
-        this.log.error('Invalid device confirm. Please activate 3rd Patry support in the TP App under TP Labor -> 3rd Party Control');
+        this.log.warn(
+          `Camera ${this.config.name} (${this.config.ipAddress}): local password rejected (device_confirm mismatch). ` +
+            `Use the Camera Account credentials (Tapo app -> Advanced Settings -> Camera Account), or enable ` +
+            `"Third-Party Compatibility" (Tapo app -> Me -> Tapo Lab). Repeated failures can lock the camera temporarily.`,
+        );
         return;
       }
     } else {
@@ -435,8 +464,7 @@ export class TAPOCamera extends OnvifCamera {
 
     if (responseData.result?.data?.sec_left && responseData.result.data.sec_left > 0) {
       this.log.debug('refreshStok: temporary suspension', responseData);
-      this.suspendUntil = Date.now() + responseData.result.data.sec_left * 1000;
-      this.log.error(`Temporary Suspension: Try again in ${responseData.result.data.sec_left} seconds`);
+      this.noteSuspension(responseData.result.data.sec_left);
       return;
     }
     if (responseData && responseData.result && responseData.result.responses && responseData.result.responses[0].error_code !== 0) {
@@ -447,8 +475,7 @@ export class TAPOCamera extends OnvifCamera {
 
     if (responseData?.data?.code === -40404 && responseData?.data?.sec_left && responseData.data.sec_left > 0) {
       this.log.debug('refreshStok: temporary suspension', responseData);
-      this.suspendUntil = Date.now() + responseData.data.sec_left * 1000;
-      this.log.error(`refreshStok: Temporary Suspension: Try again in ${responseData.data.sec_left} seconds`);
+      this.noteSuspension(responseData.data.sec_left);
       return;
     }
 
@@ -473,7 +500,7 @@ export class TAPOCamera extends OnvifCamera {
 
     this.log.debug('refreshStock: Unexpected end of flow, responseData=' + JSON.stringify(responseData));
     this.isSecureConnectionValue = null;
-    this.log.error('Invalid authentication data');
+    this.log.warn(`Camera ${this.config.name} (${this.config.ipAddress}): login failed (invalid authentication data). Verify the camera credentials.`);
   }
 
   async isSecureConnection() {
@@ -511,8 +538,7 @@ export class TAPOCamera extends OnvifCamera {
       const secLeft = (responseData as any)?.data?.sec_left;
       const innerCode = (responseData as any)?.data?.code;
       if (innerCode === -40404 && secLeft > 0) {
-        this.suspendUntil = Date.now() + secLeft * 1000;
-        this.log.error(`Temporary Suspension: Try again in ${secLeft} seconds`);
+        this.noteSuspension(secLeft);
         // Do not cache a connection type while locked; re-probe once the lockout expires.
         this.isSecureConnectionValue = null;
         return false;
@@ -546,13 +572,10 @@ export class TAPOCamera extends OnvifCamera {
       this.stokPromise()
         .then(() => {
           if (!this.stok) {
-            // While the camera is in lockout the suspension is already logged once;
-            // avoid spamming "STOK not found" on every poll during that window.
-            if (this.suspendUntil > Date.now()) {
-              this.log.debug('STOK not found (camera suspended)');
-            } else {
-              this.log.error('STOK not found');
-            }
+            // "No STOK" is a secondary symptom; the real cause (lockout or rejected
+            // credentials) is already logged once via noteSuspension / the
+            // device_confirm warning. Keep this at debug to avoid per-poll spam.
+            this.log.debug('STOK not found');
           }
           resolve(this.stok!);
         })
