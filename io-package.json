@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.5.5",
+    "version": "0.6.0",
     "news": {
+      "0.6.0": {
+        "en": "Camera login fixes for newer firmware (FW 1.4.3+)\nTry camera default credentials when the cloud password is rejected\nTPAP/SPAKE2+ fallback for cameras that no longer use the stok login\nStop amplifying device lockouts (no more repeated logins while suspended)\nActionable, rate-limited camera log messages",
+        "de": "Kamera-Login-Fixes für neuere Firmware (FW 1.4.3+)\nKamera-Standardzugangsdaten werden versucht, wenn das Cloud-Passwort abgelehnt wird\nTPAP/SPAKE2+-Fallback für Kameras, die den stok-Login nicht mehr nutzen\nGeräte-Sperren werden nicht mehr verlängert (keine wiederholten Logins während der Sperre)\nAussagekräftige, entzerrte Kamera-Logmeldungen",
+        "ru": "Исправления входа камеры для новой прошивки (FW 1.4.3+)\nПопытка учётных данных камеры по умолчанию, когда облачный пароль отклонён\nРезерв TPAP/SPAKE2+ для камер, больше не использующих вход stok\nПрекращено усиление блокировок устройства (нет повторных входов во время блокировки)\nПонятные, ограниченные по частоте сообщения журнала камеры",
+        "pt": "Correções de login da câmera para firmware mais recente (FW 1.4.3+)\nTenta as credenciais padrão da câmera quando a senha da nuvem é rejeitada\nAlternativa TPAP/SPAKE2+ para câmeras que já não usam o login stok\nDeixa de amplificar os bloqueios do dispositivo (sem logins repetidos durante a suspensão)\nMensagens de log da câmera acionáveis e com taxa limitada",
+        "nl": "Camera-loginfixes voor nieuwere firmware (FW 1.4.3+)\nProbeert standaard cameragegevens wanneer het cloudwachtwoord wordt geweigerd\nTPAP/SPAKE2+-terugval voor camera's die de stok-login niet meer gebruiken\nVersterkt apparaatvergrendelingen niet meer (geen herhaalde logins tijdens schorsing)\nBruikbare, gelimiteerde cameralogberichten",
+        "fr": "Corrections de connexion caméra pour les firmwares récents (FW 1.4.3+)\nEssaie les identifiants par défaut de la caméra quand le mot de passe cloud est refusé\nRepli TPAP/SPAKE2+ pour les caméras n'utilisant plus la connexion stok\nN'amplifie plus les verrouillages de l'appareil (plus de connexions répétées pendant la suspension)\nMessages de journal caméra utiles et à fréquence limitée",
+        "it": "Correzioni di login della fotocamera per firmware più recenti (FW 1.4.3+)\nProva le credenziali predefinite della fotocamera quando la password cloud viene rifiutata\nFallback TPAP/SPAKE2+ per fotocamere che non usano più il login stok\nNon amplifica più i blocchi del dispositivo (nessun login ripetuto durante la sospensione)\nMessaggi di log della fotocamera utili e a frequenza limitata",
+        "es": "Correcciones de inicio de sesión de cámara para firmware más reciente (FW 1.4.3+)\nPrueba las credenciales predeterminadas de la cámara cuando se rechaza la contraseña de la nube\nRespaldo TPAP/SPAKE2+ para cámaras que ya no usan el inicio de sesión stok\nDeja de amplificar los bloqueos del dispositivo (sin inicios de sesión repetidos durante la suspensión)\nMensajes de registro de cámara accionables y con frecuencia limitada",
+        "pl": "Poprawki logowania kamery dla nowszego oprogramowania (FW 1.4.3+)\nPróba domyślnych danych logowania kamery, gdy hasło chmury zostanie odrzucone\nAwaryjne TPAP/SPAKE2+ dla kamer, które nie używają już logowania stok\nKoniec z przedłużaniem blokad urządzenia (brak powtarzanych logowań podczas blokady)\nUżyteczne, ograniczone częstotliwością komunikaty dziennika kamery",
+        "uk": "Виправлення входу камери для новішої прошивки (FW 1.4.3+)\nСпроба стандартних облікових даних камери, коли хмарний пароль відхилено\nРезерв TPAP/SPAKE2+ для камер, які більше не використовують вхід stok\nПрипинено підсилення блокувань пристрою (немає повторних входів під час блокування)\nКорисні, обмежені за частотою повідомлення журналу камери",
+        "zh-cn": "针对较新固件(FW 1.4.3+)的摄像头登录修复\n当云密码被拒绝时尝试摄像头默认凭据\n为不再使用 stok 登录的摄像头提供 TPAP/SPAKE2+ 回退\n停止放大设备锁定(暂停期间不再重复登录)\n可操作、限频的摄像头日志消息"
+      },
       "0.5.5": {
         "en": "added udp detection for better device detection",
         "de": "UDP-Discovery für bessere Geräteerkennung",
