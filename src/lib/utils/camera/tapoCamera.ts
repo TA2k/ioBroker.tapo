@@ -159,10 +159,14 @@ export class TAPOCamera extends OnvifCamera {
 
     this.cnonce = this.generateCnonce();
 
-    // Default camera credentials tried when the cloud password does not match the
-    // device_confirm challenge. LV3 uses a fixed built-in passcode. See
-    // python-kasa credentials.py (TAPOCAMERA / TAPOCAMERA_LV3).
-    const candidates = [config.password, 'admin'];
+    // Candidate passwords tried against the device_confirm challenge, in order:
+    //  1. Camera Account password (Tapo app -> Advanced Settings -> Camera Account),
+    //     if configured. Newer firmware often accepts only this for local access.
+    //  2. Cloud/app password.
+    //  3. "admin", and for login_version 3 the built-in LV3 passcode.
+    // All candidates are tested in-memory against a single response (see
+    // validateDeviceConfirm), so extra candidates add no network cost or lockout risk.
+    const candidates = [config.streamPassword, config.password, 'admin'];
     if (config.loginVersion === 3) {
       candidates.push('TPL075526460603');
     }
@@ -720,11 +724,13 @@ export class TAPOCamera extends OnvifCamera {
       const pakeList = this.tpapPakeList;
       const userHashType = this.config.userHashType ?? this.tpapUserHashType;
       this.log.debug(`TPAP camera handshake to ${this.config.ipAddress}:${tpapPort} useHttps=${useHttps} pake=${JSON.stringify(pakeList)}`);
+      // Prefer the Camera Account password for local access when configured.
+      const tpapPassword = this.config.streamPassword || this.config.password;
       const cipher = new TpapCipher(
         this.log,
         this.config.ipAddress,
         this.config.username || '',
-        this.config.password,
+        tpapPassword,
         this.config.mac || '',
         tpapPort,
         useHttps,

@@ -65,7 +65,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
       }
     });
     this.cnonce = this.generateCnonce();
-    const candidates = [config.password, "admin"];
+    const candidates = [config.streamPassword, config.password, "admin"];
     if (config.loginVersion === 3) {
       candidates.push("TPL075526460603");
     }
@@ -524,11 +524,12 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
       const pakeList = this.tpapPakeList;
       const userHashType = (_a = this.config.userHashType) != null ? _a : this.tpapUserHashType;
       this.log.debug(`TPAP camera handshake to ${this.config.ipAddress}:${tpapPort} useHttps=${useHttps} pake=${JSON.stringify(pakeList)}`);
+      const tpapPassword = this.config.streamPassword || this.config.password;
       const cipher = new import_tpapCipher.default(
         this.log,
         this.config.ipAddress,
         this.config.username || "",
-        this.config.password,
+        tpapPassword,
         this.config.mac || "",
         tpapPort,
         useHttps,

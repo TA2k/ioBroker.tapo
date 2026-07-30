@@ -110,10 +110,10 @@
         "uk": "Камера Потокове ім'я користувача",
         "zh-cn": "Camera Stream用户"
       },
-      "tooltip": "Stream Username. Settings > Advanced Settings > Camera Account.",
+      "tooltip": "Camera Account username. Tapo app > Advanced Settings > Camera Account. Used for RTSP stream and, on newer firmware, for local camera login.",
       "help": {
-        "en": "Stream Username. Settings > Advanced Settings > Camera Account.",
-        "de": "Kamera Stream Benutzername. Kamera Einstellungen > Erweiterte Einstellungen > Kamerakonto.",
+        "en": "Camera Account username. Tapo app > Advanced Settings > Camera Account. Used for the RTSP stream and, on newer firmware, for local camera login.",
+        "de": "Kamerakonto-Benutzername. Tapo-App > Erweiterte Einstellungen > Kamerakonto. Wird für den RTSP-Stream und bei neuerer Firmware für den lokalen Kamera-Login verwendet.",
         "ru": "Stream Имя пользователя. Настройки > Расширенные настройки > учетная запись камеры.",
         "pt": "Stream Username. Configurações > Configurações avançadas > Conta de câmera.",
         "nl": "Stream User naam. Settings Geavanceerde Settings Camera Account.",
@@ -146,10 +146,10 @@
         "uk": "Камера Потокового пароля",
         "zh-cn": "Camera Stream护照"
       },
-      "tooltip": "Stream Password. App Settings > Advanced Settings > Camera Account.",
+      "tooltip": "Camera Account password. Tapo app > Advanced Settings > Camera Account. Used for RTSP stream and, on newer firmware, for local camera login.",
       "help": {
-        "en": "Stream Password. App Settings > Advanced Settings > Camera Account.",
-        "de": "Kamera Stream Passwort. Kamera Einstellungen > Erweiterte Einstellungen > Kamerakonto.",
+        "en": "Camera Account password. Tapo app > Advanced Settings > Camera Account. Used for the RTSP stream and, on newer firmware, for local camera login.",
+        "de": "Kamerakonto-Passwort. Tapo-App > Erweiterte Einstellungen > Kamerakonto. Wird für den RTSP-Stream und bei neuerer Firmware für den lokalen Kamera-Login verwendet.",
         "ru": "Stream Пароль. Настройки приложений > Расширенные настройки > учетная запись камеры.",
         "pt": "Stream Password. Configurações do aplicativo > Configurações avançadas > Conta de câmera.",
         "nl": "Stream Password. App Settings Geavanceerde Settings Camera Account.",
