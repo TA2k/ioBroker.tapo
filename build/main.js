@@ -33,6 +33,7 @@ var import_l530 = __toESM(require("./lib/utils/l530"));
 var import_p100 = __toESM(require("./lib/utils/p100"));
 var import_p110 = __toESM(require("./lib/utils/p110"));
 var import_udpDiscovery = require("./lib/utils/udpDiscovery");
+var import_doorbellMonitor = require("./lib/utils/camera/doorbellMonitor");
 class Tapo extends utils.Adapter {
   devices;
   deviceObjects;
@@ -590,6 +591,7 @@ class Tapo extends utils.Adapter {
     await this.setStateAsync("deviceList", JSON.stringify(this.devices), true);
   }
   async initDevice(id) {
+    var _a, _b, _c;
     const device = this.devices[id];
     if (!device.ip) {
       this.log.warn(`No IP found for ${id}`);
@@ -627,7 +629,7 @@ class Tapo extends utils.Adapter {
       deviceObject = new import_l520e.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
-    } else if (device.deviceName.startsWith("C") || device.deviceName.startsWith("TC")) {
+    } else if (((_a = device.deviceType) == null ? void 0 : _a.includes("CAMERA")) || device.deviceName.startsWith("C") || device.deviceName.startsWith("TC") || device.deviceName.startsWith("D")) {
       if (device.deviceName.startsWith("C4") && !this.config.enableBatteryDevices) {
         this.log.warn("Battery device found but ignored. Please enable in settings and check regularly the battery status");
         return;
@@ -685,6 +687,24 @@ class Tapo extends utils.Adapter {
         } else {
           this.log.debug(`ONVIF event emitter failed for ${device.ip}: ${msg}`);
         }
+      }
+      const isDoorbell = ((_b = device.deviceType) == null ? void 0 : _b.includes("CAMERA")) && ((_c = device.deviceName) == null ? void 0 : _c.startsWith("D")) || String((deviceInfo == null ? void 0 : deviceInfo.model) || "").toUpperCase().startsWith("D");
+      if (isDoorbell) {
+        await this.setObjectNotExistsAsync(id + ".ringEvent", {
+          type: "state",
+          common: {
+            name: "Doorbell ring",
+            type: "boolean",
+            role: "sensor",
+            def: false,
+            write: false,
+            read: true
+          },
+          native: {}
+        });
+        this.deviceObjects[id].isDoorbell = true;
+        import_doorbellMonitor.DoorbellMonitor.register(this.log, device.ip, () => this.fireRingEvent(id));
+        this.log.debug(`Doorbell ring detection enabled for ${id} (${device.ip})`);
       }
       return;
     } else {
@@ -757,7 +777,21 @@ class Tapo extends utils.Adapter {
       await this.setDeviceConnected(id, false);
     }
   }
+  ringTimeouts = {};
+  /** Pulse the doorbell ringEvent state: set true, then auto-reset to false after 2s. */
+  fireRingEvent(id) {
+    this.log.debug(`Doorbell ring for ${id}`);
+    this.setState(id + ".ringEvent", true, true);
+    if (this.ringTimeouts[id]) {
+      clearTimeout(this.ringTimeouts[id]);
+    }
+    this.ringTimeouts[id] = setTimeout(() => {
+      this.setState(id + ".ringEvent", false, true);
+      delete this.ringTimeouts[id];
+    }, 2e3);
+  }
   async updateDevices() {
+    var _a, _b;
     try {
       for (const deviceId in this.deviceObjects) {
         if (this.deviceObjects[deviceId].getStatus) {
@@ -805,6 +839,15 @@ class Tapo extends utils.Adapter {
           });
           if (alarmInfo) {
             await this.json2iob.parse(deviceId + ".alarmInfo", alarmInfo);
+            if (this.deviceObjects[deviceId].isDoorbell) {
+              const at = String((_a = alarmInfo.alarm_type) != null ? _a : "").toLowerCase();
+              const dbgKey = deviceId + "_lastAlarm";
+              const marker = JSON.stringify({ at, t: (_b = alarmInfo.start_time) != null ? _b : alarmInfo.alarm_time });
+              if ((at.includes("doorbell") || at.includes("button") || at.includes("ring")) && this[dbgKey] !== marker) {
+                this[dbgKey] = marker;
+                this.fireRingEvent(deviceId);
+              }
+            }
           }
           const alertTypes = await this.deviceObjects[deviceId].getAlertEventType().catch((e) => {
             this.log.debug("getAlertEventType not supported: " + ((e == null ? void 0 : e.message) || e));
@@ -925,6 +968,10 @@ class Tapo extends utils.Adapter {
       this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
       this.updateInterval && clearInterval(this.updateInterval);
       this.refreshTokenInterval && clearInterval(this.refreshTokenInterval);
+      import_doorbellMonitor.DoorbellMonitor.closeAll();
+      for (const t of Object.values(this.ringTimeouts)) {
+        clearTimeout(t);
+      }
       callback();
     } catch (e) {
       callback();

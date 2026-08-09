@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "news": {
+      "0.6.1": {
+        "en": "Support for Tapo video doorbells (D-series, e.g. D235)\nDoorbell ring event (ringEvent state) via UDP broadcast and alarm polling",
+        "de": "Unterstützung für Tapo Video-Türklingeln (D-Serie, z. B. D235)\nKlingel-Event (ringEvent-State) über UDP-Broadcast und Alarm-Polling",
+        "ru": "Поддержка видеодомофонов Tapo (серия D, напр. D235)\nСобытие звонка (состояние ringEvent) через UDP-широковещание и опрос тревог",
+        "pt": "Suporte para campainhas de vídeo Tapo (série D, ex. D235)\nEvento de toque da campainha (estado ringEvent) via broadcast UDP e sondagem de alarme",
+        "nl": "Ondersteuning voor Tapo video-deurbellen (D-serie, bijv. D235)\nDeurbel-belgebeurtenis (ringEvent-status) via UDP-broadcast en alarmpolling",
+        "fr": "Prise en charge des sonnettes vidéo Tapo (série D, ex. D235)\nÉvénement de sonnerie (état ringEvent) via broadcast UDP et interrogation d'alarme",
+        "it": "Supporto per videocitofoni Tapo (serie D, es. D235)\nEvento di suoneria (stato ringEvent) tramite broadcast UDP e polling allarmi",
+        "es": "Compatibilidad con videoporteros Tapo (serie D, p. ej. D235)\nEvento de timbre (estado ringEvent) mediante broadcast UDP y sondeo de alarmas",
+        "pl": "Obsługa wideodomofonów Tapo (seria D, np. D235)\nZdarzenie dzwonka (stan ringEvent) przez broadcast UDP i odpytywanie alarmów",
+        "uk": "Підтримка відеодзвінків Tapo (серія D, напр. D235)\nПодія дзвінка (стан ringEvent) через UDP-трансляцію та опитування тривог",
+        "zh-cn": "支持 Tapo 视频门铃(D 系列,例如 D235)\n通过 UDP 广播和告警轮询实现门铃响铃事件(ringEvent 状态)"
+      },
       "0.6.0": {
         "en": "Camera login fixes for newer firmware (FW 1.4.3+)\nUse the Camera Account credentials (Stream Username/Password) for local camera login\nTry camera default credentials when the password is rejected\nTPAP/SPAKE2+ fallback for cameras that no longer use the stok login\nStop amplifying device lockouts (no more repeated logins while suspended)\nActionable, rate-limited camera log messages",
         "de": "Kamera-Login-Fixes für neuere Firmware (FW 1.4.3+)\nKamerakonto-Zugangsdaten (Stream-Benutzername/Passwort) werden für den lokalen Kamera-Login genutzt\nKamera-Standardzugangsdaten werden versucht, wenn das Passwort abgelehnt wird\nTPAP/SPAKE2+-Fallback für Kameras, die den stok-Login nicht mehr nutzen\nGeräte-Sperren werden nicht mehr verlängert (keine wiederholten Logins während der Sperre)\nAussagekräftige, entzerrte Kamera-Logmeldungen",

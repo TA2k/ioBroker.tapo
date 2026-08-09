@@ -82,6 +82,13 @@ Communicates with devices locally via three protocols depending on device/firmwa
     (same `pake_register`/`pake_share` handshake as plugs) over HTTPS/443 and
     routes `apiRequest` through it. Detection is by stok-failure, not solely the
     discovery `encrypt_type` (some cameras report empty encrypt_type yet need TPAP)
+  - Video doorbells (D-series, e.g. D235) are `SMART.IPCAMERA` devices: routed to
+    `TAPOCamera` by `deviceType.includes('CAMERA')` / `deviceName` prefix D. They
+    add a `ringEvent` state. Ring detection: primary = UDP broadcast on port 20005
+    (`DoorbellMonitor`, one shared socket for all doorbells, payload not parsed —
+    any packet from the device IP = ring); fallback = `getLastAlarmInfo` polling
+    (best-effort, alarm_type contains doorbell/button/ring). UDP 20005 is a HASS
+    community finding, not confirmed in the APK.
 
 ### Key Files
 

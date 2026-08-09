@@ -377,6 +377,11 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
+### 0.6.1 (2026-08-09)
+
+- Support for Tapo video doorbells (D-series, e.g. D235) - initialized as camera devices
+- Doorbell ring event (`ringEvent` state) via UDP broadcast (port 20005) and alarm polling fallback
+
 ### 0.6.0 (2026-07-30)
 
 - Fix camera login for newer firmware (FW 1.4.3+, e.g. C200 1.4.4)

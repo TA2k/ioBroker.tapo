@@ -17,6 +17,7 @@ import L530 from './lib/utils/l530';
 import P100 from './lib/utils/p100';
 import P110 from './lib/utils/p110';
 import { discoverDevice } from './lib/utils/udpDiscovery';
+import { DoorbellMonitor } from './lib/utils/camera/doorbellMonitor';
 class Tapo extends utils.Adapter {
   private devices: { [key: string]: any };
   private deviceObjects: { [key: string]: any };
@@ -638,7 +639,14 @@ class Tapo extends utils.Adapter {
       deviceObject = new L520E(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName.startsWith('L') || device.deviceName.startsWith('KL')) {
       deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
-    } else if (device.deviceName.startsWith('C') || device.deviceName.startsWith('TC')) {
+    } else if (
+      device.deviceType?.includes('CAMERA') ||
+      device.deviceName.startsWith('C') ||
+      device.deviceName.startsWith('TC') ||
+      device.deviceName.startsWith('D')
+    ) {
+      // Cameras and doorbells (D-series, e.g. D235) are all SMART.IPCAMERA devices
+      // and use the same local camera protocol.
       if (device.deviceName.startsWith('C4') && !(this.config as any).enableBatteryDevices) {
         this.log.warn('Battery device found but ignored. Please enable in settings and check regularly the battery status');
         return;
@@ -699,6 +707,30 @@ class Tapo extends utils.Adapter {
         } else {
           this.log.debug(`ONVIF event emitter failed for ${device.ip}: ${msg}`);
         }
+      }
+
+      // Doorbells (D-series, e.g. D235) fire a ring event. Two detection paths:
+      //  1. UDP broadcast on port 20005 (immediate) - primary.
+      //  2. getLastAlarmInfo polling (best-effort fallback) - handled in updateDevices.
+      const isDoorbell =
+        (device.deviceType?.includes('CAMERA') && device.deviceName?.startsWith('D')) ||
+        String(deviceInfo?.model || '').toUpperCase().startsWith('D');
+      if (isDoorbell) {
+        await this.setObjectNotExistsAsync(id + '.ringEvent', {
+          type: 'state',
+          common: {
+            name: 'Doorbell ring',
+            type: 'boolean',
+            role: 'sensor',
+            def: false,
+            write: false,
+            read: true,
+          },
+          native: {},
+        });
+        this.deviceObjects[id].isDoorbell = true;
+        DoorbellMonitor.register(this.log, device.ip, () => this.fireRingEvent(id));
+        this.log.debug(`Doorbell ring detection enabled for ${id} (${device.ip})`);
       }
       return;
     } else {
@@ -772,6 +804,21 @@ class Tapo extends utils.Adapter {
     }
   }
 
+  private ringTimeouts: Record<string, NodeJS.Timeout> = {};
+
+  /** Pulse the doorbell ringEvent state: set true, then auto-reset to false after 2s. */
+  private fireRingEvent(id: string): void {
+    this.log.debug(`Doorbell ring for ${id}`);
+    this.setState(id + '.ringEvent', true, true);
+    if (this.ringTimeouts[id]) {
+      clearTimeout(this.ringTimeouts[id]);
+    }
+    this.ringTimeouts[id] = setTimeout(() => {
+      this.setState(id + '.ringEvent', false, true);
+      delete this.ringTimeouts[id];
+    }, 2000);
+  }
+
   async updateDevices(): Promise<void> {
     try {
       for (const deviceId in this.deviceObjects) {
@@ -824,6 +871,19 @@ class Tapo extends utils.Adapter {
           });
           if (alarmInfo) {
             await this.json2iob.parse(deviceId + '.alarmInfo', alarmInfo);
+            // Best-effort doorbell ring fallback via alarm polling (UDP 20005 is the
+            // primary path). Some doorbells surface a button press in the last-alarm
+            // info; treat a fresh doorbell/button alarm_type as a ring. Best-effort:
+            // the exact field is not documented, so keep this conservative.
+            if (this.deviceObjects[deviceId].isDoorbell) {
+              const at = String(alarmInfo.alarm_type ?? '').toLowerCase();
+              const dbgKey = deviceId + '_lastAlarm';
+              const marker = JSON.stringify({ at, t: alarmInfo.start_time ?? alarmInfo.alarm_time });
+              if ((at.includes('doorbell') || at.includes('button') || at.includes('ring')) && (this as any)[dbgKey] !== marker) {
+                (this as any)[dbgKey] = marker;
+                this.fireRingEvent(deviceId);
+              }
+            }
           }
 
           // Poll alert event types (which detections trigger alarm)
@@ -955,6 +1015,10 @@ class Tapo extends utils.Adapter {
       this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
       this.updateInterval && clearInterval(this.updateInterval);
       this.refreshTokenInterval && clearInterval(this.refreshTokenInterval);
+      DoorbellMonitor.closeAll();
+      for (const t of Object.values(this.ringTimeouts)) {
+        clearTimeout(t);
+      }
 
       callback();
     } catch (e) {
