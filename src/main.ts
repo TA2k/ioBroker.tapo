@@ -272,7 +272,7 @@ class Tapo extends utils.Adapter {
 
   async getDeviceList(): Promise<void> {
     const body =
-      '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH"],"limit":30}';
+      '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH","SMART.TAPODOORBELL","SMART.TAPOCHIME","SMART.TAPOLOCK","SMART.TAPOROBOVAC","SMART.TAPONVR"],"limit":30}';
     const md5 = crypto.createHash('md5').update(body).digest('base64');
     this.log.debug(md5);
     const content = md5 + '\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/getDeviceListByPage';
@@ -425,7 +425,7 @@ class Tapo extends utils.Adapter {
           // Select remotes based on device type
           let remoteArray: RemoteEntry[];
           const dn = device.deviceName || '';
-          if (device.deviceType.includes('CAMERA')) {
+          if (device.deviceType.includes('CAMERA') || device.deviceType.includes('DOORBELL')) {
             remoteArray = cameraRemotes;
           } else if (dn.startsWith('P110') || dn.startsWith('P115')) {
             remoteArray = [...baseRemotes, ...energyExtras];
@@ -641,12 +641,14 @@ class Tapo extends utils.Adapter {
       deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (
       device.deviceType?.includes('CAMERA') ||
+      device.deviceType?.includes('DOORBELL') ||
       device.deviceName.startsWith('C') ||
       device.deviceName.startsWith('TC') ||
       device.deviceName.startsWith('D')
     ) {
-      // Cameras and doorbells (D-series, e.g. D235) are all SMART.IPCAMERA devices
-      // and use the same local camera protocol.
+      // Cameras and doorbells use the same local camera protocol. Cameras report
+      // deviceType SMART.IPCAMERA, doorbells (D-series, e.g. D235) report
+      // SMART.TAPODOORBELL.
       if (device.deviceName.startsWith('C4') && !(this.config as any).enableBatteryDevices) {
         this.log.warn('Battery device found but ignored. Please enable in settings and check regularly the battery status');
         return;
@@ -713,6 +715,7 @@ class Tapo extends utils.Adapter {
       //  1. UDP broadcast on port 20005 (immediate) - primary.
       //  2. getLastAlarmInfo polling (best-effort fallback) - handled in updateDevices.
       const isDoorbell =
+        device.deviceType?.includes('DOORBELL') ||
         (device.deviceType?.includes('CAMERA') && device.deviceName?.startsWith('D')) ||
         String(deviceInfo?.model || '').toUpperCase().startsWith('D');
       if (isDoorbell) {

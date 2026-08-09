@@ -287,7 +287,7 @@ class Tapo extends utils.Adapter {
     });
   }
   async getDeviceList() {
-    const body = '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH"],"limit":30}';
+    const body = '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH","SMART.TAPODOORBELL","SMART.TAPOCHIME","SMART.TAPOLOCK","SMART.TAPOROBOVAC","SMART.TAPONVR"],"limit":30}';
     const md5 = import_crypto.default.createHash("md5").update(body).digest("base64");
     this.log.debug(md5);
     const content = md5 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/getDeviceListByPage";
@@ -431,7 +431,7 @@ class Tapo extends utils.Adapter {
         ];
         let remoteArray;
         const dn = device.deviceName || "";
-        if (device.deviceType.includes("CAMERA")) {
+        if (device.deviceType.includes("CAMERA") || device.deviceType.includes("DOORBELL")) {
           remoteArray = cameraRemotes;
         } else if (dn.startsWith("P110") || dn.startsWith("P115")) {
           remoteArray = [...baseRemotes, ...energyExtras];
@@ -591,7 +591,7 @@ class Tapo extends utils.Adapter {
     await this.setStateAsync("deviceList", JSON.stringify(this.devices), true);
   }
   async initDevice(id) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     const device = this.devices[id];
     if (!device.ip) {
       this.log.warn(`No IP found for ${id}`);
@@ -629,7 +629,7 @@ class Tapo extends utils.Adapter {
       deviceObject = new import_l520e.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
-    } else if (((_a = device.deviceType) == null ? void 0 : _a.includes("CAMERA")) || device.deviceName.startsWith("C") || device.deviceName.startsWith("TC") || device.deviceName.startsWith("D")) {
+    } else if (((_a = device.deviceType) == null ? void 0 : _a.includes("CAMERA")) || ((_b = device.deviceType) == null ? void 0 : _b.includes("DOORBELL")) || device.deviceName.startsWith("C") || device.deviceName.startsWith("TC") || device.deviceName.startsWith("D")) {
       if (device.deviceName.startsWith("C4") && !this.config.enableBatteryDevices) {
         this.log.warn("Battery device found but ignored. Please enable in settings and check regularly the battery status");
         return;
@@ -688,7 +688,7 @@ class Tapo extends utils.Adapter {
           this.log.debug(`ONVIF event emitter failed for ${device.ip}: ${msg}`);
         }
       }
-      const isDoorbell = ((_b = device.deviceType) == null ? void 0 : _b.includes("CAMERA")) && ((_c = device.deviceName) == null ? void 0 : _c.startsWith("D")) || String((deviceInfo == null ? void 0 : deviceInfo.model) || "").toUpperCase().startsWith("D");
+      const isDoorbell = ((_c = device.deviceType) == null ? void 0 : _c.includes("DOORBELL")) || ((_d = device.deviceType) == null ? void 0 : _d.includes("CAMERA")) && ((_e = device.deviceName) == null ? void 0 : _e.startsWith("D")) || String((deviceInfo == null ? void 0 : deviceInfo.model) || "").toUpperCase().startsWith("D");
       if (isDoorbell) {
         await this.setObjectNotExistsAsync(id + ".ringEvent", {
           type: "state",

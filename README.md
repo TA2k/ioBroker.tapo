@@ -380,6 +380,8 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 ### 0.6.1 (2026-08-09)
 
 - Support for Tapo video doorbells (D-series, e.g. D235) - initialized as camera devices
+- Fetch SMART.TAPODOORBELL / SMART.TAPOCHIME device types from the cloud (doorbells were missing from the device list)
+- Also fetch SMART.TAPOLOCK / SMART.TAPOROBOVAC / SMART.TAPONVR device types
 - Doorbell ring event (`ringEvent` state) via UDP broadcast (port 20005) and alarm polling fallback
 
 ### 0.6.0 (2026-07-30)
