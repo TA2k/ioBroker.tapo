@@ -16,6 +16,7 @@ import L520E from './lib/utils/l520e';
 import L530 from './lib/utils/l530';
 import P100 from './lib/utils/p100';
 import P110 from './lib/utils/p110';
+import D100C from './lib/utils/d100c';
 import { discoverDevice } from './lib/utils/udpDiscovery';
 import { DoorbellMonitor } from './lib/utils/camera/doorbellMonitor';
 class Tapo extends utils.Adapter {
@@ -377,6 +378,12 @@ class Tapo extends utils.Adapter {
             { command: 'setTemperatureOffset', name: 'Temperature Offset (-10..10)', type: 'number', def: 0, role: 'level' },
             { command: 'setFrostProtection', name: 'Frost Protection On/Off' },
           ];
+          const chimeExtras: RemoteEntry[] = [
+            { command: 'playAlarm', name: 'True = Play Chime' },
+            { command: 'stopAlarm', name: 'True = Stop Chime' },
+            { command: 'setVolume', name: 'Chime Volume (1-15)', type: 'number', def: 8, role: 'level.volume' },
+            { command: 'setRingType', name: 'Ring Type', type: 'string', def: '', role: 'text' },
+          ];
           const cameraRemotes: RemoteEntry[] = [
             { command: 'refresh', name: 'True = Refresh' },
             { command: 'setAlertConfig', name: 'Alarm On/Off' },
@@ -427,6 +434,8 @@ class Tapo extends utils.Adapter {
           const dn = device.deviceName || '';
           if (device.deviceType.includes('CAMERA') || device.deviceType.includes('DOORBELL')) {
             remoteArray = cameraRemotes;
+          } else if (device.deviceType.includes('CHIME') || dn.startsWith('D100')) {
+            remoteArray = [...baseRemotes, ...chimeExtras];
           } else if (dn.startsWith('P110') || dn.startsWith('P115')) {
             remoteArray = [...baseRemotes, ...energyExtras];
           } else if (dn.startsWith('P')) {
@@ -737,6 +746,10 @@ class Tapo extends utils.Adapter {
         this.log.debug(`Doorbell ring detection enabled for ${id} (${device.ip})`);
       }
       return;
+    } else if (device.deviceType?.includes('CHIME') || device.deviceName.startsWith('D100')) {
+      // Standalone smart chime (D100C). Speaks the plug/TPAP protocol on port 80,
+      // so it uses the P100-based D100C class and the normal handshake flow below.
+      deviceObject = new D100C(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else {
       this.log.info(`Unknown device type ${device.deviceName} init as P100`);
       deviceObject = new P100(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);

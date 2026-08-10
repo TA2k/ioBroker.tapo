@@ -65,7 +65,7 @@ Communicates with devices locally via three protocols depending on device/firmwa
 - Device discovery reports `encrypt_type`: "KLAP" or "TPAP"
 
 ### Class Hierarchy
-- `P100` (base) → all non-camera devices (P110, L510E, L520E, L530)
+- `P100` (base) → all non-camera devices (P110, L510E, L520E, L530, D100C)
   - Supports: AES SecurePassthrough + KLAP v1/v2 + TPAP/SPAKE2+
   - `TpapCipher` class handles SPAKE2+ handshake and AES-CCM encrypt/decrypt
 - `TAPOCamera` → camera devices (C210, C310, etc.)

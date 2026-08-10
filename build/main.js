@@ -32,6 +32,7 @@ var import_l520e = __toESM(require("./lib/utils/l520e"));
 var import_l530 = __toESM(require("./lib/utils/l530"));
 var import_p100 = __toESM(require("./lib/utils/p100"));
 var import_p110 = __toESM(require("./lib/utils/p110"));
+var import_d100c = __toESM(require("./lib/utils/d100c"));
 var import_udpDiscovery = require("./lib/utils/udpDiscovery");
 var import_doorbellMonitor = require("./lib/utils/camera/doorbellMonitor");
 class Tapo extends utils.Adapter {
@@ -385,6 +386,12 @@ class Tapo extends utils.Adapter {
           { command: "setTemperatureOffset", name: "Temperature Offset (-10..10)", type: "number", def: 0, role: "level" },
           { command: "setFrostProtection", name: "Frost Protection On/Off" }
         ];
+        const chimeExtras = [
+          { command: "playAlarm", name: "True = Play Chime" },
+          { command: "stopAlarm", name: "True = Stop Chime" },
+          { command: "setVolume", name: "Chime Volume (1-15)", type: "number", def: 8, role: "level.volume" },
+          { command: "setRingType", name: "Ring Type", type: "string", def: "", role: "text" }
+        ];
         const cameraRemotes = [
           { command: "refresh", name: "True = Refresh" },
           { command: "setAlertConfig", name: "Alarm On/Off" },
@@ -433,6 +440,8 @@ class Tapo extends utils.Adapter {
         const dn = device.deviceName || "";
         if (device.deviceType.includes("CAMERA") || device.deviceType.includes("DOORBELL")) {
           remoteArray = cameraRemotes;
+        } else if (device.deviceType.includes("CHIME") || dn.startsWith("D100")) {
+          remoteArray = [...baseRemotes, ...chimeExtras];
         } else if (dn.startsWith("P110") || dn.startsWith("P115")) {
           remoteArray = [...baseRemotes, ...energyExtras];
         } else if (dn.startsWith("P")) {
@@ -591,7 +600,7 @@ class Tapo extends utils.Adapter {
     await this.setStateAsync("deviceList", JSON.stringify(this.devices), true);
   }
   async initDevice(id) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     const device = this.devices[id];
     if (!device.ip) {
       this.log.warn(`No IP found for ${id}`);
@@ -707,6 +716,8 @@ class Tapo extends utils.Adapter {
         this.log.debug(`Doorbell ring detection enabled for ${id} (${device.ip})`);
       }
       return;
+    } else if (((_f = device.deviceType) == null ? void 0 : _f.includes("CHIME")) || device.deviceName.startsWith("D100")) {
+      deviceObject = new import_d100c.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else {
       this.log.info(`Unknown device type ${device.deviceName} init as P100`);
       deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);

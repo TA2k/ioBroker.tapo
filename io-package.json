@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.1",
+    "version": "0.6.2",
     "news": {
+      "0.6.2": {
+        "en": "Fix camera PTZ move-to-preset (missing preset wrapper)\nSupport for Tapo smart chime D100C (play/stop chime, volume, ring type)",
+        "de": "Fix Kamera-PTZ Zu-Preset-bewegen (fehlender preset-Wrapper)\nUnterstützung für Tapo Smart-Chime D100C (Gong abspielen/stoppen, Lautstärke, Ring-Typ)",
+        "ru": "Исправлен переход камеры PTZ к пресету (отсутствовала обёртка preset)\nПоддержка умного гонга Tapo D100C (воспроизведение/остановка, громкость, тип звонка)",
+        "pt": "Corrige o PTZ da câmera mover-para-predefinição (faltava o wrapper preset)\nSuporte para a campainha inteligente Tapo D100C (tocar/parar, volume, tipo de toque)",
+        "nl": "Fix camera-PTZ naar-preset (ontbrekende preset-wrapper)\nOndersteuning voor Tapo smart chime D100C (chime afspelen/stoppen, volume, ringtype)",
+        "fr": "Correction du PTZ caméra aller-au-préréglage (wrapper preset manquant)\nPrise en charge du carillon connecté Tapo D100C (jouer/arrêter, volume, type de sonnerie)",
+        "it": "Corregge il PTZ della fotocamera vai-a-preset (wrapper preset mancante)\nSupporto per il chime smart Tapo D100C (riproduci/ferma, volume, tipo di suoneria)",
+        "es": "Corrige el PTZ de la cámara ir-a-preajuste (faltaba el envoltorio preset)\nCompatibilidad con el timbre inteligente Tapo D100C (reproducir/detener, volumen, tipo de tono)",
+        "pl": "Poprawka PTZ kamery przejdź-do-presetu (brakujący wrapper preset)\nObsługa inteligentnego gongu Tapo D100C (odtwarzanie/zatrzymanie, głośność, typ dzwonka)",
+        "uk": "Виправлено PTZ камери перехід-до-пресету (бракувало обгортки preset)\nПідтримка розумного гонга Tapo D100C (відтворення/зупинка, гучність, тип дзвінка)",
+        "zh-cn": "修复摄像头 PTZ 移动到预设(缺少 preset 包装)\n支持 Tapo 智能门铃音 D100C(播放/停止、音量、铃声类型)"
+      },
       "0.6.1": {
         "en": "Support for Tapo video doorbells (D-series, e.g. D235)\nDoorbell ring event (ringEvent state) via UDP broadcast and alarm polling",
         "de": "Unterstützung für Tapo Video-Türklingeln (D-Serie, z. B. D235)\nKlingel-Event (ringEvent-State) über UDP-Broadcast und Alarm-Polling",

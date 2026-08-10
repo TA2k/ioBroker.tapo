@@ -1005,7 +1005,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
   async moveToPreset(presetId) {
     const json = await this.apiRequest({
       method: "multipleRequest",
-      params: { requests: [{ method: "motorMoveToPreset", params: { goto_preset: { id: presetId } } }] }
+      params: { requests: [{ method: "motorMoveToPreset", params: { preset: { goto_preset: { id: String(presetId) } } } }] }
     });
     return json.error_code !== 0;
   }
