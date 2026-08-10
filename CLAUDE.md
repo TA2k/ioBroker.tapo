@@ -82,13 +82,20 @@ Communicates with devices locally via three protocols depending on device/firmwa
     (same `pake_register`/`pake_share` handshake as plugs) over HTTPS/443 and
     routes `apiRequest` through it. Detection is by stok-failure, not solely the
     discovery `encrypt_type` (some cameras report empty encrypt_type yet need TPAP)
-  - Video doorbells (D-series, e.g. D235) are `SMART.IPCAMERA` devices: routed to
-    `TAPOCamera` by `deviceType.includes('CAMERA')` / `deviceName` prefix D. They
-    add a `ringEvent` state. Ring detection: primary = UDP broadcast on port 20005
+  - Video doorbells (D-series, e.g. D235) are `SMART.TAPODOORBELL` devices: routed to
+    `TAPOCamera` by `deviceType.includes('DOORBELL'|'CAMERA')` (NOT by a plain "D" name
+    prefix — Chimes like D100C are `SMART.TAPOCHIME` and speak the plug/TPAP protocol on
+    port 80, so they must use the P100 path, not the camera/ONVIF path). Doorbells add a
+    `ringEvent` state. Ring detection: primary = UDP broadcast on port 20005
     (`DoorbellMonitor`, one shared socket for all doorbells, payload not parsed —
     any packet from the device IP = ring); fallback = `getLastAlarmInfo` polling
     (best-effort, alarm_type contains doorbell/button/ring). UDP 20005 is a HASS
     community finding, not confirmed in the APK.
+  - Cloud device list (`getDeviceListByPage`) queries these SMART.* types: TAPOBULB,
+    TAPOPLUG, IPCAMERA, TAPOHUB, TAPOSENSOR, TAPOSWITCH, TAPODOORBELL, TAPOCHIME,
+    TAPOLOCK, TAPOROBOVAC, TAPONVR. NVRCHANNEL (NVR sub-channel) and TAPOREMOTE (hub
+    child) are intentionally excluded. Lock/Robovac/NVR have no dedicated class yet
+    (fall through to the P100 path).
 
 ### Key Files
 

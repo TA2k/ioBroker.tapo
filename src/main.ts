@@ -643,12 +643,13 @@ class Tapo extends utils.Adapter {
       device.deviceType?.includes('CAMERA') ||
       device.deviceType?.includes('DOORBELL') ||
       device.deviceName.startsWith('C') ||
-      device.deviceName.startsWith('TC') ||
-      device.deviceName.startsWith('D')
+      device.deviceName.startsWith('TC')
     ) {
-      // Cameras and doorbells use the same local camera protocol. Cameras report
-      // deviceType SMART.IPCAMERA, doorbells (D-series, e.g. D235) report
-      // SMART.TAPODOORBELL.
+      // Cameras and video doorbells use the local camera protocol (HTTPS + ONVIF).
+      // Cameras report deviceType SMART.IPCAMERA, video doorbells SMART.TAPODOORBELL.
+      // NOTE: do not route by a plain "D" name prefix - Chimes (D100C) are
+      // SMART.TAPOCHIME and speak the plug/TPAP protocol on port 80, not the camera
+      // protocol, so they must fall through to the P100 path below.
       if (device.deviceName.startsWith('C4') && !(this.config as any).enableBatteryDevices) {
         this.log.warn('Battery device found but ignored. Please enable in settings and check regularly the battery status');
         return;

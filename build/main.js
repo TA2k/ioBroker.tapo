@@ -629,7 +629,7 @@ class Tapo extends utils.Adapter {
       deviceObject = new import_l520e.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
-    } else if (((_a = device.deviceType) == null ? void 0 : _a.includes("CAMERA")) || ((_b = device.deviceType) == null ? void 0 : _b.includes("DOORBELL")) || device.deviceName.startsWith("C") || device.deviceName.startsWith("TC") || device.deviceName.startsWith("D")) {
+    } else if (((_a = device.deviceType) == null ? void 0 : _a.includes("CAMERA")) || ((_b = device.deviceType) == null ? void 0 : _b.includes("DOORBELL")) || device.deviceName.startsWith("C") || device.deviceName.startsWith("TC")) {
       if (device.deviceName.startsWith("C4") && !this.config.enableBatteryDevices) {
         this.log.warn("Battery device found but ignored. Please enable in settings and check regularly the battery status");
         return;
