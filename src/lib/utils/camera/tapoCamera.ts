@@ -49,6 +49,7 @@ export type Status = {
   meowDetection: boolean | undefined;
   glassBreakDetection: boolean | undefined;
   tamperDetection: boolean | undefined;
+  lineCrossingDetection: boolean | undefined;
   imageFlip: boolean | undefined;
   ldc: boolean | undefined;
   recordAudio: boolean | undefined;
@@ -1045,6 +1046,16 @@ export class TAPOCamera extends OnvifCamera {
         },
       },
     }),
+    lineCrossingDetection: (value) => ({
+      method: 'setLinecrossingDetectionConfig',
+      params: {
+        linecrossing_detection: {
+          detection: {
+            enabled: value ? 'on' : 'off',
+          },
+        },
+      },
+    }),
     imageFlip: (value) => ({
       method: 'setLdc',
       params: {
@@ -1148,6 +1159,7 @@ export class TAPOCamera extends OnvifCamera {
           { method: 'getMeowDetectionConfig', params: { meow_detection: { name: ['detection'] } } },
           { method: 'getGlassDetectionConfig', params: { glass_detection: { name: ['detection'] } } },
           { method: 'getTamperDetectionConfig', params: { tamper_detection: { name: ['tamper_det'] } } },
+          { method: 'getLinecrossingDetectionConfig', params: { linecrossing_detection: { name: ['detection'] } } },
           { method: 'getRotationStatus', params: { image: { name: ['switch'] } } },
           { method: 'getLdc', params: { image: { name: ['switch'] } } },
           { method: 'getAudioConfig', params: { audio_config: { name: ['record_audio'] } } },
@@ -1173,6 +1185,7 @@ export class TAPOCamera extends OnvifCamera {
         meowDetection: undefined,
         glassBreakDetection: undefined,
         tamperDetection: undefined,
+        lineCrossingDetection: undefined,
         imageFlip: undefined,
         ldc: undefined,
         recordAudio: undefined,
@@ -1196,6 +1209,7 @@ export class TAPOCamera extends OnvifCamera {
     const meow = find('getMeowDetectionConfig');
     const glass = find('getGlassDetectionConfig');
     const tamper = find('getTamperDetectionConfig');
+    const lineCrossing = find('getLinecrossingDetectionConfig');
     const rotation = find('getRotationStatus');
     const ldcResp = find('getLdc');
     const audio = find('getAudioConfig');
@@ -1228,6 +1242,12 @@ export class TAPOCamera extends OnvifCamera {
         glass?.result?.glass_detection?.detection?.enabled === 'on' ? true : glass ? false : undefined,
       tamperDetection:
         tamper?.result?.tamper_detection?.tamper_det?.enabled === 'on' ? true : tamper ? false : undefined,
+      lineCrossingDetection:
+        lineCrossing?.result?.linecrossing_detection?.detection?.enabled === 'on'
+          ? true
+          : lineCrossing
+            ? false
+            : undefined,
       imageFlip: rotation?.result?.image?.switch?.flip_type === 'center' ? true : rotation ? false : undefined,
       ldc: ldcResp?.result?.image?.switch?.ldc === 'on' ? true : ldcResp ? false : undefined,
       recordAudio: audio?.result?.audio_config?.record_audio?.enabled === 'on' ? true : audio ? false : undefined,

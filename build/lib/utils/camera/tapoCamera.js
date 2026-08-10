@@ -809,6 +809,16 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
         }
       }
     }),
+    lineCrossingDetection: (value) => ({
+      method: "setLinecrossingDetectionConfig",
+      params: {
+        linecrossing_detection: {
+          detection: {
+            enabled: value ? "on" : "off"
+          }
+        }
+      }
+    }),
     imageFlip: (value) => ({
       method: "setLdc",
       params: {
@@ -887,7 +897,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     return info.result.device_info.basic_info;
   }
   async getStatus() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca;
     const responseData = await this.apiRequest({
       method: "multipleRequest",
       params: {
@@ -906,6 +916,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
           { method: "getMeowDetectionConfig", params: { meow_detection: { name: ["detection"] } } },
           { method: "getGlassDetectionConfig", params: { glass_detection: { name: ["detection"] } } },
           { method: "getTamperDetectionConfig", params: { tamper_detection: { name: ["tamper_det"] } } },
+          { method: "getLinecrossingDetectionConfig", params: { linecrossing_detection: { name: ["detection"] } } },
           { method: "getRotationStatus", params: { image: { name: ["switch"] } } },
           { method: "getLdc", params: { image: { name: ["switch"] } } },
           { method: "getAudioConfig", params: { audio_config: { name: ["record_audio"] } } },
@@ -930,6 +941,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
         meowDetection: void 0,
         glassBreakDetection: void 0,
         tamperDetection: void 0,
+        lineCrossingDetection: void 0,
         imageFlip: void 0,
         ldc: void 0,
         recordAudio: void 0,
@@ -952,6 +964,7 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     const meow = find("getMeowDetectionConfig");
     const glass = find("getGlassDetectionConfig");
     const tamper = find("getTamperDetectionConfig");
+    const lineCrossing = find("getLinecrossingDetectionConfig");
     const rotation = find("getRotationStatus");
     const ldcResp = find("getLdc");
     const audio = find("getAudioConfig");
@@ -971,10 +984,11 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
       meowDetection: ((_J = (_I = (_H = meow == null ? void 0 : meow.result) == null ? void 0 : _H.meow_detection) == null ? void 0 : _I.detection) == null ? void 0 : _J.enabled) === "on" ? true : meow ? false : void 0,
       glassBreakDetection: ((_M = (_L = (_K = glass == null ? void 0 : glass.result) == null ? void 0 : _K.glass_detection) == null ? void 0 : _L.detection) == null ? void 0 : _M.enabled) === "on" ? true : glass ? false : void 0,
       tamperDetection: ((_P = (_O = (_N = tamper == null ? void 0 : tamper.result) == null ? void 0 : _N.tamper_detection) == null ? void 0 : _O.tamper_det) == null ? void 0 : _P.enabled) === "on" ? true : tamper ? false : void 0,
-      imageFlip: ((_S = (_R = (_Q = rotation == null ? void 0 : rotation.result) == null ? void 0 : _Q.image) == null ? void 0 : _R.switch) == null ? void 0 : _S.flip_type) === "center" ? true : rotation ? false : void 0,
-      ldc: ((_V = (_U = (_T = ldcResp == null ? void 0 : ldcResp.result) == null ? void 0 : _T.image) == null ? void 0 : _U.switch) == null ? void 0 : _V.ldc) === "on" ? true : ldcResp ? false : void 0,
-      recordAudio: ((_Y = (_X = (_W = audio == null ? void 0 : audio.result) == null ? void 0 : _W.audio_config) == null ? void 0 : _X.record_audio) == null ? void 0 : _Y.enabled) === "on" ? true : audio ? false : void 0,
-      autoUpgrade: ((_$ = (__ = (_Z = autoUpg == null ? void 0 : autoUpg.result) == null ? void 0 : _Z.auto_upgrade) == null ? void 0 : __.common) == null ? void 0 : _$.enabled) === "on" ? true : autoUpg ? false : void 0
+      lineCrossingDetection: ((_S = (_R = (_Q = lineCrossing == null ? void 0 : lineCrossing.result) == null ? void 0 : _Q.linecrossing_detection) == null ? void 0 : _R.detection) == null ? void 0 : _S.enabled) === "on" ? true : lineCrossing ? false : void 0,
+      imageFlip: ((_V = (_U = (_T = rotation == null ? void 0 : rotation.result) == null ? void 0 : _T.image) == null ? void 0 : _U.switch) == null ? void 0 : _V.flip_type) === "center" ? true : rotation ? false : void 0,
+      ldc: ((_Y = (_X = (_W = ldcResp == null ? void 0 : ldcResp.result) == null ? void 0 : _W.image) == null ? void 0 : _X.switch) == null ? void 0 : _Y.ldc) === "on" ? true : ldcResp ? false : void 0,
+      recordAudio: ((_$ = (__ = (_Z = audio == null ? void 0 : audio.result) == null ? void 0 : _Z.audio_config) == null ? void 0 : __.record_audio) == null ? void 0 : _$.enabled) === "on" ? true : audio ? false : void 0,
+      autoUpgrade: ((_ca = (_ba = (_aa = autoUpg == null ? void 0 : autoUpg.result) == null ? void 0 : _aa.auto_upgrade) == null ? void 0 : _ba.common) == null ? void 0 : _ca.enabled) === "on" ? true : autoUpg ? false : void 0
     };
   }
   async setForceWhitelampState(value) {

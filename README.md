@@ -377,6 +377,12 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
+### 0.6.3 (2026-08-10)
+
+- Camera line crossing detection (on/off toggle + status), ported from python-kasa
+- List dynamic light effects (`getLightEffects`) for L530/L630
+- Battery status exposed for battery-powered cameras via device info
+
 ### 0.6.2 (2026-08-10)
 
 - Fix camera PTZ move-to-preset (the request was missing the `preset` wrapper)

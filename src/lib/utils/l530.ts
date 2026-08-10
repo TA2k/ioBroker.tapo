@@ -91,4 +91,13 @@ export default class L530 extends L520E {
   private toHours(minutes: number):number{
     return minutes/60;
   }
+
+  /**
+   * List the built-in dynamic light effect rules (with their ids/names) so the
+   * effect id for setLightEffect (defined in P100) can be discovered.
+   * Command from python-kasa LightEffectModule (get_dynamic_light_effect_rules).
+   */
+  async getLightEffects(): Promise<any> {
+    return this.sendCommand('get_dynamic_light_effect_rules');
+  }
 }

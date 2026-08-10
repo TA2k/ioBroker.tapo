@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.2",
+    "version": "0.6.3",
     "news": {
+      "0.6.3": {
+        "en": "Camera line crossing detection (on/off + status)\nList dynamic light effects (getLightEffects) for L530/L630\nBattery status is now exposed for battery cameras via device info",
+        "de": "Kamera-Linienüberschreitungserkennung (an/aus + Status)\nDynamische Lichteffekte auflisten (getLightEffects) für L530/L630\nAkkustatus wird für Akku-Kameras über die Geräteinfo bereitgestellt",
+        "ru": "Обнаружение пересечения линии камерой (вкл/выкл + статус)\nСписок динамических световых эффектов (getLightEffects) для L530/L630\nСтатус батареи теперь доступен для камер с батареей через информацию об устройстве",
+        "pt": "Detecção de cruzamento de linha da câmera (ligar/desligar + estado)\nLista de efeitos de luz dinâmicos (getLightEffects) para L530/L630\nEstado da bateria agora exposto para câmeras com bateria via info do dispositivo",
+        "nl": "Camera lijnoverschrijdingsdetectie (aan/uit + status)\nDynamische lichteffecten opsommen (getLightEffects) voor L530/L630\nBatterijstatus nu beschikbaar voor batterijcamera's via apparaatinfo",
+        "fr": "Détection de franchissement de ligne de la caméra (marche/arrêt + état)\nLister les effets de lumière dynamiques (getLightEffects) pour L530/L630\nÉtat de la batterie désormais exposé pour les caméras à batterie via les infos de l'appareil",
+        "it": "Rilevamento attraversamento linea della fotocamera (on/off + stato)\nElenco degli effetti di luce dinamici (getLightEffects) per L530/L630\nStato della batteria ora esposto per le fotocamere a batteria tramite le info del dispositivo",
+        "es": "Detección de cruce de línea de la cámara (activar/desactivar + estado)\nListar efectos de luz dinámicos (getLightEffects) para L530/L630\nEstado de la batería ahora expuesto para cámaras con batería mediante info del dispositivo",
+        "pl": "Wykrywanie przekroczenia linii przez kamerę (wł/wył + status)\nLista dynamicznych efektów świetlnych (getLightEffects) dla L530/L630\nStatus baterii dostępny dla kamer bateryjnych przez informacje o urządzeniu",
+        "uk": "Виявлення перетину лінії камерою (увімк/вимк + статус)\nСписок динамічних світлових ефектів (getLightEffects) для L530/L630\nСтатус батареї тепер доступний для батарейних камер через інформацію пристрою",
+        "zh-cn": "摄像头越界侦测(开/关 + 状态)\n列出 L530/L630 的动态灯光效果(getLightEffects)\n电池摄像头的电池状态现通过设备信息提供"
+      },
       "0.6.2": {
         "en": "Fix camera PTZ move-to-preset (missing preset wrapper)\nSupport for Tapo smart chime D100C (play/stop chime, volume, ring type)",
         "de": "Fix Kamera-PTZ Zu-Preset-bewegen (fehlender preset-Wrapper)\nUnterstützung für Tapo Smart-Chime D100C (Gong abspielen/stoppen, Lautstärke, Ring-Typ)",
