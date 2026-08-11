@@ -666,10 +666,15 @@ class Tapo extends utils.Adapter {
         mac: discovery == null ? void 0 : discovery.mac
       });
       this.deviceObjects[id] = deviceObject;
-      const deviceInfo = await deviceObject.getDeviceInfo(true);
-      this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
-      this.log.debug(JSON.stringify(deviceInfo));
-      this.json2iob.parse(id, deviceInfo);
+      try {
+        const deviceInfo = await deviceObject.getDeviceInfo(true);
+        this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
+        this.log.debug(JSON.stringify(deviceInfo));
+        this.json2iob.parse(id, deviceInfo);
+      } catch (e) {
+        const msg = (e == null ? void 0 : e.message) || String(e);
+        this.log.info(`Camera ${id} device info unavailable (${msg}). Continuing (battery/hub doorbells are not locally reachable).`);
+      }
       this.log.debug(`Init event emitter for ${id}`);
       try {
         const eventEmitter = await deviceObject.getEventEmitter();
@@ -698,7 +703,7 @@ class Tapo extends utils.Adapter {
           this.log.debug(`ONVIF event emitter failed for ${device.ip}: ${msg}`);
         }
       }
-      const isDoorbell = ((_c = device.deviceType) == null ? void 0 : _c.includes("DOORBELL")) || ((_d = device.deviceType) == null ? void 0 : _d.includes("CAMERA")) && ((_e = device.deviceName) == null ? void 0 : _e.startsWith("D")) || String((deviceInfo == null ? void 0 : deviceInfo.model) || "").toUpperCase().startsWith("D");
+      const isDoorbell = ((_c = device.deviceType) == null ? void 0 : _c.includes("DOORBELL")) || ((_d = device.deviceType) == null ? void 0 : _d.includes("CAMERA")) && ((_e = device.deviceName) == null ? void 0 : _e.startsWith("D")) || String(device.deviceName || "").toUpperCase().startsWith("D");
       if (isDoorbell) {
         await this.setObjectNotExistsAsync(id + ".ringEvent", {
           type: "state",

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.5",
+    "version": "0.6.6",
     "news": {
+      "0.6.6": {
+        "en": "Fix: an unreachable camera/doorbell (ONVIF/EHOSTUNREACH) no longer aborts init - the ringEvent state and doorbell UDP listener are now set up even for battery/hub-paired doorbells (D210)",
+        "de": "Fix: eine nicht erreichbare Kamera/Türklingel (ONVIF/EHOSTUNREACH) bricht die Initialisierung nicht mehr ab - der ringEvent-State und der Türklingel-UDP-Listener werden auch für Akku-/Hub-Türklingeln (D210) eingerichtet",
+        "ru": "Исправление: недоступная камера/звонок (ONVIF/EHOSTUNREACH) больше не прерывает инициализацию - состояние ringEvent и UDP-слушатель звонка теперь настраиваются и для батарейных/хаб-звонков (D210)",
+        "pt": "Correção: uma câmera/campainha inacessível (ONVIF/EHOSTUNREACH) já não aborta a init - o estado ringEvent e o listener UDP são configurados mesmo para campainhas a bateria/hub (D210)",
+        "nl": "Fix: een onbereikbare camera/deurbel (ONVIF/EHOSTUNREACH) breekt de init niet meer af - de ringEvent-status en UDP-listener worden nu ook ingesteld voor batterij-/hub-deurbellen (D210)",
+        "fr": "Correctif : une caméra/sonnette injoignable (ONVIF/EHOSTUNREACH) n'interrompt plus l'init - l'état ringEvent et l'écouteur UDP sont configurés même pour les sonnettes sur batterie/hub (D210)",
+        "it": "Correzione: una fotocamera/campanello irraggiungibile (ONVIF/EHOSTUNREACH) non interrompe più l'init - lo stato ringEvent e il listener UDP vengono configurati anche per campanelli a batteria/hub (D210)",
+        "es": "Corrección: una cámara/timbre inalcanzable (ONVIF/EHOSTUNREACH) ya no aborta la init - el estado ringEvent y el listener UDP se configuran incluso para timbres a batería/hub (D210)",
+        "pl": "Poprawka: nieosiągalna kamera/dzwonek (ONVIF/EHOSTUNREACH) nie przerywa już inicjalizacji - stan ringEvent i nasłuch UDP są konfigurowane także dla dzwonków bateryjnych/hub (D210)",
+        "uk": "Виправлення: недоступна камера/дзвінок (ONVIF/EHOSTUNREACH) більше не перериває ініціалізацію - стан ringEvent і UDP-слухач налаштовуються навіть для акумуляторних/хаб-дзвінків (D210)",
+        "zh-cn": "修复:不可达的摄像头/门铃(ONVIF/EHOSTUNREACH)不再中断初始化——即使是电池/集线器配对门铃(D210),也会设置 ringEvent 状态和门铃 UDP 监听"
+      },
       "0.6.5": {
         "en": "Log all incoming doorbell UDP (port 20005) packets at debug level to help diagnose hub-paired doorbells (e.g. D210 + H200)",
         "de": "Alle eingehenden Türklingel-UDP-Pakete (Port 20005) auf Debug-Ebene loggen, um Hub-gekoppelte Türklingeln zu diagnostizieren (z. B. D210 + H200)",

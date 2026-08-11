@@ -689,10 +689,19 @@ class Tapo extends utils.Adapter {
       //new Camera(this.log, device.ip, this.config.username, this.config.password, 2);
 
       this.deviceObjects[id] = deviceObject;
-      const deviceInfo = await deviceObject.getDeviceInfo(true);
-      this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
-      this.log.debug(JSON.stringify(deviceInfo));
-      this.json2iob.parse(id, deviceInfo);
+      // getDeviceInfo uses ONVIF (port 2020). Battery doorbells (e.g. D210) paired
+      // to a hub are not locally reachable and throw EHOSTUNREACH here - don't let
+      // that abort init, otherwise the ringEvent state / doorbell setup below never
+      // runs. Continue with whatever info we have.
+      try {
+        const deviceInfo = await deviceObject.getDeviceInfo(true);
+        this.log.info(`${id} Received device info ${JSON.stringify(deviceInfo)}`);
+        this.log.debug(JSON.stringify(deviceInfo));
+        this.json2iob.parse(id, deviceInfo);
+      } catch (e: any) {
+        const msg = e?.message || String(e);
+        this.log.info(`Camera ${id} device info unavailable (${msg}). Continuing (battery/hub doorbells are not locally reachable).`);
+      }
       this.log.debug(`Init event emitter for ${id}`);
       try {
         const eventEmitter = await deviceObject.getEventEmitter();
@@ -733,7 +742,7 @@ class Tapo extends utils.Adapter {
       const isDoorbell =
         device.deviceType?.includes('DOORBELL') ||
         (device.deviceType?.includes('CAMERA') && device.deviceName?.startsWith('D')) ||
-        String(deviceInfo?.model || '').toUpperCase().startsWith('D');
+        String(device.deviceName || '').toUpperCase().startsWith('D');
       if (isDoorbell) {
         await this.setObjectNotExistsAsync(id + '.ringEvent', {
           type: 'state',
