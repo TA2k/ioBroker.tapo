@@ -377,6 +377,10 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
+### 0.6.7 (2026-08-11)
+
+- Doorbell ring now also works for hub-paired battery doorbells (e.g. D210 + H200): the ring UDP packet (port 20005) is sent from the hub IP, so any packet on the doorbell port now triggers the `ringEvent` (matches Home Assistant)
+
 ### 0.6.6 (2026-08-11)
 
 - Fix: an unreachable camera/doorbell (ONVIF/EHOSTUNREACH) no longer aborts init, so the `ringEvent` state and doorbell UDP listener are set up even for battery/hub-paired doorbells (D210)

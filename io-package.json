@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.6",
+    "version": "0.6.7",
     "news": {
+      "0.6.7": {
+        "en": "Doorbell ring now also works for hub-paired battery doorbells (e.g. D210 + H200): the ring UDP packet (port 20005) is sent from the hub IP, so any doorbell-port packet now triggers the ringEvent (matches Home Assistant behaviour)",
+        "de": "Türklingel-Ring funktioniert jetzt auch für Hub-gekoppelte Akku-Türklingeln (z. B. D210 + H200): das Ring-UDP-Paket (Port 20005) kommt von der Hub-IP, daher löst jedes Paket auf dem Türklingel-Port jetzt das ringEvent aus (wie in Home Assistant)",
+        "ru": "Звонок теперь работает и для батарейных звонков через хаб (напр. D210 + H200): UDP-пакет звонка (порт 20005) отправляется с IP хаба, поэтому любой пакет на порту звонка теперь запускает ringEvent (как в Home Assistant)",
+        "pt": "O toque agora funciona também para campainhas a bateria via hub (ex. D210 + H200): o pacote UDP (porta 20005) vem do IP do hub, portanto qualquer pacote nessa porta dispara o ringEvent (como no Home Assistant)",
+        "nl": "Deurbel werkt nu ook voor hub-gekoppelde batterijdeurbellen (bijv. D210 + H200): het UDP-pakket (poort 20005) komt van het hub-IP, dus elk pakket op die poort triggert nu het ringEvent (zoals in Home Assistant)",
+        "fr": "La sonnette fonctionne maintenant aussi pour les sonnettes sur batterie via hub (ex. D210 + H200) : le paquet UDP (port 20005) provient de l'IP du hub, donc tout paquet sur ce port déclenche le ringEvent (comme dans Home Assistant)",
+        "it": "Il campanello ora funziona anche per campanelli a batteria via hub (es. D210 + H200): il pacchetto UDP (porta 20005) proviene dall'IP dell'hub, quindi qualsiasi pacchetto su quella porta attiva il ringEvent (come in Home Assistant)",
+        "es": "El timbre ahora también funciona con timbres a batería vía hub (p. ej. D210 + H200): el paquete UDP (puerto 20005) proviene de la IP del hub, por lo que cualquier paquete en ese puerto dispara el ringEvent (como en Home Assistant)",
+        "pl": "Dzwonek działa teraz także dla bateryjnych dzwonków przez hub (np. D210 + H200): pakiet UDP (port 20005) pochodzi z IP huba, więc każdy pakiet na tym porcie wyzwala ringEvent (jak w Home Assistant)",
+        "uk": "Дзвінок тепер працює і для акумуляторних дзвінків через хаб (напр. D210 + H200): UDP-пакет (порт 20005) надходить з IP хаба, тому будь-який пакет на цьому порту запускає ringEvent (як у Home Assistant)",
+        "zh-cn": "门铃现在也适用于通过集线器配对的电池门铃(例如 D210 + H200):响铃 UDP 包(端口 20005)来自集线器 IP,因此该端口上的任何数据包现在都会触发 ringEvent(与 Home Assistant 行为一致)"
+      },
       "0.6.6": {
         "en": "Fix: an unreachable camera/doorbell (ONVIF/EHOSTUNREACH) no longer aborts init - the ringEvent state and doorbell UDP listener are now set up even for battery/hub-paired doorbells (D210)",
         "de": "Fix: eine nicht erreichbare Kamera/Türklingel (ONVIF/EHOSTUNREACH) bricht die Initialisierung nicht mehr ab - der ringEvent-State und der Türklingel-UDP-Listener werden auch für Akku-/Hub-Türklingeln (D210) eingerichtet",

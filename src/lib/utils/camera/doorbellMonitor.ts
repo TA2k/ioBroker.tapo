@@ -77,14 +77,26 @@ export class DoorbellMonitor {
 
     socket.on('message', (msg: Buffer, rinfo: dgram.RemoteInfo) => {
       const cb = DoorbellMonitor.callbacks.get(rinfo.address);
-      // Log every packet (diagnostic): battery doorbells paired to a hub/chime may
-      // broadcast from the hub/chime IP rather than the doorbell's own IP.
+      const registered = [...DoorbellMonitor.callbacks.keys()];
       DoorbellMonitor.log.debug(
         `DoorbellMonitor: UDP packet from ${rinfo.address}:${rinfo.port} len=${msg.length} matched=${!!cb} ` +
-          `registered=${JSON.stringify([...DoorbellMonitor.callbacks.keys()])}`,
+          `registered=${JSON.stringify(registered)}`,
       );
       if (cb) {
+        // Exact match: the packet came from the doorbell's own IP (standalone doorbell).
         cb();
+      } else if (DoorbellMonitor.callbacks.size > 0) {
+        // No exact match, but doorbells are registered. Hub-paired battery doorbells
+        // (e.g. D210 + H200) broadcast the ring from the HUB's IP, not the doorbell's
+        // (matches HomeAssistant-Tapo-Control, which monitors the parent/hub IP).
+        // Port 20005 traffic is doorbell-ring specific, so treat it as a ring for all
+        // registered doorbells.
+        DoorbellMonitor.log.debug(
+          `DoorbellMonitor: unmatched source ${rinfo.address}, firing all registered doorbells (hub-sourced ring)`,
+        );
+        for (const fire of DoorbellMonitor.callbacks.values()) {
+          fire();
+        }
       }
     });
 

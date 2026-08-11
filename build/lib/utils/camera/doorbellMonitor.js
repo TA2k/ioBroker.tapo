@@ -88,11 +88,19 @@ class DoorbellMonitor {
     });
     socket.on("message", (msg, rinfo) => {
       const cb = DoorbellMonitor.callbacks.get(rinfo.address);
+      const registered = [...DoorbellMonitor.callbacks.keys()];
       DoorbellMonitor.log.debug(
-        `DoorbellMonitor: UDP packet from ${rinfo.address}:${rinfo.port} len=${msg.length} matched=${!!cb} registered=${JSON.stringify([...DoorbellMonitor.callbacks.keys()])}`
+        `DoorbellMonitor: UDP packet from ${rinfo.address}:${rinfo.port} len=${msg.length} matched=${!!cb} registered=${JSON.stringify(registered)}`
       );
       if (cb) {
         cb();
+      } else if (DoorbellMonitor.callbacks.size > 0) {
+        DoorbellMonitor.log.debug(
+          `DoorbellMonitor: unmatched source ${rinfo.address}, firing all registered doorbells (hub-sourced ring)`
+        );
+        for (const fire of DoorbellMonitor.callbacks.values()) {
+          fire();
+        }
       }
     });
     socket.bind(DOORBELL_UDP_PORT, "0.0.0.0", () => {
