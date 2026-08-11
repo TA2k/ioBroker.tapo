@@ -86,10 +86,12 @@ class DoorbellMonitor {
       DoorbellMonitor.socket = null;
       DoorbellMonitor.bound = false;
     });
-    socket.on("message", (_msg, rinfo) => {
+    socket.on("message", (msg, rinfo) => {
       const cb = DoorbellMonitor.callbacks.get(rinfo.address);
+      DoorbellMonitor.log.debug(
+        `DoorbellMonitor: UDP packet from ${rinfo.address}:${rinfo.port} len=${msg.length} matched=${!!cb} registered=${JSON.stringify([...DoorbellMonitor.callbacks.keys()])}`
+      );
       if (cb) {
-        DoorbellMonitor.log.debug(`DoorbellMonitor: ring packet from ${rinfo.address}`);
         cb();
       }
     });

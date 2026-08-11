@@ -75,10 +75,15 @@ export class DoorbellMonitor {
       DoorbellMonitor.bound = false;
     });
 
-    socket.on('message', (_msg: Buffer, rinfo: dgram.RemoteInfo) => {
+    socket.on('message', (msg: Buffer, rinfo: dgram.RemoteInfo) => {
       const cb = DoorbellMonitor.callbacks.get(rinfo.address);
+      // Log every packet (diagnostic): battery doorbells paired to a hub/chime may
+      // broadcast from the hub/chime IP rather than the doorbell's own IP.
+      DoorbellMonitor.log.debug(
+        `DoorbellMonitor: UDP packet from ${rinfo.address}:${rinfo.port} len=${msg.length} matched=${!!cb} ` +
+          `registered=${JSON.stringify([...DoorbellMonitor.callbacks.keys()])}`,
+      );
       if (cb) {
-        DoorbellMonitor.log.debug(`DoorbellMonitor: ring packet from ${rinfo.address}`);
         cb();
       }
     });

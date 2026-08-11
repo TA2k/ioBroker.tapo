@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.4",
+    "version": "0.6.5",
     "news": {
+      "0.6.5": {
+        "en": "Log all incoming doorbell UDP (port 20005) packets at debug level to help diagnose hub-paired doorbells (e.g. D210 + H200)",
+        "de": "Alle eingehenden Türklingel-UDP-Pakete (Port 20005) auf Debug-Ebene loggen, um Hub-gekoppelte Türklingeln zu diagnostizieren (z. B. D210 + H200)",
+        "ru": "Логировать все входящие UDP-пакеты дверного звонка (порт 20005) на уровне debug для диагностики звонков, подключённых к хабу (напр. D210 + H200)",
+        "pt": "Registar todos os pacotes UDP da campainha (porta 20005) em nível debug para ajudar a diagnosticar campainhas ligadas a hub (ex. D210 + H200)",
+        "nl": "Alle inkomende deurbel-UDP-pakketten (poort 20005) op debugniveau loggen om hub-gekoppelde deurbellen te diagnosticeren (bijv. D210 + H200)",
+        "fr": "Journaliser tous les paquets UDP de sonnette (port 20005) au niveau debug pour diagnostiquer les sonnettes liées à un hub (ex. D210 + H200)",
+        "it": "Registrare tutti i pacchetti UDP del campanello (porta 20005) a livello debug per diagnosticare i campanelli associati a un hub (es. D210 + H200)",
+        "es": "Registrar todos los paquetes UDP del timbre (puerto 20005) en nivel debug para diagnosticar timbres emparejados con un hub (p. ej. D210 + H200)",
+        "pl": "Logowanie wszystkich przychodzących pakietów UDP dzwonka (port 20005) na poziomie debug, aby diagnozować dzwonki sparowane z hubem (np. D210 + H200)",
+        "uk": "Логувати всі вхідні UDP-пакети дзвінка (порт 20005) на рівні debug для діагностики дзвінків, підключених до хаба (напр. D210 + H200)",
+        "zh-cn": "以 debug 级别记录所有传入的门铃 UDP(端口 20005)数据包,以帮助诊断与集线器配对的门铃(例如 D210 + H200)"
+      },
       "0.6.4": {
         "en": "No longer log an error when a camera's ONVIF port (2020) is unreachable (EHOSTUNREACH/ETIMEDOUT); downgraded to an info hint\nCapture onvif socket errors so they no longer surface as uncaught errors",
         "de": "Kein Fehler-Log mehr, wenn der ONVIF-Port (2020) einer Kamera nicht erreichbar ist (EHOSTUNREACH/ETIMEDOUT); auf einen Info-Hinweis herabgestuft\nONVIF-Socket-Fehler werden abgefangen und tauchen nicht mehr als unbehandelte Fehler auf",
