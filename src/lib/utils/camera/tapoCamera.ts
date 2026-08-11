@@ -1281,13 +1281,48 @@ export class TAPOCamera extends OnvifCamera {
 
     return json.error_code !== 0;
   }
-  async moveToPreset(presetId: string) {
+  /** Return the configured PTZ presets as a map of id -> name. */
+  async getPresets(): Promise<Record<string, string>> {
+    const response = await this.apiRequest({
+      method: 'multipleRequest',
+      params: { requests: [{ method: 'getPresetConfig', params: { preset: { name: ['preset'] } } }] },
+    });
+    const preset = response?.result?.responses?.[0]?.result?.preset?.preset;
+    const map: Record<string, string> = {};
+    if (preset && Array.isArray(preset.id)) {
+      preset.id.forEach((id: any, i: number) => {
+        map[String(id)] = String(preset.name?.[i] ?? '');
+      });
+    }
+    return map;
+  }
+
+  /**
+   * Move to a PTZ preset. Accepts either the preset ID (number) or its name
+   * (e.g. "Terrasse"); a name is resolved to its ID via getPresets(). The device
+   * API (motorMoveToPreset) only accepts the numeric ID.
+   */
+  async moveToPreset(preset: string) {
+    let id = String(preset);
+    const presets = await this.getPresets().catch(() => ({}) as Record<string, string>);
+    if (!(id in presets)) {
+      // Not an ID - try to resolve it as a (case-insensitive) preset name.
+      const match = Object.entries(presets).find(([, name]) => name.toLowerCase() === id.toLowerCase());
+      if (match) {
+        id = match[0];
+      } else {
+        this.log.warn(
+          `moveToPreset: "${preset}" is neither a known preset id nor name. Available presets: ${JSON.stringify(presets)}`,
+        );
+      }
+    }
     const json = await this.apiRequest({
       method: 'multipleRequest',
-      params: { requests: [{ method: 'motorMoveToPreset', params: { preset: { goto_preset: { id: String(presetId) } } } }] },
+      params: { requests: [{ method: 'motorMoveToPreset', params: { preset: { goto_preset: { id } } } }] },
     });
 
-    return json.error_code !== 0;
+    const op = json?.result?.responses?.[0];
+    return (op?.error_code ?? json.error_code) === 0;
   }
 
   async moveMotor(x: string, y: string) {

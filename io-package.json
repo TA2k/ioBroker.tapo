@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.7",
+    "version": "0.6.8",
     "news": {
+      "0.6.8": {
+        "en": "PTZ move-to-preset now accepts the preset name (not just the numeric id) and reports success correctly\nCamera connect/reconnect log messages now show the IP instead of 'undefined'",
+        "de": "PTZ Zu-Preset akzeptiert jetzt den Preset-Namen (nicht nur die numerische id) und meldet den Erfolg korrekt\nKamera Verbindungs-/Reconnect-Logmeldungen zeigen jetzt die IP statt 'undefined'",
+        "ru": "PTZ переход к пресету теперь принимает имя пресета (не только числовой id) и корректно сообщает об успехе\nСообщения журнала подключения/переподключения камеры теперь показывают IP вместо 'undefined'",
+        "pt": "PTZ mover-para-predefinição agora aceita o nome da predefinição (não só o id numérico) e reporta o sucesso corretamente\nAs mensagens de log de ligação/reconexão da câmera mostram agora o IP em vez de 'undefined'",
+        "nl": "PTZ naar-preset accepteert nu de presetnaam (niet alleen de numerieke id) en meldt succes correct\nCamera verbindings-/herverbindingslogs tonen nu het IP in plaats van 'undefined'",
+        "fr": "PTZ aller-au-préréglage accepte maintenant le nom du préréglage (pas seulement l'id numérique) et signale correctement le succès\nLes messages de journal de connexion/reconnexion caméra affichent l'IP au lieu de 'undefined'",
+        "it": "PTZ vai-a-preset ora accetta il nome del preset (non solo l'id numerico) e riporta correttamente il successo\nI messaggi di log di connessione/riconnessione della fotocamera mostrano l'IP invece di 'undefined'",
+        "es": "PTZ ir-a-preajuste ahora acepta el nombre del preajuste (no solo el id numérico) e informa el éxito correctamente\nLos mensajes de registro de conexión/reconexión de la cámara ahora muestran la IP en lugar de 'undefined'",
+        "pl": "PTZ przejdź-do-presetu akceptuje teraz nazwę presetu (nie tylko numeryczne id) i poprawnie raportuje sukces\nKomunikaty logu połączenia/ponownego połączenia kamery pokazują teraz IP zamiast 'undefined'",
+        "uk": "PTZ перехід-до-пресету тепер приймає ім'я пресету (не лише числовий id) і коректно звітує про успіх\nПовідомлення журналу підключення/перепідключення камери тепер показують IP замість 'undefined'",
+        "zh-cn": "PTZ 移动到预设现在接受预设名称(不仅是数字 id)并正确报告成功\n摄像头连接/重连日志现在显示 IP 而非 'undefined'"
+      },
       "0.6.7": {
         "en": "Doorbell ring now also works for hub-paired battery doorbells (e.g. D210 + H200): the ring UDP packet (port 20005) is sent from the hub IP, so any doorbell-port packet now triggers the ringEvent (matches Home Assistant behaviour)",
         "de": "Türklingel-Ring funktioniert jetzt auch für Hub-gekoppelte Akku-Türklingeln (z. B. D210 + H200): das Ring-UDP-Paket (Port 20005) kommt von der Hub-IP, daher löst jedes Paket auf dem Türklingel-Port jetzt das ringEvent aus (wie in Home Assistant)",

@@ -377,6 +377,11 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
+### 0.6.8 (2026-08-11)
+
+- PTZ move-to-preset now accepts the preset name (not just the numeric id) and reports success correctly
+- Camera connect/reconnect log messages now show the IP instead of `undefined`
+
 ### 0.6.7 (2026-08-11)
 
 - Doorbell ring now also works for hub-paired battery doorbells (e.g. D210 + H200): the ring UDP packet (port 20005) is sent from the hub IP, so any packet on the doorbell port now triggers the `ringEvent` (matches Home Assistant)

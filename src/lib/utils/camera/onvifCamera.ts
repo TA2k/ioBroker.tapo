@@ -28,6 +28,12 @@ export class OnvifCamera {
 
   constructor(protected readonly log: any, protected readonly config: CameraConfig) {}
 
+  /** IP of the camera. Mirrors the P100 `ip` field so main.ts logging/reconnect
+   * (which reads deviceObject.ip) shows the address instead of "undefined". */
+  get ip(): string {
+    return this.config.ipAddress;
+  }
+
   private async getDevice(): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.device) {

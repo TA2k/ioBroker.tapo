@@ -1016,12 +1016,48 @@ class TAPOCamera extends import_onvifCamera.OnvifCamera {
     const json = await this.apiRequest({ method: "do", motor: { movestep: { direction: angle } } });
     return json.error_code !== 0;
   }
-  async moveToPreset(presetId) {
+  /** Return the configured PTZ presets as a map of id -> name. */
+  async getPresets() {
+    var _a, _b, _c, _d, _e;
+    const response = await this.apiRequest({
+      method: "multipleRequest",
+      params: { requests: [{ method: "getPresetConfig", params: { preset: { name: ["preset"] } } }] }
+    });
+    const preset = (_e = (_d = (_c = (_b = (_a = response == null ? void 0 : response.result) == null ? void 0 : _a.responses) == null ? void 0 : _b[0]) == null ? void 0 : _c.result) == null ? void 0 : _d.preset) == null ? void 0 : _e.preset;
+    const map = {};
+    if (preset && Array.isArray(preset.id)) {
+      preset.id.forEach((id, i) => {
+        var _a2, _b2;
+        map[String(id)] = String((_b2 = (_a2 = preset.name) == null ? void 0 : _a2[i]) != null ? _b2 : "");
+      });
+    }
+    return map;
+  }
+  /**
+   * Move to a PTZ preset. Accepts either the preset ID (number) or its name
+   * (e.g. "Terrasse"); a name is resolved to its ID via getPresets(). The device
+   * API (motorMoveToPreset) only accepts the numeric ID.
+   */
+  async moveToPreset(preset) {
+    var _a, _b, _c;
+    let id = String(preset);
+    const presets = await this.getPresets().catch(() => ({}));
+    if (!(id in presets)) {
+      const match = Object.entries(presets).find(([, name]) => name.toLowerCase() === id.toLowerCase());
+      if (match) {
+        id = match[0];
+      } else {
+        this.log.warn(
+          `moveToPreset: "${preset}" is neither a known preset id nor name. Available presets: ${JSON.stringify(presets)}`
+        );
+      }
+    }
     const json = await this.apiRequest({
       method: "multipleRequest",
-      params: { requests: [{ method: "motorMoveToPreset", params: { preset: { goto_preset: { id: String(presetId) } } } }] }
+      params: { requests: [{ method: "motorMoveToPreset", params: { preset: { goto_preset: { id } } } }] }
     });
-    return json.error_code !== 0;
+    const op = (_b = (_a = json == null ? void 0 : json.result) == null ? void 0 : _a.responses) == null ? void 0 : _b[0];
+    return ((_c = op == null ? void 0 : op.error_code) != null ? _c : json.error_code) === 0;
   }
   async moveMotor(x, y) {
     const json = await this.apiRequest({

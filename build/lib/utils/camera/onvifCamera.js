@@ -31,6 +31,11 @@ class OnvifCamera {
   events;
   device;
   kOnvifPort = 2020;
+  /** IP of the camera. Mirrors the P100 `ip` field so main.ts logging/reconnect
+   * (which reads deviceObject.ip) shows the address instead of "undefined". */
+  get ip() {
+    return this.config.ipAddress;
+  }
   async getDevice() {
     return new Promise((resolve, reject) => {
       if (this.device) {
