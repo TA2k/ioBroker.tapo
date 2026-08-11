@@ -36,6 +36,7 @@ class OnvifCamera {
       if (this.device) {
         return resolve(this.device);
       }
+      let settled = false;
       const device = new import_onvif2.Cam(
         {
           hostname: this.config.ipAddress,
@@ -44,6 +45,8 @@ class OnvifCamera {
           port: this.kOnvifPort
         },
         (err) => {
+          if (settled) return;
+          settled = true;
           if (err) {
             return reject(err);
           }
@@ -51,6 +54,11 @@ class OnvifCamera {
           return resolve(this.device);
         }
       );
+      device.on("error", (err) => {
+        if (settled) return;
+        settled = true;
+        reject(err);
+      });
     });
   }
   async getEventEmitter() {

@@ -377,6 +377,11 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
+### 0.6.4 (2026-08-11)
+
+- Camera ONVIF port (2020) unreachable is now an info hint, not an error (EHOSTUNREACH/ETIMEDOUT)
+- Capture onvif socket errors so they no longer surface as uncaught errors
+
 ### 0.6.3 (2026-08-10)
 
 - Camera line crossing detection (on/off toggle + status), ported from python-kasa

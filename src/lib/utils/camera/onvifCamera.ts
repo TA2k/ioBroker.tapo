@@ -34,6 +34,7 @@ export class OnvifCamera {
         return resolve(this.device);
       }
 
+      let settled = false;
       const device = new Cam(
         {
           hostname: this.config.ipAddress,
@@ -42,6 +43,8 @@ export class OnvifCamera {
           port: this.kOnvifPort,
         },
         (err?: Error) => {
+          if (settled) return;
+          settled = true;
           if (err) {
             return reject(err);
           }
@@ -49,6 +52,14 @@ export class OnvifCamera {
           return resolve(this.device);
         },
       );
+      // The onvif Cam emits socket errors (EHOSTUNREACH/ETIMEDOUT) as 'error'
+      // events that are not routed through the constructor callback. Without a
+      // listener these surface as noisy top-level errors, so capture and reject.
+      (device as any).on('error', (err: Error) => {
+        if (settled) return;
+        settled = true;
+        reject(err);
+      });
     });
   }
 

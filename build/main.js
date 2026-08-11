@@ -692,7 +692,7 @@ class Tapo extends utils.Adapter {
         });
       } catch (e) {
         const msg = (e == null ? void 0 : e.message) || String(e);
-        if (msg.includes("ECONNREFUSED")) {
+        if (msg.includes("ECONNREFUSED") || msg.includes("EHOSTUNREACH") || msg.includes("ETIMEDOUT") || msg.includes("ENETUNREACH")) {
           this.log.info(`ONVIF port 2020 not reachable for ${device.ip}. Enable ONVIF in the Tapo app under camera settings to use motion events.`);
         } else {
           this.log.debug(`ONVIF event emitter failed for ${device.ip}: ${msg}`);

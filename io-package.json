@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.3",
+    "version": "0.6.4",
     "news": {
+      "0.6.4": {
+        "en": "No longer log an error when a camera's ONVIF port (2020) is unreachable (EHOSTUNREACH/ETIMEDOUT); downgraded to an info hint\nCapture onvif socket errors so they no longer surface as uncaught errors",
+        "de": "Kein Fehler-Log mehr, wenn der ONVIF-Port (2020) einer Kamera nicht erreichbar ist (EHOSTUNREACH/ETIMEDOUT); auf einen Info-Hinweis herabgestuft\nONVIF-Socket-Fehler werden abgefangen und tauchen nicht mehr als unbehandelte Fehler auf",
+        "ru": "Больше нет лога ошибки, когда порт ONVIF (2020) камеры недоступен (EHOSTUNREACH/ETIMEDOUT); понижено до информационной подсказки\nОшибки сокета onvif перехватываются и больше не появляются как необработанные",
+        "pt": "Não regista mais um erro quando a porta ONVIF (2020) de uma câmera está inacessível (EHOSTUNREACH/ETIMEDOUT); rebaixado para uma dica informativa\nErros de socket onvif são capturados e já não surgem como erros não tratados",
+        "nl": "Logt geen fout meer wanneer de ONVIF-poort (2020) van een camera onbereikbaar is (EHOSTUNREACH/ETIMEDOUT); verlaagd naar een info-hint\nOnvif-socketfouten worden opgevangen en verschijnen niet meer als onafgevangen fouten",
+        "fr": "Ne journalise plus une erreur lorsque le port ONVIF (2020) d'une caméra est injoignable (EHOSTUNREACH/ETIMEDOUT); rétrogradé en indication info\nLes erreurs de socket onvif sont capturées et n'apparaissent plus comme des erreurs non gérées",
+        "it": "Non registra più un errore quando la porta ONVIF (2020) di una fotocamera è irraggiungibile (EHOSTUNREACH/ETIMEDOUT); declassato a suggerimento info\nGli errori del socket onvif vengono catturati e non emergono più come errori non gestiti",
+        "es": "Ya no registra un error cuando el puerto ONVIF (2020) de una cámara es inalcanzable (EHOSTUNREACH/ETIMEDOUT); degradado a una sugerencia info\nLos errores de socket onvif se capturan y ya no aparecen como errores no controlados",
+        "pl": "Nie loguje już błędu, gdy port ONVIF (2020) kamery jest nieosiągalny (EHOSTUNREACH/ETIMEDOUT); obniżony do wskazówki info\nBłędy gniazda onvif są przechwytywane i nie pojawiają się już jako nieobsłużone błędy",
+        "uk": "Більше не логує помилку, коли порт ONVIF (2020) камери недоступний (EHOSTUNREACH/ETIMEDOUT); знижено до інформаційної підказки\nПомилки сокета onvif перехоплюються і більше не з'являються як необроблені",
+        "zh-cn": "当摄像头的 ONVIF 端口(2020)不可达时(EHOSTUNREACH/ETIMEDOUT)不再记录错误,降级为信息提示\n捕获 onvif 套接字错误,不再作为未捕获错误出现"
+      },
       "0.6.3": {
         "en": "Camera line crossing detection (on/off + status)\nList dynamic light effects (getLightEffects) for L530/L630\nBattery status is now exposed for battery cameras via device info",
         "de": "Kamera-Linienüberschreitungserkennung (an/aus + Status)\nDynamische Lichteffekte auflisten (getLightEffects) für L530/L630\nAkkustatus wird für Akku-Kameras über die Geräteinfo bereitgestellt",
