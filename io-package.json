@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.8",
+    "version": "0.6.9",
     "news": {
+      "0.6.9": {
+        "en": "Publish the configured PTZ presets as a state (presets: id -> name) and refresh it after save/delete, so you know which names/ids moveToPreset accepts",
+        "de": "Konfigurierte PTZ-Presets als State anzeigen (presets: id -> name) und nach Speichern/Löschen aktualisieren, damit klar ist, welche Namen/IDs moveToPreset akzeptiert",
+        "ru": "Публикация настроенных пресетов PTZ в виде состояния (presets: id -> name) и обновление после сохранения/удаления, чтобы знать какие имена/id принимает moveToPreset",
+        "pt": "Publicar as predefinições PTZ configuradas como estado (presets: id -> name) e atualizá-lo após guardar/eliminar, para saber quais nomes/ids o moveToPreset aceita",
+        "nl": "De geconfigureerde PTZ-presets als state publiceren (presets: id -> name) en verversen na opslaan/verwijderen, zodat je weet welke namen/ids moveToPreset accepteert",
+        "fr": "Publier les préréglages PTZ configurés en tant qu'état (presets: id -> name) et le rafraîchir après enregistrement/suppression, pour savoir quels noms/ids moveToPreset accepte",
+        "it": "Pubblicare i preset PTZ configurati come stato (presets: id -> name) e aggiornarlo dopo salva/elimina, per sapere quali nomi/id accetta moveToPreset",
+        "es": "Publicar los preajustes PTZ configurados como estado (presets: id -> name) y actualizarlo tras guardar/eliminar, para saber qué nombres/ids acepta moveToPreset",
+        "pl": "Publikowanie skonfigurowanych presetów PTZ jako stanu (presets: id -> name) i odświeżanie po zapisie/usunięciu, aby wiedzieć jakie nazwy/id akceptuje moveToPreset",
+        "uk": "Публікація налаштованих PTZ-пресетів як стану (presets: id -> name) та оновлення після збереження/видалення, щоб знати які імена/id приймає moveToPreset",
+        "zh-cn": "将已配置的 PTZ 预设作为状态发布(presets: id -> name),并在保存/删除后刷新,以便知道 moveToPreset 接受哪些名称/id"
+      },
       "0.6.8": {
         "en": "PTZ move-to-preset now accepts the preset name (not just the numeric id) and reports success correctly\nCamera connect/reconnect log messages now show the IP instead of 'undefined'",
         "de": "PTZ Zu-Preset akzeptiert jetzt den Preset-Namen (nicht nur die numerische id) und meldet den Erfolg korrekt\nKamera Verbindungs-/Reconnect-Logmeldungen zeigen jetzt die IP statt 'undefined'",

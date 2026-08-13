@@ -377,6 +377,10 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
+### 0.6.9 (2026-08-11)
+
+- Publish the configured PTZ presets as a state (`presets`: id -> name), refreshed after save/delete, so you can see which names/ids `moveToPreset` accepts
+
 ### 0.6.8 (2026-08-11)
 
 - PTZ move-to-preset now accepts the preset name (not just the numeric id) and reports success correctly

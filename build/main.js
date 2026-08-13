@@ -419,7 +419,7 @@ class Tapo extends utils.Adapter {
           { command: "setRecordPlan", name: "SD Card Recording On/Off" },
           { command: "moveMotor", name: "Move Camera X,Y (-360..360, -45..45)", type: "string", def: "0, 0", role: "text" },
           { command: "moveMotorStep", name: "Angle (0-360)", type: "string", def: "180", role: "text" },
-          { command: "moveToPreset", name: "PresetId", type: "string", def: "1", role: "text" },
+          { command: "moveToPreset", name: "Move to Preset (id or name)", type: "string", def: "1", role: "text" },
           { command: "calibrateMotor", name: "True = Calibrate Motor" },
           { command: "savePreset", name: "Save Preset (name)", type: "string", def: "", role: "text" },
           { command: "deletePreset", name: "Delete Preset (id)", type: "string", def: "", role: "text" },
@@ -720,6 +720,16 @@ class Tapo extends utils.Adapter {
         this.deviceObjects[id].isDoorbell = true;
         import_doorbellMonitor.DoorbellMonitor.register(this.log, device.ip, () => this.fireRingEvent(id));
         this.log.debug(`Doorbell ring detection enabled for ${id} (${device.ip})`);
+      }
+      if (this.deviceObjects[id].getPresets) {
+        try {
+          const presets = await this.deviceObjects[id].getPresets();
+          if (presets && Object.keys(presets).length) {
+            await this.json2iob.parse(id + ".presets", presets);
+          }
+        } catch (e) {
+          this.log.debug(`getPresets failed for ${id}: ${(e == null ? void 0 : e.message) || e}`);
+        }
       }
       return;
     } else if (((_f = device.deviceType) == null ? void 0 : _f.includes("CHIME")) || device.deviceName.startsWith("D100")) {
@@ -1063,6 +1073,14 @@ class Tapo extends utils.Adapter {
             this.log.info(
               command + " was set to : " + state.val + " for device " + deviceId + " was successful: " + JSON.stringify(result)
             );
+            if ((command === "savePreset" || command === "deletePreset") && this.deviceObjects[deviceId].getPresets) {
+              try {
+                const presets = await this.deviceObjects[deviceId].getPresets();
+                await this.json2iob.parse(deviceId + ".presets", presets || {});
+              } catch (e) {
+                this.log.debug(`getPresets refresh failed for ${deviceId}: ${(e == null ? void 0 : e.message) || e}`);
+              }
+            }
             this.refreshTimeout && clearTimeout(this.refreshTimeout);
             this.refreshTimeout = setTimeout(async () => {
               this.updateDevices();
