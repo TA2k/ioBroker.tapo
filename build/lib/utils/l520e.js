@@ -49,10 +49,9 @@ class L520E extends import_l510e.default {
     });
   }
   async setColorTemp(color_temp) {
-    const transformedColorTemp = this.transformColorTemp(color_temp);
-    this.log.debug("Color Temp Tapo :" + transformedColorTemp);
-    const roundedValue = transformedColorTemp > 6500 ? 6500 : transformedColorTemp < 2500 ? 2500 : transformedColorTemp;
-    const payload = '{"method": "set_device_info","params": {"hue": 0,"saturation": 0,"color_temp": ' + roundedValue + '},"requestTimeMils": ' + Math.round(Date.now() * 1e3) + "};";
+    const roundedValue = color_temp > 6500 ? 6500 : color_temp < 2500 ? 2500 : Math.round(color_temp);
+    this.log.debug("Color Temp Tapo (Kelvin): " + roundedValue);
+    const payload = '{"method": "set_device_info","params": {"color_temp": ' + roundedValue + '},"requestTimeMils": ' + Math.round(Date.now() * 1e3) + "};";
     return this.sendRequest(payload);
   }
   transformColorTemp(value) {

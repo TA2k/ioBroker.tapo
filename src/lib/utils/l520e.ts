@@ -24,22 +24,25 @@ export default class L520E extends L510E {
     });
   }
 
-  async setColorTemp(color_temp:number):Promise<boolean>{
-    const transformedColorTemp = this.transformColorTemp(color_temp);
-    this.log.debug('Color Temp Tapo :' + transformedColorTemp);
+  async setColorTemp(color_temp: number): Promise<boolean> {
+    // Tapo expects the color temperature directly in Kelvin (2500-6500), NOT in
+    // mired - matching python-kasa's set_color_temp ({color_temp: <kelvin>}).
+    // Send ONLY color_temp: sending hue/saturation:0 alongside made the L530
+    // briefly apply the temp and then revert to a warm hue.
+    const roundedValue = color_temp > 6500 ? 6500 : color_temp < 2500 ? 2500 : Math.round(color_temp);
+    this.log.debug('Color Temp Tapo (Kelvin): ' + roundedValue);
 
-    const roundedValue = transformedColorTemp > 6500 ? 6500 : transformedColorTemp < 2500 ?
-      2500 : transformedColorTemp;
-
-    const payload = '{'+
-              '"method": "set_device_info",'+
-              '"params": {'+
-                  '"hue": 0,' +
-                  '"saturation": 0,' +
-                  '"color_temp": ' + roundedValue +
-                  '},'+
-                  '"requestTimeMils": ' + Math.round(Date.now() * 1000) + ''+
-                  '};';
+    const payload =
+      '{' +
+      '"method": "set_device_info",' +
+      '"params": {' +
+      '"color_temp": ' +
+      roundedValue +
+      '},' +
+      '"requestTimeMils": ' +
+      Math.round(Date.now() * 1000) +
+      '' +
+      '};';
 
     return this.sendRequest(payload);
   }

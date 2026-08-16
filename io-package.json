@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.9",
+    "version": "0.6.10",
     "news": {
+      "0.6.10": {
+        "en": "Fix setColorTemp for L530/L530E: send the value directly in Kelvin (was wrongly converted from mired) and send only color_temp (no hue/saturation), which caused the lamp to briefly apply the temp and then revert to a warm hue",
+        "de": "Fix setColorTemp für L530/L530E: Wert direkt in Kelvin senden (wurde fälschlich aus mired umgerechnet) und nur color_temp senden (kein hue/saturation), was dazu führte, dass die Lampe die Temperatur kurz übernahm und dann auf einen warmen Farbton zurücksprang",
+        "ru": "Исправление setColorTemp для L530/L530E: отправлять значение напрямую в Кельвинах (ранее ошибочно конвертировалось из майред) и отправлять только color_temp (без hue/saturation), из-за чего лампа кратко применяла температуру и возвращалась к тёплому оттенку",
+        "pt": "Corrige setColorTemp para L530/L530E: envia o valor diretamente em Kelvin (era convertido erradamente de mired) e envia apenas color_temp (sem hue/saturation), o que fazia a lâmpada aplicar brevemente a temperatura e reverter para um tom quente",
+        "nl": "Fix setColorTemp voor L530/L530E: waarde direct in Kelvin sturen (werd ten onrechte uit mired omgerekend) en alleen color_temp sturen (geen hue/saturation), waardoor de lamp de temperatuur kort toepaste en terugsprong naar een warme tint",
+        "fr": "Correction de setColorTemp pour L530/L530E : envoie la valeur directement en Kelvin (elle était convertie à tort depuis les mired) et envoie uniquement color_temp (sans hue/saturation), ce qui faisait que la lampe appliquait brièvement la température puis revenait à une teinte chaude",
+        "it": "Corregge setColorTemp per L530/L530E: invia il valore direttamente in Kelvin (era convertito erroneamente da mired) e invia solo color_temp (senza hue/saturation), che faceva applicare brevemente la temperatura per poi tornare a una tonalità calda",
+        "es": "Corrige setColorTemp para L530/L530E: envía el valor directamente en Kelvin (se convertía erróneamente desde mired) y envía solo color_temp (sin hue/saturation), lo que hacía que la lámpara aplicara brevemente la temperatura y volviera a un tono cálido",
+        "pl": "Poprawka setColorTemp dla L530/L530E: wysyłanie wartości bezpośrednio w Kelwinach (było błędnie konwertowane z mired) i wysyłanie tylko color_temp (bez hue/saturation), co powodowało krótkie zastosowanie temperatury i powrót do ciepłego odcienia",
+        "uk": "Виправлення setColorTemp для L530/L530E: надсилання значення напряму в Кельвінах (раніше помилково конвертувалося з майред) і лише color_temp (без hue/saturation), через що лампа коротко застосовувала температуру і поверталася до теплого відтінку",
+        "zh-cn": "修复 L530/L530E 的 setColorTemp:直接以开尔文发送数值(此前错误地从 mired 转换),且仅发送 color_temp(不含 hue/saturation),此前会导致灯泡短暂应用色温后又跳回暖色"
+      },
       "0.6.9": {
         "en": "Publish the configured PTZ presets as a state (presets: id -> name) and refresh it after save/delete, so you know which names/ids moveToPreset accepts",
         "de": "Konfigurierte PTZ-Presets als State anzeigen (presets: id -> name) und nach Speichern/Löschen aktualisieren, damit klar ist, welche Namen/IDs moveToPreset akzeptiert",
