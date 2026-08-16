@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.11",
+    "version": "0.6.12",
     "news": {
+      "0.6.12": {
+        "en": "Fix intermittent 'Expected double-quoted property name in JSON' on KLAP/TPAP devices: requests per device are now serialized, so rapid commands (or a poll racing a command) no longer corrupt the AES sequence and garble the decrypted response",
+        "de": "Fix für sporadisches 'Expected double-quoted property name in JSON' bei KLAP/TPAP-Geräten: Anfragen pro Gerät werden jetzt serialisiert, sodass schnelle Befehle (oder ein Poll gleichzeitig mit einem Befehl) die AES-Sequenz nicht mehr verfälschen und die entschlüsselte Antwort nicht mehr zerstören",
+        "ru": "Исправление периодической ошибки 'Expected double-quoted property name in JSON' на устройствах KLAP/TPAP: запросы к устройству теперь сериализуются, поэтому быстрые команды (или опрос одновременно с командой) больше не повреждают последовательность AES и не искажают расшифрованный ответ",
+        "pt": "Corrige o erro intermitente 'Expected double-quoted property name in JSON' em dispositivos KLAP/TPAP: os pedidos por dispositivo são agora serializados, para que comandos rápidos (ou um poll em simultâneo com um comando) já não corrompam a sequência AES nem estraguem a resposta desencriptada",
+        "nl": "Fix voor incidentele 'Expected double-quoted property name in JSON' bij KLAP/TPAP-apparaten: verzoeken per apparaat worden nu geserialiseerd, zodat snelle commando's (of een poll tegelijk met een commando) de AES-sequentie niet meer beschadigen en het ontsleutelde antwoord niet meer verminken",
+        "fr": "Correction de l'erreur intermittente 'Expected double-quoted property name in JSON' sur les appareils KLAP/TPAP : les requêtes par appareil sont désormais sérialisées, afin que des commandes rapides (ou un poll simultané à une commande) ne corrompent plus la séquence AES ni la réponse déchiffrée",
+        "it": "Corregge l'errore intermittente 'Expected double-quoted property name in JSON' sui dispositivi KLAP/TPAP: le richieste per dispositivo sono ora serializzate, così comandi rapidi (o un poll in concomitanza con un comando) non corrompono più la sequenza AES né la risposta decrittata",
+        "es": "Corrige el error intermitente 'Expected double-quoted property name in JSON' en dispositivos KLAP/TPAP: las peticiones por dispositivo ahora se serializan, de modo que comandos rápidos (o un sondeo a la vez que un comando) ya no corrompen la secuencia AES ni la respuesta descifrada",
+        "pl": "Poprawka sporadycznego 'Expected double-quoted property name in JSON' na urządzeniach KLAP/TPAP: żądania na urządzenie są teraz serializowane, więc szybkie polecenia (lub odpytywanie równocześnie z poleceniem) nie uszkadzają już sekwencji AES ani odszyfrowanej odpowiedzi",
+        "uk": "Виправлення періодичної помилки 'Expected double-quoted property name in JSON' на пристроях KLAP/TPAP: запити до пристрою тепер серіалізуються, тож швидкі команди (або опитування одночасно з командою) більше не псують послідовність AES і розшифровану відповідь",
+        "zh-cn": "修复 KLAP/TPAP 设备上偶发的 'Expected double-quoted property name in JSON':每台设备的请求现在被串行化,快速连续命令(或轮询与命令并发)不再破坏 AES 序列号,也不再导致解密响应错乱"
+      },
       "0.6.11": {
         "en": "Fix: L530 name variants (e.g. 'L530 Series', hw 1.0) are now detected as color bulbs, so setColor/setColorTemp are available (match by prefix instead of exact 'L530')",
         "de": "Fix: L530-Namensvarianten (z. B. 'L530 Series', hw 1.0) werden jetzt als Farblampen erkannt, sodass setColor/setColorTemp verfügbar sind (Prefix-Erkennung statt exaktem 'L530')",

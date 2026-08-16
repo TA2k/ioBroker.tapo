@@ -377,6 +377,10 @@ Nicht jede Kamera unterstuetzt alle Funktionen. Nicht unterstuetzte Befehle werd
 <https://forum.iobroker.net/topic/57336/test-adapter-tp-link-tapo/>
 
 ## Changelog
+### 0.6.12 (2026-08-11)
+
+- Fix intermittent "Expected double-quoted property name in JSON" on KLAP/TPAP devices: requests per device are now serialized, so rapid commands (or a poll racing a command) no longer corrupt the AES sequence counter and garble the decrypted response
+
 ### 0.6.11 (2026-08-11)
 
 - Fix: L530 name variants (e.g. "L530 Series", hw 1.0) are now detected as color bulbs, so `setColor`/`setColorTemp` are available (match by prefix instead of exact "L530")

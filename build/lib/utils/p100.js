@@ -83,6 +83,11 @@ class P100 {
   _reconnect_counter;
   _lastErrorMessage = "";
   _timeout;
+  // Serializes requests per device. KLAP/TPAP derive the AES IV from a sequence
+  // counter that encrypt() increments; overlapping requests (e.g. rapid commands
+  // or a poll racing a command) would decrypt a response with the wrong seq and
+  // yield garbage ("Expected double-quoted property name in JSON ...").
+  _requestLock = Promise.resolve();
   tpLinkCipher;
   newTpLinkCipher;
   tpapCipher;
@@ -815,52 +820,66 @@ class P100 {
       reject();
     });
   }
+  /** Run fn while holding the per-device request lock, so encrypt→send→decrypt
+   * of one request completes before the next starts (avoids KLAP/TPAP seq races). */
+  runExclusive(fn) {
+    const run = this._requestLock.then(fn, fn);
+    this._requestLock = run.then(
+      () => void 0,
+      () => void 0
+    );
+    return run;
+  }
   handleKlapRequest(payload) {
-    if (this.newTpLinkCipher) {
-      const data = this.newTpLinkCipher.encrypt(payload);
-      return this.raw_request("request", data.encryptedPayload, "arraybuffer", { seq: data.seq.toString() }).then((res) => {
-        var _a;
-        if (!res || !Buffer.isBuffer(res)) {
-          const responseData = (_a = res == null ? void 0 : res.response) == null ? void 0 : _a.data;
-          if (responseData && Buffer.isBuffer(responseData)) {
-            try {
-              const decrypted = JSON.parse(this.newTpLinkCipher.decrypt(responseData));
-              this.log.debug("KLAP HTTP error but decrypted device response: " + JSON.stringify(decrypted));
-              return this.handleError(decrypted.error_code || res.status || res.message, "671d");
-            } catch (e) {
-              this.log.debug("KLAP could not decrypt error response: " + e.message);
+    return this.runExclusive(() => {
+      if (this.newTpLinkCipher) {
+        const data = this.newTpLinkCipher.encrypt(payload);
+        return this.raw_request("request", data.encryptedPayload, "arraybuffer", { seq: data.seq.toString() }).then((res) => {
+          var _a;
+          if (!res || !Buffer.isBuffer(res)) {
+            const responseData = (_a = res == null ? void 0 : res.response) == null ? void 0 : _a.data;
+            if (responseData && Buffer.isBuffer(responseData)) {
+              try {
+                const decrypted = JSON.parse(this.newTpLinkCipher.decrypt(responseData));
+                this.log.debug("KLAP HTTP error but decrypted device response: " + JSON.stringify(decrypted));
+                return this.handleError(decrypted.error_code || res.status || res.message, "671d");
+              } catch (e) {
+                this.log.debug("KLAP could not decrypt error response: " + e.message);
+              }
             }
+            this.log.debug("KLAP request returned non-buffer response: " + typeof res);
+            return false;
           }
-          this.log.debug("KLAP request returned non-buffer response: " + typeof res);
-          return false;
-        }
-        return JSON.parse(this.newTpLinkCipher.decrypt(res));
-      }).catch((error) => {
-        return this.handleError(error.message, "671");
+          return JSON.parse(this.newTpLinkCipher.decrypt(res));
+        }).catch((error) => {
+          return this.handleError(error.message, "671");
+        });
+      }
+      return new Promise((resolve, reject) => {
+        reject();
       });
-    }
-    return new Promise((resolve, reject) => {
-      reject();
     });
   }
   async handleTpapRequest(payload) {
-    if (!this.tpapCipher || !this.tpapCipher.isReady) {
-      throw new Error("TPAP cipher not ready");
-    }
-    const encrypted = this.tpapCipher.encrypt(payload);
-    const url = this.tpapCipher.sessionUrl;
-    const config = {
-      timeout: this._timeout * 1e3,
-      responseType: "arraybuffer",
-      headers: {
-        "Content-Type": "application/octet-stream",
-        Connection: "Keep-Alive"
+    return this.runExclusive(async () => {
+      if (!this.tpapCipher || !this.tpapCipher.isReady) {
+        throw new Error("TPAP cipher not ready");
       }
-    };
-    const res = await this._axios.post(url, encrypted.data, config);
-    const responseData = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data);
-    const decrypted = this.tpapCipher.decrypt(responseData);
-    return JSON.parse(decrypted);
+      const encrypted = this.tpapCipher.encrypt(payload);
+      const url = this.tpapCipher.sessionUrl;
+      const config = {
+        timeout: this._timeout * 1e3,
+        responseType: "arraybuffer",
+        headers: {
+          "Content-Type": "application/octet-stream",
+          Connection: "Keep-Alive"
+        }
+      };
+      const res = await this._axios.post(url, encrypted.data, config);
+      const responseData = Buffer.isBuffer(res.data) ? res.data : Buffer.from(res.data);
+      const decrypted = this.tpapCipher.decrypt(responseData);
+      return JSON.parse(decrypted);
+    });
   }
   async reconnect() {
     this._reconnect_counter++;
