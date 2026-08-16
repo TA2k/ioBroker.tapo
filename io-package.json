@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tapo",
-    "version": "0.6.10",
+    "version": "0.6.11",
     "news": {
+      "0.6.11": {
+        "en": "Fix: L530 name variants (e.g. 'L530 Series', hw 1.0) are now detected as color bulbs, so setColor/setColorTemp are available (match by prefix instead of exact 'L530')",
+        "de": "Fix: L530-Namensvarianten (z. B. 'L530 Series', hw 1.0) werden jetzt als Farblampen erkannt, sodass setColor/setColorTemp verfügbar sind (Prefix-Erkennung statt exaktem 'L530')",
+        "ru": "Исправление: варианты имени L530 (напр. 'L530 Series', hw 1.0) теперь распознаются как цветные лампы, поэтому доступны setColor/setColorTemp (сопоставление по префиксу вместо точного 'L530')",
+        "pt": "Correção: variantes de nome L530 (ex. 'L530 Series', hw 1.0) são agora detetadas como lâmpadas de cor, disponibilizando setColor/setColorTemp (correspondência por prefixo em vez de 'L530' exato)",
+        "nl": "Fix: L530-naamvarianten (bijv. 'L530 Series', hw 1.0) worden nu herkend als kleurlampen, zodat setColor/setColorTemp beschikbaar zijn (prefix-detectie in plaats van exact 'L530')",
+        "fr": "Correction : les variantes de nom L530 (ex. 'L530 Series', hw 1.0) sont maintenant détectées comme ampoules couleur, rendant setColor/setColorTemp disponibles (correspondance par préfixe au lieu de 'L530' exact)",
+        "it": "Correzione: le varianti di nome L530 (es. 'L530 Series', hw 1.0) ora sono riconosciute come lampadine a colori, rendendo disponibili setColor/setColorTemp (corrispondenza per prefisso invece di 'L530' esatto)",
+        "es": "Corrección: las variantes de nombre L530 (p. ej. 'L530 Series', hw 1.0) ahora se detectan como bombillas de color, habilitando setColor/setColorTemp (coincidencia por prefijo en lugar de 'L530' exacto)",
+        "pl": "Poprawka: warianty nazwy L530 (np. 'L530 Series', hw 1.0) są teraz wykrywane jako żarówki kolorowe, więc setColor/setColorTemp są dostępne (dopasowanie po prefiksie zamiast dokładnego 'L530')",
+        "uk": "Виправлення: варіанти назви L530 (напр. 'L530 Series', hw 1.0) тепер розпізнаються як кольорові лампи, тож доступні setColor/setColorTemp (співставлення за префіксом замість точного 'L530')",
+        "zh-cn": "修复:L530 名称变体(如 'L530 Series',硬件 1.0)现在被识别为彩色灯泡,因此可用 setColor/setColorTemp(按前缀匹配而非精确 'L530')"
+      },
       "0.6.10": {
         "en": "Fix setColorTemp for L530/L530E: send the value directly in Kelvin (was wrongly converted from mired) and send only color_temp (no hue/saturation), which caused the lamp to briefly apply the temp and then revert to a warm hue",
         "de": "Fix setColorTemp für L530/L530E: Wert direkt in Kelvin senden (wurde fälschlich aus mired umgerechnet) und nur color_temp senden (kein hue/saturation), was dazu führte, dass die Lampe die Temperatur kurz übernahm und dann auf einen warmen Farbton zurücksprang",

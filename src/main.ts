@@ -641,12 +641,18 @@ class Tapo extends utils.Adapter {
       deviceObject = new P100(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName.startsWith('P110') || device.deviceName.startsWith('P115')) {
       deviceObject = new P110(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
-    } else if (device.deviceName === 'L530' || device.deviceName.startsWith('L630')) {
-      deviceObject = new L530(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName === 'L510E') {
       deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName === 'L520E') {
       deviceObject = new L520E(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
+    } else if (
+      device.deviceName.startsWith('L530') ||
+      device.deviceName.startsWith('L535') ||
+      device.deviceName.startsWith('L630')
+    ) {
+      // Multicolor bulbs. Match by prefix so hardware/name variants like
+      // "L530 Series" (hw 1.0) or "L530E" still get the color/color-temp class.
+      deviceObject = new L530(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName.startsWith('L') || device.deviceName.startsWith('KL')) {
       deviceObject = new L510E(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (

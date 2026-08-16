@@ -631,12 +631,12 @@ class Tapo extends utils.Adapter {
       deviceObject = new import_p100.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName.startsWith("P110") || device.deviceName.startsWith("P115")) {
       deviceObject = new import_p110.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
-    } else if (device.deviceName === "L530" || device.deviceName.startsWith("L630")) {
-      deviceObject = new import_l530.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName === "L510E") {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName === "L520E") {
       deviceObject = new import_l520e.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
+    } else if (device.deviceName.startsWith("L530") || device.deviceName.startsWith("L535") || device.deviceName.startsWith("L630")) {
+      deviceObject = new import_l530.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (device.deviceName.startsWith("L") || device.deviceName.startsWith("KL")) {
       deviceObject = new import_l510e.default(this.log, device.ip, this.config.username, this.config.password, 2, port, useHttps);
     } else if (((_a = device.deviceType) == null ? void 0 : _a.includes("CAMERA")) || ((_b = device.deviceType) == null ? void 0 : _b.includes("DOORBELL")) || device.deviceName.startsWith("C") || device.deviceName.startsWith("TC")) {
