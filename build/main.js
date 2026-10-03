@@ -288,7 +288,7 @@ class Tapo extends utils.Adapter {
     });
   }
   async getDeviceList() {
-    const body = '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH","SMART.TAPODOORBELL","SMART.TAPOCHIME","SMART.TAPOLOCK","SMART.TAPOROBOVAC","SMART.TAPONVR"],"limit":30}';
+    const body = '{"index":0,"deviceTypeList":["SMART.TAPOBULB","SMART.TAPOPLUG","SMART.IPCAMERA","SMART.TAPOHUB","SMART.KASAHUB","SMART.TAPOSENSOR","SMART.TAPOSWITCH","SMART.TAPODOORBELL","SMART.TAPOCHIME","SMART.TAPOLOCK","SMART.TAPOROBOVAC","SMART.TAPONVR"],"limit":30}';
     const md5 = import_crypto.default.createHash("md5").update(body).digest("base64");
     this.log.debug(md5);
     const content = md5 + "\n9999999999\nfee66616-58dd-4bcb-be79-fe092d800a21\n/api/v2/common/getDeviceListByPage";
@@ -451,7 +451,7 @@ class Tapo extends utils.Adapter {
           remoteArray = [...baseRemotes, ...lightExtras];
         } else if (dn.startsWith("F")) {
           remoteArray = [...baseRemotes, ...fanExtras];
-        } else if (dn.startsWith("H")) {
+        } else if (dn.startsWith("H") || dn.startsWith("KH")) {
           remoteArray = [...baseRemotes, ...hubExtras];
         } else if (dn.startsWith("KE")) {
           remoteArray = [...baseRemotes, ...thermostatExtras];
@@ -805,6 +805,63 @@ class Tapo extends utils.Adapter {
     }
   }
   ringTimeouts = {};
+  childRemotesCreated = /* @__PURE__ */ new Set();
+  static trvRemotes = [
+    { command: "setTargetTemperature", name: "Target Temperature (turns heating on)", type: "number", role: "level.temperature" },
+    { command: "setFrostProtection", name: "Frost Protection On/Off (on = heating off)", type: "boolean", role: "switch" },
+    { command: "setTemperatureOffset", name: "Temperature Offset (-10..10)", type: "number", role: "level" },
+    { command: "setChildProtection", name: "Child Lock On/Off", type: "boolean", role: "switch" }
+  ];
+  /** Create writable remotes for each TRV behind a SMART-protocol hub. */
+  async createChildRemotes(hubId, childList) {
+    var _a;
+    for (const child of ((_a = childList == null ? void 0 : childList.result) == null ? void 0 : _a.child_device_list) || []) {
+      if (child.category !== "subg.trv" || this.childRemotesCreated.has(child.device_id)) {
+        continue;
+      }
+      const base = `${hubId}.childremote.${child.device_id}`;
+      const name = this.isBase64(child.nickname) ? Buffer.from(child.nickname, "base64").toString("utf8") : child.device_id;
+      await this.extendObject(base, { type: "channel", common: { name }, native: {} });
+      for (const r of Tapo.trvRemotes) {
+        await this.extendObject(`${base}.${r.command}`, {
+          type: "state",
+          common: { name: r.name, type: r.type, role: r.role, read: true, write: true },
+          native: {}
+        });
+      }
+      this.childRemotesCreated.add(child.device_id);
+    }
+  }
+  /** Send a TRV remote write to the child through its hub. */
+  async handleChildRemote(hubId, childId, command, state) {
+    var _a, _b, _c;
+    const paramsFor = {
+      setTargetTemperature: { target_temp: Number(state.val), frost_protection_on: false },
+      setFrostProtection: { frost_protection_on: !!state.val },
+      setTemperatureOffset: { temp_offset: Number(state.val) },
+      setChildProtection: { child_protection: !!state.val }
+    };
+    const params = paramsFor[command];
+    const hub = this.deviceObjects[hubId];
+    if (!params || !(hub == null ? void 0 : hub.sendHubChildCommand)) {
+      this.log.error(`Hub ${hubId} has no child command ${command}`);
+      return;
+    }
+    try {
+      const result = await hub.sendHubChildCommand(childId, "set_device_info", params);
+      const code = Number((_c = (_b = (_a = result == null ? void 0 : result.responseData) == null ? void 0 : _a.error_code) != null ? _b : result == null ? void 0 : result.error_code) != null ? _c : 0);
+      if (code !== 0) {
+        this.log.error(`${command}=${state.val} for ${childId} failed: ${JSON.stringify(result)}`);
+        return;
+      }
+      this.log.info(`${command} was set to ${state.val} for ${childId} via hub ${hubId}`);
+      await this.setState(`${hubId}.childremote.${childId}.${command}`, state.val, true);
+      this.refreshTimeout && clearTimeout(this.refreshTimeout);
+      this.refreshTimeout = setTimeout(() => this.updateDevices(), 2 * 1e3);
+    } catch (error) {
+      this.log.error(`${command} for ${childId} failed: ${(error == null ? void 0 : error.message) || error}`);
+    }
+  }
   /** Pulse the doorbell ringEvent state: set true, then auto-reset to false after 2s. */
   fireRingEvent(id) {
     this.log.debug(`Doorbell ring for ${id}`);
@@ -923,6 +980,13 @@ class Tapo extends utils.Adapter {
           this.deviceObjects[deviceId]._connected = true;
           await this.setState(deviceId + ".connected", true, true);
           await this.json2iob.parse(deviceId, sysInfo);
+          if (String(sysInfo.type || "").includes("HUB")) {
+            const childList = await this.deviceObjects[deviceId].getChildDevices();
+            if (childList && Number(childList.error_code) === 0) {
+              await this.json2iob.parse(deviceId + ".childlist", childList);
+              await this.createChildRemotes(deviceId, childList);
+            }
+          }
           if (this.deviceObjects[deviceId].getEnergyUsage) {
             this.log.debug("Receive energy usage");
             const energyUsage = await this.deviceObjects[deviceId].getEnergyUsage();
@@ -1012,6 +1076,10 @@ class Tapo extends utils.Adapter {
       if (!state.ack) {
         const deviceId = id.split(".")[2];
         const command = id.split(".")[4];
+        if (id.split(".")[3] === "childremote") {
+          await this.handleChildRemote(deviceId, id.split(".")[4], id.split(".")[5], state);
+          return;
+        }
         if (id.split(".")[3] !== "remote") {
           return;
         }

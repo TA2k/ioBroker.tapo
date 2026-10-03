@@ -606,13 +606,18 @@ export default class P100 implements TpLinkAccessory {
 
     return this.sendRequest(payload);
   }
-  async getChildDevices(): Promise<boolean> {
-    const payload = {
-      method: 'getChildDeviceList',
-      params: { childControl: { start_index: 0 } },
-    };
-
-    return this.sendRequest(JSON.stringify(payload));
+  async getChildDevices(): Promise<any> {
+    // SMART-protocol hubs (KH100, H100) use get_child_device_list; fall back to the
+    // camera-style getChildDeviceList when that method is unknown (-1002).
+    const result: any = await this.sendRequest(
+      JSON.stringify({ method: 'get_child_device_list', params: { start_index: 0 } }),
+    );
+    if (result && Number(result.error_code) === 0) {
+      return result;
+    }
+    return this.sendRequest(
+      JSON.stringify({ method: 'getChildDeviceList', params: { childControl: { start_index: 0 } } }),
+    );
   }
   async setPowerStateChild(deviceId: string, state: boolean): Promise<boolean> {
     const payload = {
@@ -1241,6 +1246,15 @@ export default class P100 implements TpLinkAccessory {
           terminalUUID: this.terminalUUID,
         },
       },
+    });
+  }
+
+  // SMART-protocol hubs (KH100, H100) expect control_child/requestData, not the
+  // camera-style controlChild/childControl envelope used by sendChildCommand.
+  async sendHubChildCommand(deviceId: string, method: string, params?: Record<string, any>): Promise<any> {
+    return this.sendCommand('control_child', {
+      device_id: deviceId,
+      requestData: { method, params: params || {} },
     });
   }
 
