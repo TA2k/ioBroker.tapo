@@ -486,11 +486,15 @@ class P100 {
     return this.sendRequest(payload);
   }
   async getChildDevices() {
-    const payload = {
-      method: "getChildDeviceList",
-      params: { childControl: { start_index: 0 } }
-    };
-    return this.sendRequest(JSON.stringify(payload));
+    const result = await this.sendRequest(
+      JSON.stringify({ method: "get_child_device_list", params: { start_index: 0 } })
+    );
+    if (result && Number(result.error_code) === 0) {
+      return result;
+    }
+    return this.sendRequest(
+      JSON.stringify({ method: "getChildDeviceList", params: { childControl: { start_index: 0 } } })
+    );
   }
   async setPowerStateChild(deviceId, state) {
     const payload = {
@@ -1012,6 +1016,14 @@ class P100 {
           terminalUUID: this.terminalUUID
         }
       }
+    });
+  }
+  // SMART-protocol hubs (KH100, H100) expect control_child/requestData, not the
+  // camera-style controlChild/childControl envelope used by sendChildCommand.
+  async sendHubChildCommand(deviceId, method, params) {
+    return this.sendCommand("control_child", {
+      device_id: deviceId,
+      requestData: { method, params: params || {} }
     });
   }
   async reAuthenticate() {

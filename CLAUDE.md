@@ -92,10 +92,16 @@ Communicates with devices locally via three protocols depending on device/firmwa
     (best-effort, alarm_type contains doorbell/button/ring). UDP 20005 is a HASS
     community finding, not confirmed in the APK.
   - Cloud device list (`getDeviceListByPage`) queries these SMART.* types: TAPOBULB,
-    TAPOPLUG, IPCAMERA, TAPOHUB, TAPOSENSOR, TAPOSWITCH, TAPODOORBELL, TAPOCHIME,
+    TAPOPLUG, IPCAMERA, TAPOHUB, KASAHUB, TAPOSENSOR, TAPOSWITCH, TAPODOORBELL, TAPOCHIME,
     TAPOLOCK, TAPOROBOVAC, TAPONVR. NVRCHANNEL (NVR sub-channel) and TAPOREMOTE (hub
     child) are intentionally excluded. Lock/Robovac/NVR have no dedicated class yet
     (fall through to the P100 path).
+  - Hub children: `getChildDevices()` tries `get_child_device_list` (SMART hubs, e.g.
+    KH100/H100) and falls back to `getChildDeviceList`; refreshed on every poll for
+    devices whose `type` contains `HUB`. Child TRVs (`category: subg.trv`) get remotes
+    under `<hubId>.childremote.<childId>.*`, sent via `sendHubChildCommand()` as
+    `control_child` → `{device_id, requestData:{method, params}}` (not the camera-style
+    `controlChild`/`childControl` envelope of `sendChildCommand()`)
 
 ### Key Files
 
