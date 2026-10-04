@@ -45,7 +45,21 @@ class Tapo extends utils.Adapter {
     this.on('unload', this.onUnload.bind(this));
     this.devices = {};
     this.deviceObjects = {};
-    this.json2iob = new Json2iob(this);
+    // Polls re-send every value, so let json2iob write through setStateChanged: unchanged values
+    // are not re-published to subscribers on every poll (a KH100 with nine KE100s: ~340 writes/min).
+    // json2iob only uses these members of the adapter (read at call time: log is set up after the constructor).
+    const adapter = this;
+    this.json2iob = new Json2iob({
+      get FORBIDDEN_CHARS() {
+        return adapter.FORBIDDEN_CHARS;
+      },
+      get log() {
+        return adapter.log;
+      },
+      extendObjectAsync: (...args: any[]) => (this.extendObjectAsync as any)(...args),
+      delObjectAsync: (...args: any[]) => (this.delObjectAsync as any)(...args),
+      setStateAsync: (id: string, val: any, ack: boolean) => this.setStateChangedAsync(id, val, ack),
+    });
     this.requestClient = axios.create({
       httpsAgent: new https.Agent({
         rejectUnauthorized: false,
