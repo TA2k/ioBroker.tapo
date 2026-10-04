@@ -60,7 +60,18 @@ class Tapo extends utils.Adapter {
     this.on("unload", this.onUnload.bind(this));
     this.devices = {};
     this.deviceObjects = {};
-    this.json2iob = new import_json2iob.default(this);
+    const adapter = this;
+    this.json2iob = new import_json2iob.default({
+      get FORBIDDEN_CHARS() {
+        return adapter.FORBIDDEN_CHARS;
+      },
+      get log() {
+        return adapter.log;
+      },
+      extendObjectAsync: (...args) => this.extendObjectAsync(...args),
+      delObjectAsync: (...args) => this.delObjectAsync(...args),
+      setStateAsync: (id, val, ack) => this.setStateChangedAsync(id, val, ack)
+    });
     this.requestClient = import_axios.default.create({
       httpsAgent: new import_https.default.Agent({
         rejectUnauthorized: false,
